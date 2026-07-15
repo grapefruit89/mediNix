@@ -37,7 +37,11 @@ let
   localeLang = locale.language or "en";
   localeUi = lib.replaceStrings [ "_" ] [ "-" ] (locale.default or "en_US.UTF-8");
   localeCc = lib.toUpper (lib.substring 3 2 localeUi);
-  jellyfinUrl = "https://jellyfin.${domain}";
+  # P0-1/P1-2: absolute Domain-URL nur wenn eine Domain gesetzt ist.
+  # Ohne Domain leer -- Jellyfin nutzt dann Auto-Detection statt einer
+  # kaputten https://jellyfin.null-URL.
+  hasDomain = domain != null && domain != "";
+  jellyfinUrl = if hasDomain then "https://jellyfin.${domain}" else "";
   vaapiDevice = cfg.hardware.renderDevice;
 
   jellyfinConfigSeeds = pkgs.runCommand "jellyfin-config-seeds" { } ''

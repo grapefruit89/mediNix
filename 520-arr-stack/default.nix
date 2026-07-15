@@ -129,7 +129,9 @@ let
           memoryPolicy = memory.arr { };
           extraSystemd = {
             UMask = lib.mkForce "0002";
-            EnvironmentFile = [ "${cfg.secrets.secretsDir}/${name}.env" ];
+            # P2-3: -Prefix -- systemd ignoriert die Datei wenn sie (noch) fehlt,
+            # statt den Dienst hart zu blockieren (Parität zu Jellyseerr/Navidrome).
+            EnvironmentFile = [ "-${cfg.secrets.secretsDir}/${name}.env" ];
             BindPaths = lib.mkIf (metadataDir != null) [
               "${metadataDir}:/var/lib/${name}/MediaCover"
             ];

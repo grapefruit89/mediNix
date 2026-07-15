@@ -33,9 +33,20 @@ in {
     enable = lib.mkEnableOption "Standalone Media Stack Module";
 
     domain = lib.mkOption {
-      type = lib.types.str;
-      default = "grapefruit-media.local";
-      description = "Base domain used for local ingress routing (e.g. *.grapefruit-media.local).";
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      example = "media.example.com";
+      description = ''
+        Optionale Unicast-Base-Domain fuer die L2-vHosts ({service}.{domain}).
+
+        null (Default) oder "" = KEINE L2-Namen. Die L1-mDNS-Identitaet
+        {service}.local laeuft davon unabhaengig immer (Phase B).
+
+        WICHTIG (grok-review.md Fallstrick): NIEMALS auf .local enden lassen --
+        .local ist ausschliesslich Multicast-DNS (RFC 6762) und gehoert nie in
+        Cloudflare oder einen Unicast-Rewrite. Fuer L2 eine echte Domain setzen
+        (z.B. media.example.com), aufgeloest via Cloudflare/Blocky.
+      '';
     };
 
     # Service enable options

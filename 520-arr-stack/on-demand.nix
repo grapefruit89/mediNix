@@ -67,7 +67,8 @@ let
               User = name;
               Group = name;
               UMask = "0002";
-              EnvironmentFile = [ "${cfg.secrets.secretsDir}/${name}.env" ];
+              # P2-3: -Prefix -- fehlende .env darf den Dienst nicht hart blockieren.
+              EnvironmentFile = [ "-${cfg.secrets.secretsDir}/${name}.env" ];
               BindPaths = [ "${metadataDir}:/var/lib/${name}/MediaCover" ];
               ReadWritePaths = [
                 "/var/lib/${name}"

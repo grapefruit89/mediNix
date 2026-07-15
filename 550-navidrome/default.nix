@@ -24,6 +24,9 @@ let
     ramGB = cfgGlobal.hardware.ramGB;
   };
   domain = cfgGlobal.domain;
+  # P0-1/P1-2: OIDC-DiscoveryUrl braucht eine echte Domain. Ohne Domain wird der
+  # gesamte Oidc-Block weggelassen statt eine https://auth.null-URL zu bauen.
+  hasDomain = domain != null && domain != "";
   port = cfgGlobal.ports.navidrome;
   mediaRoot = cfgGlobal.storage.mediaRoot;
   storageReady = cfgGlobal.storage.enable;
@@ -39,6 +42,8 @@ in
             Port = port;
             DataFolder = "/var/lib/navidrome";
             MusicFolder = lib.mkIf storageReady "${mediaRoot}/music";
+          }
+          // lib.optionalAttrs hasDomain {
             Oidc = {
               DiscoveryUrl = "https://auth.${domain}/.well-known/openid-configuration";
               AutoRegister = true;

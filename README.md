@@ -47,7 +47,7 @@ Nach `nixos-rebuild switch`: Dienste laufen auf `127.0.0.1`, Ingress auf `:80`.
 | Option | Default | Beschreibung |
 |--------|---------|--------------|
 | `grapefruitMedia.enable` | `false` | Modul aktivieren |
-| `grapefruitMedia.domain` | `grapefruit-media.local` | Base-Domain für vHosts |
+| `grapefruitMedia.domain` | `null` | Optionale L2-Unicast-Domain für vHosts (`{service}.{domain}`). `null`/`""` = nur mDNS `{service}.local`. **Nie** auf `.local` enden lassen. |
 | `grapefruitMedia.storage.mediaRoot` | `/data` | Basis für Downloads + Mediathek |
 | `grapefruitMedia.storage.metadataDir` | `/var/lib/media-metadata` | Artwork-Cache |
 | `grapefruitMedia.secrets.autoGenerate` | `false` | API-Keys automatisch erzeugen |
@@ -141,58 +141,54 @@ grapefruitMedia.ingress.tls = {
 
 ## DNS & Namensschema
 
-### Was NICHT verwenden
+> **Kanon:** `grok-review.md` ist die SSoT für Naming/DNS/Ingress. Ältere
+> Aussagen in `handoff-v2.md`/`claude-review*.md` („kein `.local`", `home.arpa")
+> sind überholt und gelten nicht mehr.
 
-**Kein `.local`** — `.local` ist für mDNS/Bonjour reserviert (RFC 6762).
-Browser und Avahi/systemd-resolved konkurrieren darum → unzuverlässig.
+### Zwei Namensebenen
 
-### Empfohlenes Setup: Eigene Domain mit Split-Horizon
+| Ebene | Name | Wann | Auflösung | Cloudflare |
+|-------|------|------|-----------|------------|
+| **L1 mDNS** | `{service}.local` | **immer**, jeder enabled UI-Dienst | Multicast (Avahi) | **nie** |
+| **L2 Unicast** | `{service}.{domain}` | nur wenn `domain` gesetzt | Unicast (Cloudflare + optional Blocky) | ja, nach Tier |
 
-```
-Domain: media.example.com  (oder sub.yourdomain.de)
+`.local` ist **Pflicht-LAN-Identität** (nicht Fallback) und kommt mit der
+mDNS-Arbeit in Phase B. `domain` ist die **zusätzliche** Schicht für HTTPS,
+SSO und WAN. Beide Namen landen am selben Caddy-Handle → `reverse_proxy`.
 
-Intern:  Blocky/AdGuard-Rewrite → LAN-IP des Servers
-Extern:  Cloudflare DDNS        → WAN-IP (optional)
-TLS:     lego DNS-01 Wildcard   → *.media.example.com
-```
+**Fallstrick (unverhandelbar):** `.local` gehört **ausschließlich** ins
+Multicast-LAN. Niemals in Cloudflare, niemals als Unicast-Rewrite in
+Blocky/AdGuard, niemals als Let's-Encrypt-SAN. `domain` **nie** auf `.local`
+enden lassen — dafür eine echte Domain (`media.example.com`) setzen.
 
-**Blocky-Rewrite** (in `services.blocky`):
-```yaml
-customDNS:
-  mapping:
-    jellyfin.media.example.com: 192.168.1.100
-    sonarr.media.example.com:   192.168.1.100
-    # … oder Wildcard wenn Blocky das unterstützt
-```
+### Service-Tiers (L2 / Cloudflare)
 
-**lego DNS-01 Wildcard** via `security.acme` (NixOS):
-```nix
-security.acme = {
-  acceptTerms = true;
-  email = "admin@example.com";
-  certs."media.example.com" = {
-    extraDomainNames = [ "*.media.example.com" ];
-    dnsProvider = "cloudflare";
-    credentialsFile = "/run/secrets/cloudflare.env";
-  };
-};
+Feste SSoT: `lib/service-tiers.nix`.
 
-grapefruitMedia.ingress.tls = {
-  mode     = "custom";
-  certFile = "/var/lib/acme/media.example.com/fullchain.pem";
-  keyFile  = "/var/lib/acme/media.example.com/key.pem";
-};
-```
+| Tier | Bedeutung | Services (Default) |
+|------|-----------|--------------------|
+| **edge-wan** | WAN-erreichbar, CNAME → CF-Anker 2 (WAN-IP, **unproxied** — Streaming-ToS) | jellyfin, jellyseerr, audiobookshelf, navidrome |
+| **backend-lan** | nur LAN-DNS, CNAME → CF-Anker 3 (LAN-IP, unproxied) | sonarr, radarr, readarr, lidarr, prowlarr, sabnzbd |
+| **none** | kein vHost / kein CF-Name | recyclarr, exportarr |
 
-### Alternative: `.home.arpa` (RFC 8375)
+### Cloudflare: genau drei Routen
 
-Für rein interne Setups ohne eigene Domain:
-```nix
-grapefruitMedia.domain = "grapefruit-media.home.arpa";
-```
-`.home.arpa` ist der offizielle RFC-8375-Namespace für Heimnetzwerke.
-Keine Kollision mit mDNS. Lokaler DNS-Resolver (Blocky/dnsmasq) muss
-die Zone auflösen — kein automatisches Discovery wie bei `.local`.
+Kein A-Record-je-Service mit starrer IP, sondern **drei Anker** (DDNS pflegt
+nur diese, Service-Namen hängen per CNAME dran):
+
+1. **Landing** (`@`/Apex) — **proxied** (orange), Host-Sache (nicht 50-media).
+2. **Edge-Anker** — **unproxied** (grau) → WAN-IP via DDNS. Alle edge-wan-Services.
+3. **Backend-Anker** — **unproxied** → LAN-IP des Hosts via DDNS. Alle backend-lan-Services.
+
+50-media liefert nur **Namensliste + Tier** (SSoT oben). DDNS, CF-Records und
+Router-Port-Forward (nur 443 für Edge) macht der Host (`10-network`). **Keine**
+starre Heim-IP im Modul, **kein** `.local` in Cloudflare.
+
+### TLS für L2
+
+Extern via `security.acme`/lego (DNS-01, ADR-032), Modul bekommt nur Cert-Pfade
+(`ingress.tls.mode = "custom"`). `.local` (L1) läuft HTTP oder bewusst
+`tls internal` — **kein** Let's-Encrypt für `.local`.
 
 ---
 
@@ -202,8 +198,8 @@ die Zone auflösen — kein automatisches Discovery wie bei `.local`.
   Download-Clients, API-Key-Injection — Phase 1 (noch nicht implementiert).
   Bis dahin: manuelle Erstkonfiguration im UI.
 - **Feishin:** Native SPA-Implementierung noch ausstehend (Phase 5).
-- **GPU-Transcoding:** Jellyfin QuickSync-Mapping via `audiobookshelf.enableQuickSync`
-  (falsch benannt — betrifft Jellyfin). Erfordert `hardware.renderDevice`.
+- **GPU-Transcoding:** `audiobookshelf.enableQuickSync` steuert das Intel-QSV-
+  Mapping für **Audiobookshelf** (nicht Jellyfin). Erfordert `hardware.renderDevice`.
 - **Tests:** `nix flake check` mit VM-Test kommt in Phase 5.
 
 ---
