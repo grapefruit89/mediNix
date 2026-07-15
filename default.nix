@@ -95,16 +95,64 @@ in {
       };
       tls = {
         mode = mkOption {
-          type = types.enum [ "off" "internal" "acme" ];
+          type = types.enum [ "off" "internal" "custom" ];
           default = "off";
           description = ''
             TLS-Modus fuer den Standalone-Ingress:
-              off:      nur HTTP auf :80 (kein TLS -- fuer LAN hinter eigenem Proxy).
-              internal: HTTP :80 + HTTPS :443 mit Caddy-interner CA (selbstsigniert,
-                        Browser zeigt Warnung). Fuer lokale Entwicklung geeignet.
-              acme:     NICHT im Modul verwenden (ADR-032: TLS gehoert auf Host-Ebene
-                        via security.acme/lego + DNS-01). Diese Option ist ein
-                        Reminder-Platzhalter und hat keine Auswirkung.
+              off:      nur HTTP :80 (kein TLS -- fuer LAN hinter eigenem Proxy).
+              internal: HTTP :80 + HTTPS :443 mit Caddy-interner CA (selbstsigniert).
+                        Gut fuer lokale Entwicklung, Browser zeigt Warnung.
+              custom:   HTTPS :443 mit externem Zertifikat (certFile + keyFile).
+                        ACME/lego laeuft Host-seitig (ADR-032: security.acme/lego
+                        DNS-01), nicht im Modul. Cert-Pfade via tls.certFile/keyFile.
+          '';
+        };
+        certFile = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          example = "/var/lib/acme/example.com/cert.pem";
+          description = "Pfad zum TLS-Zertifikat (PEM, Chain). Nur bei tls.mode = custom.";
+        };
+        keyFile = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          example = "/var/lib/acme/example.com/key.pem";
+          description = "Pfad zum TLS-Private-Key (PEM). Nur bei tls.mode = custom.";
+        };
+      };
+      auth = {
+        mode = mkOption {
+          type = types.enum [ "none" "forward-auth" ];
+          default = "none";
+          description = ''
+            Authentifizierungsmodus fuer den Chameleon-Ingress.
+              none:         Kein zusaetzlicher Auth-Check (Standard).
+              forward-auth: Jede Anfrage wird gegen forwardAuthUrl geprueft
+                            (z.B. oauth2-proxy, Pocket-ID, Authentik).
+                            Setze zusaetzlich grapefruitMedia.authProxyPresent = true,
+                            damit *arr-Apps ebenfalls AUTH__METHOD=External erhalten.
+          '';
+        };
+        forwardAuthUrl = mkOption {
+          type = types.str;
+          default = "";
+          example = "http://127.0.0.1:4180/oauth2/auth";
+          description = ''
+            Vollstaendige URL des Forward-Auth-Endpoints.
+            Nur relevant bei auth.mode = forward-auth.
+            Beispiele:
+              oauth2-proxy:  http://127.0.0.1:4180/oauth2/auth
+              Pocket-ID:     http://127.0.0.1:8080/api/v1/auth
+              Authentik:     http://127.0.0.1:9000/outpost.goauthentik.io/auth/caddy
+          '';
+        };
+        skipPaths = mkOption {
+          type = types.listOf types.str;
+          default = [ ];
+          example = [ "/metrics" "/health" "/api/v1/items" ];
+          description = ''
+            Pfade die forward_auth umgehen (z.B. native App-APIs, Health-Endpoints).
+            Gilt global fuer alle vHosts im Ingress.
           '';
         };
       };

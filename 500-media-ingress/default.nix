@@ -50,14 +50,14 @@ let
     lidarr = lib.optionalAttrs cfg.lidarr.enable { port = ports.lidarr; };
   };
 
-  # Caddyfile-Snippet: pro Dienst einen Matcher + reverse_proxy
+  # Caddyfile-Snippet: pro Dienst Matcher + (optionaler forward_auth) + reverse_proxy
   mkSvcRoutes = lib.concatStringsSep "\n" (
     lib.mapAttrsToList (
       name: svc:
       ''
         @${name} host ${name}.${domain}
         handle @${name} {
-          reverse_proxy http://127.0.0.1:${toString svc.port}
+          ${forwardAuthSnippet}reverse_proxy http://127.0.0.1:${toString svc.port}
         }
       ''
     ) enabledServices
@@ -65,10 +65,27 @@ let
 
   # TLS-Direktive fuer den Standalone-Block
   tlsDirective =
-    if cfg.ingress.tls.mode == "internal" then "tls internal"
-    else "";  # "off" und "acme" = kein tls-Snippet (acme gehoert auf Host-Ebene, ADR-032)
+    if cfg.ingress.tls.mode == "internal" then
+      "tls internal"
+    else if cfg.ingress.tls.mode == "custom" then
+      # Zertifikat kommt von security.acme/lego (ADR-032), nicht von Caddy-ACME
+      "tls ${cfg.ingress.tls.certFile} ${cfg.ingress.tls.keyFile}"
+    else
+      "";  # off = kein TLS-Snippet
 
-  standaloneProtocol = if cfg.ingress.tls.mode == "internal" then "https" else "http";
+  standaloneProtocol = if cfg.ingress.tls.mode != "off" then "https" else "http";
+
+  # forward_auth Snippet (leer bei auth.mode = "none")
+  forwardAuthSnippet = lib.optionalString (cfg.ingress.auth.mode == "forward-auth") ''
+    forward_auth ${cfg.ingress.auth.forwardAuthUrl}
+  '';
+
+  # Matcher fuer Pfade die forward_auth umgehen (skipPaths)
+  skipPathsMatcher = lib.optionalString
+    (cfg.ingress.auth.mode == "forward-auth" && cfg.ingress.auth.skipPaths != [ ])
+    (let
+      paths = lib.concatStringsSep " " cfg.ingress.auth.skipPaths;
+    in "@noAuth path ${paths}");
 
   # Caddyfile fuer Standalone-Modus
   # H6-Fix: Site-Adresse :80 (catch-all) statt "http://localhost:80" (nur localhost-Header)
@@ -130,11 +147,44 @@ in
         name: svc:
         lib.nameValuePair "${name}.${domain}" {
           extraConfig = ''
-            reverse_proxy http://127.0.0.1:${toString svc.port}
+            ${forwardAuthSnippet}reverse_proxy http://127.0.0.1:${toString svc.port}
           '';
         }
       ) enabledServices;
     })
+
+    # --- Phase 3.2: Auth-Warnings + Assertions ---
+    {
+      warnings =
+        # Warnung: auth.mode=forward-auth aber authProxyPresent nicht gesetzt
+        lib.optional
+          (cfg.enable && cfg.ingress.enable
+            && cfg.ingress.auth.mode == "forward-auth"
+            && !cfg.authProxyPresent)
+          ''
+            [50-media/ingress] ingress.auth.mode = "forward-auth" aber
+            grapefruitMedia.authProxyPresent = false. Setze authProxyPresent = true
+            damit *arr-Apps ebenfalls AUTH__METHOD=External verwenden.
+          ''
+        # Warnung: auth.mode=forward-auth aber forwardAuthUrl leer
+        ++ lib.optional
+          (cfg.enable && cfg.ingress.enable
+            && cfg.ingress.auth.mode == "forward-auth"
+            && cfg.ingress.auth.forwardAuthUrl == "")
+          ''
+            [50-media/ingress] auth.mode = "forward-auth" erfordert
+            grapefruitMedia.ingress.auth.forwardAuthUrl (z.B. http://127.0.0.1:4180/oauth2/auth).
+          ''
+        # Warnung: custom TLS aber certFile oder keyFile fehlt
+        ++ lib.optional
+          (cfg.enable && cfg.ingress.enable
+            && cfg.ingress.tls.mode == "custom"
+            && (cfg.ingress.tls.certFile == null || cfg.ingress.tls.keyFile == null))
+          ''
+            [50-media/ingress] tls.mode = "custom" erfordert
+            grapefruitMedia.ingress.tls.certFile und .keyFile.
+          '';
+    }
 
     # --- DNS-Empfehlung (Block 7, 2026-07-15) ---
     # KEIN .local (mDNS-Konflikt RFC 6762). Empfohlenes Setup:
