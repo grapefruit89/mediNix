@@ -1,0 +1,63 @@
+{
+  config,
+  lib,
+  ...
+}:
+let
+  cfgGlobal = config.grapefruitMedia;
+  cfg = cfgGlobal.navidrome;
+  factory = import ../lib/service-factory.nix { inherit lib; };
+  memory = import ../lib/memory-policy.nix {
+    inherit lib;
+    ramGB = cfgGlobal.hardware.ramGB;
+  };
+  domain = cfgGlobal.domain;
+  port = cfgGlobal.ports.navidrome;
+  mediaRoot = cfgGlobal.storage.mediaRoot;
+  storageReady = cfgGlobal.storage.enable;
+in
+{
+  config = lib.mkIf (cfgGlobal.enable && cfg.enable) (
+    lib.mkMerge [
+      {
+        services.navidrome = {
+          enable = true;
+          settings = {
+            Address = "127.0.0.1";
+            Port = port;
+            DataFolder = "/var/lib/navidrome";
+            MusicFolder = lib.mkIf storageReady "${mediaRoot}/music";
+            Oidc = {
+              DiscoveryUrl = "https://auth.${domain}/.well-known/openid-configuration";
+              AutoRegister = true;
+              Scopes = "openid profile email";
+            };
+          };
+        };
+
+        # -Prefix: systemd ignoriert fehlende Datei → Navidrome startet ohne OIDC bis Secrets gesetzt
+        systemd.services.navidrome.serviceConfig.EnvironmentFile = [
+          "-${cfgGlobal.secrets.navidromeOidcFile}"
+        ];
+      }
+
+      (factory.mkService {
+        inherit config;
+        name = "navidrome";
+        inherit port;
+        mode = "sso";
+        persistDirs = [ "/var/lib/navidrome" ];
+        readWritePaths = [
+          "/var/lib/navidrome"
+        ]
+        ++ lib.optionals storageReady [ "${mediaRoot}/music" ];
+        memoryPolicy = memory.navidrome { };
+      })
+
+      (lib.mkIf storageReady {
+        users.groups.media = {};
+        systemd.tmpfiles.rules = [ "d ${mediaRoot}/music 0775 navidrome media -" ];
+      })
+    ]
+  );
+}

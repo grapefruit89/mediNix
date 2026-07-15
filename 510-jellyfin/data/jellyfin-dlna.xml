@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- DLNA komplett deaktiviert — Jellyfin läuft hinter Caddy, kein LAN-Discovery nötig -->
+<DlnaOptions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <EnableServer>false</EnableServer>
+  <EnablePlayTo>false</EnablePlayTo>
+  <EnableGettingPostersFromInternet>false</EnableGettingPostersFromInternet>
+  <EnableGettingSubtitlesFromInternet>false</EnableGettingSubtitlesFromInternet>
+  <SendOnlyMatchedHost>true</SendOnlyMatchedHost>
+  <ClientDiscoveryIntervalSeconds>60</ClientDiscoveryIntervalSeconds>
+  <BlastAliveMessageIntervalSeconds>1800</BlastAliveMessageIntervalSeconds>
+  <AliveMessageIntervalSeconds>1800</AliveMessageIntervalSeconds>
+</DlnaOptions>

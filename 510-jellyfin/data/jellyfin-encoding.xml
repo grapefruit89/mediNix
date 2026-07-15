@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<EncodingOptions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <EncodingThreadCount>-1</EncodingThreadCount>
+  <!-- Transkodierungspfad: /run/ ist tmpfs — Segmente liegen im RAM, nie auf Disk -->
+  <TranscodingTempPath>/run/jellyfin-transcode</TranscodingTempPath>
+  <EnableThrottling>true</EnableThrottling>
+  <ThrottleDelaySeconds>180</ThrottleDelaySeconds>
+  <!-- Intel UHD 630 (i3-9100 / Coffee Lake Gen 9) — VAAPI via iHD-Treiber -->
+  <HardwareAccelerationType>vaapi</HardwareAccelerationType>
+  <VaapiDevice>@VAAPI_DEVICE@</VaapiDevice>
+  <EnableVppTonemapping>false</EnableVppTonemapping>
+  <EnableTonemapping>false</EnableTonemapping>
+  <TonemappingAlgorithm>bt2390</TonemappingAlgorithm>
+  <TonemappingMode>auto</TonemappingMode>
+  <TonemappingRange>tv</TonemappingRange>
+  <TonemappingDesat>0</TonemappingDesat>
+  <TonemappingPeak>100</TonemappingPeak>
+  <TonemappingParam>0</TonemappingParam>
+  <H264Crf>23</H264Crf>
+  <H265Crf>28</H265Crf>
+  <DeinterlaceDoubleRate>false</DeinterlaceDoubleRate>
+  <DeinterlaceMethod>yadif</DeinterlaceMethod>
+  <!-- 10-Bit HEVC und VP9 Decode: Gen 9 unterstützt beide -->
+  <EnableDecodingColorDepth10Hevc>true</EnableDecodingColorDepth10Hevc>
+  <EnableDecodingColorDepth10Vp9>true</EnableDecodingColorDepth10Vp9>
+  <EnableDecodingColorDepth10HevcRext>false</EnableDecodingColorDepth10HevcRext>
+  <EnableDecodingColorDepth12HevcRext>false</EnableDecodingColorDepth12HevcRext>
+  <EnableDecodingColorDepth10Av1>false</EnableDecodingColorDepth10Av1>
+  <EnableEnhancedNvdecDecoder>false</EnableEnhancedNvdecDecoder>
+  <!-- Low-Power Encoder: i3-9100 Gen 9 unterstützt H.264 LP und HEVC LP -->
+  <EnableIntelLowPowerH264HwEncoder>true</EnableIntelLowPowerH264HwEncoder>
+  <EnableIntelLowPowerHevcHwEncoder>true</EnableIntelLowPowerHevcHwEncoder>
+  <EnableHardwareEncoding>true</EnableHardwareEncoding>
+  <AllowHevcEncoding>true</AllowHevcEncoding>
+  <AllowAv1Encoding>false</AllowAv1Encoding>
+  <EnableSubtitleExtraction>true</EnableSubtitleExtraction>
+  <HardwareDecodingCodecs>
+    <string>h264</string>
+    <string>hevc</string>
+    <string>vc1</string>
+    <string>mpeg2video</string>
+    <string>vp9</string>
+    <string>vp8</string>
+  </HardwareDecodingCodecs>
+  <AllowOnDemandMetadataBasedKeyframeExtractionForExtensions>
+    <string>mkv</string>
+  </AllowOnDemandMetadataBasedKeyframeExtractionForExtensions>
+</EncodingOptions>

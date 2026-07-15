@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ServerConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <LogFileRetentionDays>3</LogFileRetentionDays>
+  <IsStartupWizardCompleted>true</IsStartupWizardCompleted>
+  <EnableMetrics>false</EnableMetrics>
+  <EnableNormalizedItemByNameIds>true</EnableNormalizedItemByNameIds>
+  <IsPortAuthorized>true</IsPortAuthorized>
+  <QuickConnectAvailable>true</QuickConnectAvailable>
+  <EnableCaseSensitiveItemIds>true</EnableCaseSensitiveItemIds>
+  <DisableLiveTvChannelUserDataName>true</DisableLiveTvChannelUserDataName>
+  <!-- Metadaten auf fast_pool — nicht in /var/lib/jellyfin (langsamer Datenpool) -->
+  <MetadataPath>/mnt/fast_pool/metadata/jellyfin</MetadataPath>
+  <PreferredMetadataLanguage>@LOCALE_LANG@</PreferredMetadataLanguage>
+  <MetadataCountryCode>@LOCALE_CC@</MetadataCountryCode>
+  <MinResumePct>5</MinResumePct>
+  <MaxResumePct>92</MaxResumePct>
+  <MinResumeDurationSeconds>300</MinResumeDurationSeconds>
+  <MinAudiobookResume>5</MinAudiobookResume>
+  <MaxAudiobookResume>92</MaxAudiobookResume>
+  <LibraryMonitorDelay>60</LibraryMonitorDelay>
+  <EnableDashboardResponseCaching>true</EnableDashboardResponseCaching>
+  <!-- 800 MB RAM-Cache für häufig genutzte Metadaten -->
+  <CacheSize>800</CacheSize>
+  <UICulture>@LOCALE_UI@</UICulture>
+  <SaveMetadataHidden>false</SaveMetadataHidden>
+  <EnableExternalContentInSuggestions>false</EnableExternalContentInSuggestions>
+  <EnableSlowResponseWarning>true</EnableSlowResponseWarning>
+  <SlowResponseThresholdMs>500</SlowResponseThresholdMs>
+  <ActivityLogRetentionDays>14</ActivityLogRetentionDays>
+  <EnableLegacyAuthorization>true</EnableLegacyAuthorization>
+  <!-- Kapitelextraktion für Intro-Detection (Jellyfin 10.9+, built-in) -->
+  <ChapterImageResolution>MatchSource</ChapterImageResolution>
+  <ParallelImageEncodingLimit>0</ParallelImageEncodingLimit>
+  <EnableGroupingShowsIntoCollections>true</EnableGroupingShowsIntoCollections>
+  <DisplaySpecialsWithinSeasons>true</DisplaySpecialsWithinSeasons>
+  <!-- Trickplay: Vorschaubilder beim Scrubben via QuickSync (NonBlocking, kein Transcode-Impact) -->
+  <TrickplayOptions>
+    <EnableHwAcceleration>true</EnableHwAcceleration>
+    <ScanBehavior>NonBlocking</ScanBehavior>
+    <ProcessPriority>BelowNormal</ProcessPriority>
+    <Interval>10000</Interval>
+    <ProcessThreads>1</ProcessThreads>
+  </TrickplayOptions>
+</ServerConfiguration>
