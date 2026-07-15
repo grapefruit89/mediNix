@@ -243,6 +243,24 @@ diese Phase ist reine Standalone-Funktionalität, auf q958 nur Eval-neutral.
 Minimal-Standalone-Config (siehe Phase 5 nixosTest) mit `ingress.mode = "standalone"`:
 generiertes Caddyfile enthält alle aktiven Dienste; kein `http://localhost`-Site-Block mehr.
 
+### Phase 3 Nacharbeit — 4 Bugs (gefunden + gefixt 2026-07-15)
+
+Beim Code-Review nach dem Phase-3-Commit wurden vier Bugs in `500-media-ingress/default.nix`
+gefunden und direkt behoben. Commit: "fix(ingress): 4 bugs Phase 3 Nacharbeit".
+
+| # | Bug | Fix |
+|---|-----|-----|
+| 1 | `enabledServices`-Filter griff nie: `lib.optionalAttrs false {}` ergibt `{}`, nicht `null` — für jeden deaktivierten Dienst fehlte deshalb `svc.port` | `if enable then { port = ...; } else null` |
+| 2 | `forward_auth`-Syntax falsch: Caddy erwartet `forward_auth <upstream> { uri <pfad>; }` — Upstream ohne Pfad | `forwardAuthUrl` aufgeteilt in `forwardAuthUpstream` (Adresse) + `forwardAuthUri` (Pfad, default `/oauth2/auth`) |
+| 3 | `skipPaths` war No-Op: `skipPathsMatcher` definiert aber nirgends verwendet — native App-Clients wurden ausgesperrt | In `mkSvcBlock` verdrahtet: `@<name>Skip path` + zwei `handle`-Blöcke (skip direkt, Rest auth-gated) |
+| 4 | `tls.mode = "custom"` hatte keinen `:443`-Block; `:80` redirectete bei aktivem TLS nicht | `:80` → `redir https://{host}{uri} 308`, `:443` für `internal` und `custom` |
+
+Option-Umbenennung: `ingress.auth.forwardAuthUrl` (String mit Pfad) wurde durch
+`ingress.auth.forwardAuthUpstream` + `ingress.auth.forwardAuthUri` ersetzt.
+`README.md` + `default.nix` entsprechend aktualisiert.
+Keine Konsumenten von `forwardAuthUrl` auf q958 (Ingress ist dort deaktiviert) — Breaking
+Change ist sicher.
+
 ---
 
 ## Phase 4 — Hygiene / M-Findings (≈ ½ Session)

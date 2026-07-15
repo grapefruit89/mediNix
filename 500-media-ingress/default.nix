@@ -9,7 +9,13 @@
 # tags: [caddy, ingress, reverse-proxy]
 # docs:
 #   - modules/50-media/claude-review.md
+#   - modules/50-media/README.md
 # ---
+# Bugfixes Phase 3 Nacharbeit (2026-07-15):
+#   Bug1: enabledServices-Filter (optionalAttrs false == {}, nicht null) -- gefixt
+#   Bug2: forward_auth Upstream enthielt Pfad (Caddy: uri als Subdirektive) -- gefixt
+#   Bug3: skipPaths war No-Op (Matcher definiert aber nie verdrahtet) -- gefixt
+#   Bug4: tls.mode=custom hatte keinen :443-Block, :80 ohne Redirect -- gefixt
 {
   config,
   lib,
@@ -20,6 +26,7 @@ let
   cfg = config.grapefruitMedia;
   domain = cfg.domain;
   ports = cfg.ports;
+  auth = cfg.ingress.auth;
 
   isStandalone =
     cfg.ingress.enable
@@ -35,33 +42,71 @@ let
       || (cfg.ingress.mode == "auto" && config.services.caddy.enable)
     );
 
-  # H6-Fix: alle aktivierten Dienste mit ihren Ports -- fuer globalen und
-  # Standalone-Modus gemeinsam genutzt.
+  # Bug1 Fix: lib.optionalAttrs false ergibt {} (leeres Attrset), nicht null --
+  # filterAttrs (_: v: v != null) filterte deshalb nie. Gefixt: if/else null.
   enabledServices = lib.filterAttrs (_: v: v != null) {
-    jellyfin = lib.optionalAttrs cfg.jellyfin.enable { port = ports.jellyfin; };
-    jellyseerr = lib.optionalAttrs cfg.jellyseerr.enable { port = ports.jellyseerr; };
-    sonarr = lib.optionalAttrs cfg.sonarr.enable { port = ports.sonarr; };
-    radarr = lib.optionalAttrs cfg.radarr.enable { port = ports.radarr; };
-    readarr = lib.optionalAttrs cfg.readarr.enable { port = ports.readarr; };
-    prowlarr = lib.optionalAttrs cfg.prowlarr.enable { port = ports.prowlarr; };
-    sabnzbd = lib.optionalAttrs cfg.sabnzbd.enable { port = ports.sabnzbd; };
-    audiobookshelf = lib.optionalAttrs cfg.audiobookshelf.enable { port = ports.audiobookshelf; };
-    navidrome = lib.optionalAttrs cfg.navidrome.enable { port = ports.navidrome; };
-    lidarr = lib.optionalAttrs cfg.lidarr.enable { port = ports.lidarr; };
+    jellyfin       = if cfg.jellyfin.enable       then { port = ports.jellyfin; }       else null;
+    jellyseerr     = if cfg.jellyseerr.enable     then { port = ports.jellyseerr; }     else null;
+    sonarr         = if cfg.sonarr.enable         then { port = ports.sonarr; }         else null;
+    radarr         = if cfg.radarr.enable         then { port = ports.radarr; }         else null;
+    readarr        = if cfg.readarr.enable        then { port = ports.readarr; }        else null;
+    prowlarr       = if cfg.prowlarr.enable       then { port = ports.prowlarr; }       else null;
+    sabnzbd        = if cfg.sabnzbd.enable        then { port = ports.sabnzbd; }        else null;
+    audiobookshelf = if cfg.audiobookshelf.enable then { port = ports.audiobookshelf; } else null;
+    navidrome      = if cfg.navidrome.enable      then { port = ports.navidrome; }      else null;
+    lidarr         = if cfg.lidarr.enable         then { port = ports.lidarr; }         else null;
   };
 
-  # Caddyfile-Snippet: pro Dienst Matcher + (optionaler forward_auth) + reverse_proxy
-  mkSvcRoutes = lib.concatStringsSep "\n" (
-    lib.mapAttrsToList (
-      name: svc:
-      ''
-        @${name} host ${name}.${domain}
-        handle @${name} {
-          ${forwardAuthSnippet}reverse_proxy http://127.0.0.1:${toString svc.port}
+  hasForwardAuth = auth.mode == "forward-auth";
+  hasSkipPaths   = hasForwardAuth && auth.skipPaths != [ ];
+  skipPathsStr   = lib.concatStringsSep " " auth.skipPaths;
+
+  # Bug2 Fix: Caddy forward_auth-Syntax: <upstream> ohne Pfad + uri als Subdirektive.
+  # Kontext7 bestaetigt: forward_auth <upstream> { uri <pfad>; copy_headers ...; }
+  # forwardAuthUrl aufgeteilt in forwardAuthUpstream + forwardAuthUri (default /oauth2/auth).
+  mkForwardAuthBlock = ''
+    forward_auth ${auth.forwardAuthUpstream} {
+      uri ${auth.forwardAuthUri}
+      copy_headers Remote-User Remote-Email Remote-Groups X-Auth-Request-User X-Auth-Request-Email
+    }
+  '';
+
+  # Bug3 Fix: skipPaths jetzt verdrahtet. Zwei handle-Bloecke: @<name>Skip geht direkt
+  # zur reverse_proxy, alles andere wird erst durch forward_auth geschleust.
+  mkSvcBlock =
+    name: svc:
+    let
+      proxy = "reverse_proxy http://127.0.0.1:${toString svc.port}";
+    in
+    ''
+      @${name} host ${name}.${domain}
+      handle @${name} {
+        ${
+          if hasSkipPaths then
+            ''
+              @${name}Skip path ${skipPathsStr}
+              handle @${name}Skip {
+                ${proxy}
+              }
+              handle {
+                ${mkForwardAuthBlock}
+                ${proxy}
+              }
+            ''
+          else if hasForwardAuth then
+            ''
+              ${mkForwardAuthBlock}
+              ${proxy}
+            ''
+          else
+            ''
+              ${proxy}
+            ''
         }
-      ''
-    ) enabledServices
-  );
+      }
+    '';
+
+  mkSvcRoutes = lib.concatStringsSep "\n" (lib.mapAttrsToList mkSvcBlock enabledServices);
 
   # TLS-Direktive fuer den Standalone-Block
   tlsDirective =
@@ -71,38 +116,63 @@ let
       # Zertifikat kommt von security.acme/lego (ADR-032), nicht von Caddy-ACME
       "tls ${cfg.ingress.tls.certFile} ${cfg.ingress.tls.keyFile}"
     else
-      "";  # off = kein TLS-Snippet
+      "";
 
-  standaloneProtocol = if cfg.ingress.tls.mode != "off" then "https" else "http";
+  # Bug4 Fix: tls.mode=custom bekommt jetzt :443-Block (wie internal).
+  # Bei aktivem TLS leitet :80 auf :443 um (308 Permanent Redirect).
+  # standaloneProtocol entfernt (war totes Code).
+  standaloneConfig = pkgs.writeText "Caddyfile-media-standalone" (
+    if cfg.ingress.tls.mode == "off" then
+      ''
+        :80 {
+          route /health {
+            respond "OK" 200
+          }
+          ${mkSvcRoutes}
+        }
+      ''
+    else
+      ''
+        :80 {
+          redir https://{host}{uri} 308
+        }
+        :443 {
+          ${tlsDirective}
+          route /health {
+            respond "OK" 200
+          }
+          ${mkSvcRoutes}
+        }
+      ''
+  );
 
-  # forward_auth Snippet (leer bei auth.mode = "none")
-  forwardAuthSnippet = lib.optionalString (cfg.ingress.auth.mode == "forward-auth") ''
-    forward_auth ${cfg.ingress.auth.forwardAuthUrl}
-  '';
+  # Globaler vHost extraConfig (Bug2+3 Fix: korrekte forward_auth + skipPaths)
+  mkGlobalExtraConfig =
+    svc:
+    let
+      proxy = "reverse_proxy http://127.0.0.1:${toString svc.port}";
+    in
+    if hasSkipPaths then
+      ''
+        @skip path ${skipPathsStr}
+        handle @skip {
+          ${proxy}
+        }
+        handle {
+          ${mkForwardAuthBlock}
+          ${proxy}
+        }
+      ''
+    else if hasForwardAuth then
+      ''
+        ${mkForwardAuthBlock}
+        ${proxy}
+      ''
+    else
+      ''
+        ${proxy}
+      '';
 
-  # Matcher fuer Pfade die forward_auth umgehen (skipPaths)
-  skipPathsMatcher = lib.optionalString
-    (cfg.ingress.auth.mode == "forward-auth" && cfg.ingress.auth.skipPaths != [ ])
-    (let
-      paths = lib.concatStringsSep " " cfg.ingress.auth.skipPaths;
-    in "@noAuth path ${paths}");
-
-  # Caddyfile fuer Standalone-Modus
-  # H6-Fix: Site-Adresse :80 (catch-all) statt "http://localhost:80" (nur localhost-Header)
-  standaloneConfig = pkgs.writeText "Caddyfile-media-standalone" ''
-    :80 {
-      route /health {
-        respond "OK" 200
-      }
-      ${mkSvcRoutes}
-    }
-    ${lib.optionalString (cfg.ingress.tls.mode == "internal") ''
-      :443 {
-        ${tlsDirective}
-        ${mkSvcRoutes}
-      }
-    ''}
-  '';
 in
 {
   config = lib.mkIf cfg.enable (lib.mkMerge [
@@ -141,45 +211,49 @@ in
     })
 
     # --- Global-Modus: vHosts fuer ALLE aktivierten Dienste ---
-    # H6-Fix: nicht mehr hardkodierte 3 Dienste, sondern map ueber enabledServices
     (lib.mkIf isGlobal {
       services.caddy.virtualHosts = lib.mapAttrs' (
         name: svc:
         lib.nameValuePair "${name}.${domain}" {
-          extraConfig = ''
-            ${forwardAuthSnippet}reverse_proxy http://127.0.0.1:${toString svc.port}
-          '';
+          extraConfig = mkGlobalExtraConfig svc;
         }
       ) enabledServices;
     })
 
-    # --- Phase 3.2: Auth-Warnings + Assertions ---
+    # --- Phase 3.2: Auth-Warnings ---
     {
       warnings =
-        # Warnung: auth.mode=forward-auth aber authProxyPresent nicht gesetzt
         lib.optional
-          (cfg.enable && cfg.ingress.enable
+          (
+            cfg.enable
+            && cfg.ingress.enable
             && cfg.ingress.auth.mode == "forward-auth"
-            && !cfg.authProxyPresent)
+            && !cfg.authProxyPresent
+          )
           ''
             [50-media/ingress] ingress.auth.mode = "forward-auth" aber
             grapefruitMedia.authProxyPresent = false. Setze authProxyPresent = true
             damit *arr-Apps ebenfalls AUTH__METHOD=External verwenden.
           ''
-        # Warnung: auth.mode=forward-auth aber forwardAuthUrl leer
         ++ lib.optional
-          (cfg.enable && cfg.ingress.enable
+          (
+            cfg.enable
+            && cfg.ingress.enable
             && cfg.ingress.auth.mode == "forward-auth"
-            && cfg.ingress.auth.forwardAuthUrl == "")
+            && cfg.ingress.auth.forwardAuthUpstream == ""
+          )
           ''
             [50-media/ingress] auth.mode = "forward-auth" erfordert
-            grapefruitMedia.ingress.auth.forwardAuthUrl (z.B. http://127.0.0.1:4180/oauth2/auth).
+            grapefruitMedia.ingress.auth.forwardAuthUpstream
+            (z.B. http://127.0.0.1:4180).
           ''
-        # Warnung: custom TLS aber certFile oder keyFile fehlt
         ++ lib.optional
-          (cfg.enable && cfg.ingress.enable
+          (
+            cfg.enable
+            && cfg.ingress.enable
             && cfg.ingress.tls.mode == "custom"
-            && (cfg.ingress.tls.certFile == null || cfg.ingress.tls.keyFile == null))
+            && (cfg.ingress.tls.certFile == null || cfg.ingress.tls.keyFile == null)
+          )
           ''
             [50-media/ingress] tls.mode = "custom" erfordert
             grapefruitMedia.ingress.tls.certFile und .keyFile.

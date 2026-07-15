@@ -137,23 +137,35 @@ in {
           description = ''
             Authentifizierungsmodus fuer den Chameleon-Ingress.
               none:         Kein zusaetzlicher Auth-Check (Standard).
-              forward-auth: Jede Anfrage wird gegen forwardAuthUrl geprueft
+              forward-auth: Jede Anfrage wird gegen forwardAuthUpstream geprueft
                             (z.B. oauth2-proxy, Pocket-ID, Authentik).
                             Setze zusaetzlich grapefruitMedia.authProxyPresent = true,
                             damit *arr-Apps ebenfalls AUTH__METHOD=External erhalten.
           '';
         };
-        forwardAuthUrl = lib.mkOption {
+        forwardAuthUpstream = lib.mkOption {
           type = lib.types.str;
           default = "";
-          example = "http://127.0.0.1:4180/oauth2/auth";
+          example = "http://127.0.0.1:4180";
           description = ''
-            Vollstaendige URL des Forward-Auth-Endpoints.
+            Upstream-Adresse des Forward-Auth-Proxys (ohne Pfad).
             Nur relevant bei auth.mode = forward-auth.
             Beispiele:
-              oauth2-proxy:  http://127.0.0.1:4180/oauth2/auth
-              Pocket-ID:     http://127.0.0.1:8080/api/v1/auth
-              Authentik:     http://127.0.0.1:9000/outpost.goauthentik.io/auth/caddy
+              oauth2-proxy:  http://127.0.0.1:4180
+              Pocket-ID:     http://127.0.0.1:8080
+              Authentik:     http://127.0.0.1:9000
+          '';
+        };
+        forwardAuthUri = lib.mkOption {
+          type = lib.types.str;
+          default = "/oauth2/auth";
+          description = ''
+            Pruef-Pfad auf dem Forward-Auth-Upstream.
+            Nur relevant bei auth.mode = forward-auth.
+            Beispiele:
+              oauth2-proxy:  /oauth2/auth
+              Pocket-ID:     /api/v1/auth
+              Authentik:     /outpost.goauthentik.io/auth/caddy
           '';
         };
         skipPaths = lib.mkOption {

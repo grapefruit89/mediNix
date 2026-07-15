@@ -85,18 +85,39 @@ grapefruitMedia.secrets = {
 grapefruitMedia = {
   authProxyPresent = true;   # schaltet *arr AUTH__METHOD=External
   ingress.auth = {
-    mode           = "forward-auth";
-    forwardAuthUrl = "http://127.0.0.1:4180/oauth2/auth";
-    skipPaths      = [ "/metrics" "/health" ];
+    mode                = "forward-auth";
+    forwardAuthUpstream = "http://127.0.0.1:4180";  # Upstream ohne Pfad
+    forwardAuthUri      = "/oauth2/auth";            # default: /oauth2/auth
+    skipPaths           = [ "/metrics" "/health" ];
   };
 };
 ```
 
-Caddy generiert dann für jeden Dienst:
+Caddy generiert dann für jeden Dienst (korrekte Caddy-Syntax per Doku):
 ```
 handle @sonarr {
-  forward_auth http://127.0.0.1:4180/oauth2/auth
+  forward_auth http://127.0.0.1:4180 {
+    uri /oauth2/auth
+    copy_headers Remote-User Remote-Email Remote-Groups X-Auth-Request-User X-Auth-Request-Email
+  }
   reverse_proxy http://127.0.0.1:5003
+}
+```
+
+Bei `skipPaths` (z.B. für native App-APIs die kein Cookie nutzen):
+```
+handle @sonarr {
+  @sonarrSkip path /metrics /health
+  handle @sonarrSkip {
+    reverse_proxy http://127.0.0.1:5003
+  }
+  handle {
+    forward_auth http://127.0.0.1:4180 {
+      uri /oauth2/auth
+      copy_headers Remote-User Remote-Email Remote-Groups
+    }
+    reverse_proxy http://127.0.0.1:5003
+  }
 }
 ```
 
