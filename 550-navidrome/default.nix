@@ -1,3 +1,15 @@
+# ---
+# id: "navidrome"
+# domain: "50"
+# status: "active"
+# layer: 4
+# purpose: "Navidrome Music Server (Subsonic API)"
+# provides: [navidrome]
+# requires: [grapefruitMedia.storage, grapefruitMedia.secrets]
+# ports: [5009]
+# state_dir: "/var/lib/navidrome"
+# tags: [navidrome, music, subsonic]
+# ---
 {
   config,
   lib,
@@ -45,7 +57,6 @@ in
         inherit config;
         name = "navidrome";
         inherit port;
-        mode = "sso";
         persistDirs = [ "/var/lib/navidrome" ];
         readWritePaths = [
           "/var/lib/navidrome"
@@ -55,7 +66,6 @@ in
       })
 
       (lib.mkIf storageReady {
-        users.groups.media = {};
         systemd.tmpfiles.rules = [ "d ${mediaRoot}/music 0775 navidrome media -" ];
       })
     ]

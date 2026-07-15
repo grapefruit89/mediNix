@@ -1,3 +1,15 @@
+# ---
+# id: "audiobookshelf"
+# domain: "50"
+# status: "active"
+# layer: 4
+# purpose: "Audiobookshelf Audiobook/Podcast Server"
+# provides: [audiobookshelf]
+# requires: [grapefruitMedia.storage, grapefruitMedia.hardware]
+# ports: [5008]
+# state_dir: "/var/lib/audiobookshelf"
+# tags: [audiobookshelf, audiobooks, streaming]
+# ---
 {
   config,
   lib,
@@ -27,7 +39,6 @@ in
           group = "media";
         };
 
-        users.groups.media = {};
         users.users.audiobookshelf.extraGroups = lib.mkAfter [
           "media"
           "video"
@@ -47,7 +58,6 @@ in
         inherit config;
         name = "audiobookshelf";
         inherit port;
-        mode = "streaming";
         hardeningProfile = "node";
         persistDirs = [ "/var/lib/audiobookshelf" ];
         privateDevices = !cfg.enableQuickSync;

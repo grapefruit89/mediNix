@@ -1,3 +1,15 @@
+# ---
+# id: "arr-secrets-generator"
+# domain: "50"
+# status: "active"
+# layer: 4
+# purpose: "Idempotenter API-Key-Generator fuer alle *arr-Dienste (oneshot)"
+# provides: [arr-secrets-generator.service]
+# requires: [grapefruitMedia.secrets.autoGenerate]
+# tags: [secrets, arr, generator, systemd]
+# docs:
+#   - modules/50-media/claude-review.md (K4)
+# ---
 {
   config,
   lib,

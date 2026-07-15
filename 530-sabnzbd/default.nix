@@ -1,3 +1,17 @@
+# ---
+# id: "sabnzbd"
+# domain: "50"
+# status: "active"
+# layer: 4
+# purpose: "SABnzbd Usenet Downloader"
+# provides: [sabnzbd]
+# requires: [grapefruitMedia.storage, grapefruitMedia.usenet-confinement]
+# ports: [5007]
+# state_dir: "/var/lib/sabnzbd"
+# tags: [sabnzbd, usenet, downloader]
+# docs:
+#   - docs/adr/5031-usenet-confinement.md
+# ---
 {
   config,
   lib,
@@ -15,7 +29,7 @@ let
 in
 {
   config = lib.mkIf (cfg.enable && cfgSabnzbd.enable) {
-    # If persist is enabled, hook paths
+    # Pfade immer eintragen; Impermanence konsumiert sie nur wenn persist.enable = true.
     grapefruitMedia.persist.extraPaths = [ "/var/lib/sabnzbd" ];
 
     services.sabnzbd = {
@@ -34,7 +48,6 @@ in
 
     users = {
       groups = {
-        media = { };
         sabnzbd = {};
       };
       users.sabnzbd = {

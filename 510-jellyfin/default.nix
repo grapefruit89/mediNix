@@ -1,3 +1,17 @@
+# ---
+# id: "jellyfin"
+# domain: "50"
+# status: "active"
+# layer: 4
+# purpose: "Jellyfin Media Server + Jellyseerr Request Manager"
+# provides: [jellyfin, seerr]
+# requires: [grapefruitMedia.storage, grapefruitMedia.hardware]
+# ports: [5001, 5002]
+# state_dir: "/var/lib/jellyfin /var/cache/jellyfin"
+# tags: [jellyfin, jellyseerr, media, streaming, qsv]
+# docs:
+#   - docs/adr/5030-media-stack-factory-hardening.md
+# ---
 {
   config,
   lib,
@@ -170,7 +184,6 @@ in
             ];
           };
 
-          users.groups.media = {};
           users.users.jellyfin.extraGroups = [
             "video"
             "render"
@@ -198,7 +211,6 @@ in
           name = "jellyfin";
           port = portJellyfin;
           useGPU = true;
-          manageIngress = false;
           memoryPolicy = memory.jellyfin { };
           persistDirs = [
             "/var/lib/jellyfin"
@@ -244,7 +256,6 @@ in
           inherit config;
           name = "seerr";
           port = portJellyseerr;
-          mode = "sso";
           persistDirs = [ "/var/lib/seerr" ];
           readWritePaths = [ "/var/lib/seerr" ];
         })

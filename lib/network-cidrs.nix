@@ -1,4 +1,13 @@
-{ lib, config ? {} }:
+# ---
+# id: "network-cidrs"
+# domain: "50"
+# status: "active"
+# layer: 5
+# role: lib
+# purpose: "CIDR-Konstanten fuer IP-Allowlists (loopback, private RFC-1918)"
+# tags: [lib, network, cidrs]
+# ---
+{ lib }:
 let
   loopbackV4 = "127.0.0.0/8";
   loopbackV6 = "::1/128";

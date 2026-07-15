@@ -1,3 +1,15 @@
+# ---
+# id: "usenet-confinement"
+# domain: "50"
+# status: "active"
+# layer: 4
+# purpose: "WireGuard-VPN-Sandbox fuer SABnzbd + Prowlarr -- Leak-Schutz"
+# provides: [usenet-vpn-verify, usenet-vpn-carrier.path, sabnzbd/prowlarr NetworkNamespace]
+# requires: [grapefruitMedia.vpn, grapefruitMedia.usenet-confinement]
+# tags: [vpn, wireguard, usenet, sandboxing, leak-protection]
+# docs:
+#   - docs/adr/5031-usenet-confinement.md
+# ---
 {
   config,
   lib,

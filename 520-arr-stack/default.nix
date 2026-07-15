@@ -74,7 +74,6 @@ let
       port,
       dataDir,
       metadataDir ? null,
-      upstreamHost ? "127.0.0.1",
       extraEnv ? { },
       onDemand ? false,
     }:
@@ -118,8 +117,7 @@ let
 
       (lib.mkIf (!onDemand) (
         factory.mkService {
-          inherit config name port upstreamHost;
-          mode = "sso";
+          inherit config name port;
           hardeningProfile = "dotnet";
           persistDirs = [ dataDir ];
           readWritePaths = [

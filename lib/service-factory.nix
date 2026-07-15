@@ -3,12 +3,14 @@
 #   id: NIXH-05-LIB-002
 #   layer: 5
 #   role: lib
-#   purpose: mkService / mkStreamer — systemd-Hardening, persistDirs, optional Caddy
-#   tags:
-#     - factory
-#     - caddy
-#     - systemd
+#   purpose: mkService / mkStreamer -- systemd-Hardening, persistDirs
+#   tags: [factory, systemd, hardening]
+#   docs:
+#     - docs/adr/5030-media-stack-factory-hardening.md
 # ---
+# M2-Cleanup (Phase 4, 2026-07-15): entfernte tote Parameter:
+#   mode, upstreamHost, socketPath, host, extraCaddy, caddyOnly,
+#   manageIngress, ipAllow -- alle ohne Leser/Aufrufer.
 { lib }:
 let
   systemdHardening =
@@ -80,32 +82,21 @@ rec {
       config,
       name,
       port ? null,
-      socketPath ? null,
-      host ? null,
-      mode ? "sso",
-      upstreamHost ? "127.0.0.1",
       readWritePaths ? [ ],
       readOnlyPaths ? [ ],
       privateDevices ? true,
       hardeningProfile ? "full",
       memoryPolicy ? null,
       extraSystemd ? { },
-      extraCaddy ? "",
-      caddyOnly ? false,
       persist ? true,
       persistDirs ? [ ],
       cacheDir ? "/var/cache/${name}",
-      manageIngress ? null,
-      ipAllow ? null,
     }:
     let
-      domain = if config ? grapefruitMedia then config.grapefruitMedia.domain else "grapefruit-media.local";
-      vhost = if host != null then host else "${name}.${domain}";
-      doIngress = if manageIngress != null then manageIngress else false;
       paths = lib.unique (defaultPersistDirs name persistDirs cacheDir);
     in
     lib.mkMerge [
-      (lib.mkIf (!caddyOnly) {
+      {
         systemd.services.${name}.serviceConfig = lib.mkMerge (
           [
             (systemdHardening {
@@ -117,13 +108,9 @@ rec {
             ReadOnlyPaths = readOnlyPaths;
           }
           ++ lib.optional (memoryPolicy != null) memoryPolicy
-          ++ lib.optional (ipAllow != null) {
-            IPAddressAllow = lib.mkDefault ipAllow;
-            IPAddressDeny = lib.mkDefault "any";
-          }
           ++ [ extraSystemd ]
         );
-      })
+      }
       (lib.mkIf (config.grapefruitMedia.persist.enable && persist && paths != [ ]) {
         grapefruitMedia.persist.extraPaths = paths;
       })
@@ -143,8 +130,6 @@ rec {
         "/var/lib/${name}"
         "/var/cache/${name}"
       ],
-      manageIngress ? false,
-      mode ? "sso",
     }:
     let
       gpuExtra =
@@ -165,10 +150,8 @@ rec {
         config
         name
         port
-        mode
         memoryPolicy
         persistDirs
-        manageIngress
         ;
       hardeningProfile = "streamer";
       privateDevices = !useGPU;
