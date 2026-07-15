@@ -1,3 +1,14 @@
+# ---
+# id: "exportarr"
+# domain: "50"
+# status: "active"
+# layer: 4
+# purpose: "Prometheus Exportarr Exporter fuer *arr-Apps (DynamicUser + LoadCredential)"
+# provides: [prometheus-exportarr-{sonarr,radarr,prowlarr,lidarr}-exporter]
+# requires: [grapefruitMedia.exporters, per-service API keys]
+# ports: [4070, 4071, 4072, 4073]
+# tags: [prometheus, exportarr, metrics]
+# ---
 {
   config,
   lib,
@@ -41,7 +52,7 @@ let
       exporterPort = ports.${portOption};
       wrapper = mkWrapper service arrPort exporterPort;
     in
-    lib.mkIf (cfgGlobal.${service}.enable && cfg.enable) {
+    lib.mkIf (cfgGlobal.enable && cfgGlobal.${service}.enable && cfg.enable) {
       systemd.services."prometheus-exportarr-${service}-exporter" = {
         description = "Prometheus Exportarr exporter for ${service}";
         after = [
@@ -89,25 +100,25 @@ in
       service = "sonarr";
       portOption = "exportarr-sonarr";
       arrPort = ports.sonarr;
-      apiKeyFile = cfgGlobal.secrets.arrApiKeyFile;
+      apiKeyFile = cfgGlobal.secrets.sonarrApiKeyFile;
     })
     (mkExporter {
       service = "radarr";
       portOption = "exportarr-radarr";
       arrPort = ports.radarr;
-      apiKeyFile = cfgGlobal.secrets.arrApiKeyFile;
+      apiKeyFile = cfgGlobal.secrets.radarrApiKeyFile;
     })
     (mkExporter {
       service = "prowlarr";
       portOption = "exportarr-prowlarr";
       arrPort = ports.prowlarr;
-      apiKeyFile = cfgGlobal.secrets.arrApiKeyFile;
+      apiKeyFile = cfgGlobal.secrets.prowlarrApiKeyFile;
     })
     (lib.mkIf (cfgGlobal.lidarr.enable && cfg.lidarr.enable) (mkExporter {
       service = "lidarr";
       portOption = "exportarr-lidarr";
       arrPort = ports.lidarr;
-      apiKeyFile = cfgGlobal.secrets.arrApiKeyFile;
+      apiKeyFile = cfgGlobal.secrets.lidarrApiKeyFile;
     }))
   ];
 }

@@ -1,3 +1,15 @@
+# ---
+# id: "recyclarr"
+# domain: "50"
+# status: "active"
+# layer: 4
+# purpose: "Recyclarr -- TRaSH-Guide Custom Formats + Quality-Profile fuer Sonarr/Radarr"
+# provides: [recyclarr]
+# requires: [grapefruitMedia.sonarr, grapefruitMedia.radarr, per-service API keys]
+# tags: [recyclarr, trash-guides, custom-formats, quality]
+# docs:
+#   - docs/adr/5034-scope-cut-arr-provision.md
+# ---
 {
   config,
   lib,
@@ -78,15 +90,17 @@ let
     "English 1080p HEVC"
   ];
 
+  # M2-Fix (Nit): trash_id wird nicht ausgewertet (dient nur als Doku-Kommentar).
+  # Geaendert zu _trash_id (Unterstrich = bewusst ignoriert, kein Lint-Fehler).
   mkBlock =
-    trash_id:
+    _trash_id:
     lib.map (name: {
       inherit name;
       score = -35000;
     }) profileNames;
 
   mkRepack =
-    trash_id: score:
+    _trash_id: score:
     lib.map (name: {
       inherit name;
       score = score;
@@ -398,7 +412,7 @@ in
         (lib.mkIf cfgGlobal.sonarr.enable {
           sonarr.sonarr = {
             base_url = "http://127.0.0.1:${toString ports.sonarr}";
-            api_key._secret = cfgGlobal.secrets.arrApiKeyFile;
+            api_key._secret = cfgGlobal.secrets.sonarrApiKeyFile;
             delete_old_custom_formats = true;
             quality_definition = seriesQualityDefinition;
             quality_profiles = [
@@ -411,7 +425,7 @@ in
         (lib.mkIf cfgGlobal.radarr.enable {
           radarr.radarr = {
             base_url = "http://127.0.0.1:${toString ports.radarr}";
-            api_key._secret = cfgGlobal.secrets.arrApiKeyFile;
+            api_key._secret = cfgGlobal.secrets.radarrApiKeyFile;
             delete_old_custom_formats = true;
             quality_definition = movieQualityDefinition;
             quality_profiles = [

@@ -1,3 +1,18 @@
+# ---
+# id: "arr-stack"
+# domain: "50"
+# status: "active"
+# layer: 4
+# purpose: "Sonarr/Radarr/Readarr/Prowlarr/Lidarr -- gemeinsame Fabrik mit Security-Baseline"
+# provides: [sonarr, radarr, readarr, prowlarr, lidarr]
+# requires: [grapefruitMedia.storage, grapefruitMedia.secrets]
+# ports: [5003, 5004, 5005, 5006, 5010]
+# state_dir: "/var/lib/{name}"
+# tags: [arr, servarr, media, security]
+# docs:
+#   - modules/50-media/claude-review.md
+#   - docs/adr/5030-media-stack-factory-hardening.md
+# ---
 {
   config,
   lib,
@@ -76,24 +91,29 @@ let
         };
       }
 
+      # H4-Fix: tmpfiles immer aktiv (auch bei onDemand.enable=true),
+      # damit BindPaths in on-demand.nix nicht scheitert.
+      (lib.mkIf (metadataDir != null) {
+        systemd.tmpfiles.rules = [
+          "d ${metadataDir} 0775 ${name} media -"
+          "d /var/lib/${name}/MediaCover 0755 ${name} ${name} -"
+        ];
+      })
+
       (lib.mkIf (!onDemand) {
         services.${name} = {
           enable = true;
           openFirewall = false;
           inherit dataDir;
           settings.server.port = port;
+          settings.server.bindaddress = "127.0.0.1";
         };
 
         systemd.services.${name}.environment = {
-          "${nameUpper}__AUTH__METHOD" = lib.mkForce "External";
+          "${nameUpper}__AUTH__METHOD" = lib.mkForce (if cfg.authProxyPresent then "External" else "Forms");
           "${nameUpper}__LOG__LEVEL" = lib.mkDefault "info";
         }
         // extraEnv;
-
-        systemd.tmpfiles.rules = lib.mkIf (metadataDir != null) [
-          "d ${metadataDir} 0775 ${name} media -"
-          "d /var/lib/${name}/MediaCover 0755 ${name} ${name} -"
-        ];
       })
 
       (lib.mkIf (!onDemand) (
@@ -137,5 +157,19 @@ let
     );
 in
 {
-  config = lib.mkMerge (lib.mapAttrsToList mkArr arrApps);
+  config = lib.mkMerge [
+    (lib.mkMerge (lib.mapAttrsToList mkArr arrApps))
+    {
+      # K2-Assertion: Hinweis wenn kein Auth-Proxy deklariert (AUTH__METHOD=Forms aktiv)
+      assertions = lib.optional cfg.enable {
+        assertion = cfg.authProxyPresent;
+        message = ''
+          [50-media/arr-stack] grapefruitMedia.authProxyPresent = false:
+          *arr-Apps nutzen AUTH__METHOD=Forms (Lokal-Login).
+          Setze grapefruitMedia.authProxyPresent = true wenn ein Forward-Auth-
+          Proxy (oauth2-proxy o.ae.) aktiv ist -- sonst ist Forms korrekt.
+        '';
+      };
+    }
+  ];
 }
