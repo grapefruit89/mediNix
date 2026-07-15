@@ -1,3 +1,6 @@
+> **ABGELÖST:** Dieses Dokument (v1) wurde durch [`handoff-v2.md`](handoff-v2.md) ersetzt (Stand 2026-07-15).
+> Phasen 0–5 sind dort definiert. Hier nur noch als Referenz für die ursprünglichen Block-Beschreibungen.
+
 # Handoff: Umsetzung der Review-Findings (Blöcke 2–7)
 
 **Basis:** `modules/50-media/claude-review.md` (NICHT verändern!)

@@ -17,13 +17,6 @@ in {
     ./560-recyclarr
     ./570-exportarr
     ./590-usenet-confinement
-    # 551-feishin: OCI-Container entfernt (POL-FT-001 Docker verboten, Review K6).
-    #   Feishin ist eine SPA -- nativer Caddy file_server waere policy-konform.
-    #   feishin.enable Option bleibt deklariert (kein Bruch fuer bestehende Config).
-    # 580-libreseerr: OCI-Container entfernt (Review K6). Natives Modul:
-    #   modules/60-apps/62-libreseerr.nix (laeuft via rollout Stufe 7).
-    # 591-secrets-portal: Python-Inline-Prototyp entfernt (Review K5).
-    #   Natives Go-Modul: modules/20-security/2029-secrets-portal.nix.
   ];
 
   options.grapefruitMedia = {
@@ -53,29 +46,6 @@ in {
     };
     navidrome.enable = mkEnableOption "Navidrome Music Server";
     lidarr.enable = mkEnableOption "Lidarr Music Download Manager";
-    feishin = {
-      enable = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Feishin Music Client (Web UI). OCI-Container-Implementierung entfernt
-          (Review K6: POL-FT-001 Docker verboten). Natives statisches Frontend
-          (Caddy file_server) noch nicht implementiert. Option bleibt deklariert,
-          hat aber keinen Effekt bis eine native Implementierung existiert.
-        '';
-      };
-    };
-    libreseerr = {
-      enable = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Libreseerr (OCI-Container-Variante entfernt -- Review K6).
-          Natives Modul: modules/60-apps/62-libreseerr.nix.
-          Diese Option hat keinen Effekt mehr.
-        '';
-      };
-    };
     recyclarr = {
       enable = mkEnableOption "Recyclarr custom format synchronization";
       schedule = mkOption {
@@ -152,9 +122,6 @@ in {
       audiobookshelf = mkOption { type = types.port; default = 5008; };
       navidrome = mkOption { type = types.port; default = 5009; };
       lidarr = mkOption { type = types.port; default = 5010; };
-      feishin = mkOption { type = types.port; default = 5012; };
-      libreseerr = mkOption { type = types.port; default = 6010; };
-      secrets-portal = mkOption { type = types.port; default = 5011; };
       exportarr-sonarr = mkOption { type = types.port; default = 4070; };
       exportarr-radarr = mkOption { type = types.port; default = 4071; };
       exportarr-prowlarr = mkOption { type = types.port; default = 4072; };
@@ -253,21 +220,6 @@ in {
         default = cfg.secrets.arrApiKeyFile;
         description = "Path to Readarr API key file.";
       };
-      usenetFile = mkOption {
-        type = types.path;
-        default = "${cfg.secrets.secretsDir}/usenet.env";
-        description = "Path to Usenet provider credential file (configured via Portal or SOPS).";
-      };
-      vpnFile = mkOption {
-        type = types.path;
-        default = "${cfg.secrets.secretsDir}/vpn.env";
-        description = "Path to WireGuard/VPN credential files.";
-      };
-      indexersFile = mkOption {
-        type = types.path;
-        default = "${cfg.secrets.secretsDir}/indexers.env";
-        description = "Path to indexer API keys/settings.";
-      };
       navidromeOidcFile = mkOption {
         type = types.path;
         default = "${cfg.secrets.secretsDir}/navidrome-oidc.env";
@@ -286,16 +238,6 @@ in {
           (520-arr-stack/secrets-generator.nix). Default off: overwrites
           existing <service>.env files and uses one shared key for all
           services -- see claude-review.md K4 before enabling.
-        '';
-      };
-      portal.enable = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Python-Inline-Prototyp (591-secrets-portal) entfernt (Review K5:
-          unauthentifiziert, Permissions-Deadlock, ExecStart nicht parsebar).
-          Natives Go-Modul: modules/20-security/2029-secrets-portal.nix
-          (my.services.secrets-portal.enable). Diese Option hat keinen Effekt.
         '';
       };
     };

@@ -103,9 +103,8 @@ in
       domain = lib.mkDefault config.my.configs.identity.domain;
 
       # Ports aus der zentralen Registry (my.ports) — Werte identisch zum Altstand.
-      # feishin / libreseerr / secrets-portal: bewusst NICHT gemappt — Container-
-      # Varianten bzw. Portal-Stub bleiben deaktiviert (Review K5/K6); natives
-      # Libreseerr läuft weiter über modules/60-apps/62-libreseerr.nix.
+      # feishin / libreseerr / secrets-portal: Optionen entfernt (Phase 0.2 — 2026-07-15).
+      # Libreseerr nativ: modules/60-apps/62-libreseerr.nix.
       ports = {
         jellyfin = lib.mkDefault config.my.ports.jellyfin;
         jellyseerr = lib.mkDefault config.my.ports.jellyseerr;

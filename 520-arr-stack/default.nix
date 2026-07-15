@@ -160,16 +160,13 @@ in
   config = lib.mkMerge [
     (lib.mkMerge (lib.mapAttrsToList mkArr arrApps))
     {
-      # K2-Assertion: Hinweis wenn kein Auth-Proxy deklariert (AUTH__METHOD=Forms aktiv)
-      assertions = lib.optional cfg.enable {
-        assertion = cfg.authProxyPresent;
-        message = ''
-          [50-media/arr-stack] grapefruitMedia.authProxyPresent = false:
-          *arr-Apps nutzen AUTH__METHOD=Forms (Lokal-Login).
-          Setze grapefruitMedia.authProxyPresent = true wenn ein Forward-Auth-
-          Proxy (oauth2-proxy o.ae.) aktiv ist -- sonst ist Forms korrekt.
-        '';
-      };
+      # K2-Warning: Kein Auth-Proxy -> Forms-Fallback aktiv (kein Eval-Bruch mehr)
+      warnings = lib.optional (cfg.enable && !cfg.authProxyPresent) ''
+        [50-media/arr-stack] Kein Forward-Auth-Proxy deklariert
+        (grapefruitMedia.authProxyPresent = false) -- *arr-Apps laufen mit
+        AUTH__METHOD=Forms (lokaler Login). Fuer SSO: authProxyPresent = true
+        setzen, wenn oauth2-proxy/Pocket-ID vor dem Ingress steht.
+      '';
     }
   ];
 }
