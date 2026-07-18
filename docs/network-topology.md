@@ -25,49 +25,90 @@ use `{service}.{domain}`.
 
 ---
 
-## 2. Inbound — name resolution and entry
+## 2. Inbound — outside vs. inside, and the three paths
+
+Three independent ways a service gets reached. Colour code:
+**red = path ① WAN**, **blue = path ② LAN via domain**, **green = path ③ mDNS**.
 
 ```mermaid
 flowchart TB
-    INET["Internet client"]
-    LANC["LAN client"]
-    WGC["WireGuard client"]
+    subgraph OUT["🌐 OUTSIDE — Internet / WAN"]
+        WANC(["Internet client"])
+        CF["Cloudflare DNS<br/>public zone · grey cloud"]
+        DEAD(["⛔ private IP<br/>not routable from WAN"])
+    end
 
-    CF["Cloudflare public DNS<br/>grey cloud, DNS only"]
-    MDNS["mDNS / Avahi<br/>service.local multicast"]
+    ROUTER["🔒 Router<br/>only port 443 forwarded"]
 
-    ROUTER["Router<br/>only :443 forwarded"]
-    CADDY["Caddy ingress<br/>:80 / :443"]
-    DEAD(["private IP<br/>not routable from WAN"])
+    subgraph IN["🏠 INSIDE — LAN / WireGuard"]
+        LANC(["LAN client"])
+        WGC(["WireGuard client"])
+        MDNS["mDNS / Avahi<br/>*.local · LAN only"]
+        CADDY["Caddy ingress<br/>:80 / :443"]
 
-    EDGE["edge-wan<br/>jellyfin, jellyseerr,<br/>audiobookshelf, navidrome"]
-    BACK["backend-lan<br/>sonarr, radarr, readarr,<br/>lidarr, prowlarr, sabnzbd"]
-    NONE["none, no vHost<br/>recyclarr, exportarr"]
+        subgraph SVC["Services — bind 127.0.0.1 only"]
+            EDGE["Edge / WAN-exposed<br/>jellyfin · jellyseerr<br/>audiobookshelf · navidrome"]
+            BACK["Backend / internal only<br/>sonarr · radarr · readarr<br/>lidarr · prowlarr · sabnzbd"]
+            NONE["no vHost<br/>recyclarr · exportarr"]
+        end
+    end
 
-    INET -->|"service.domain"| CF
-    LANC -->|"service.domain"| CF
-    WGC -->|"service.domain"| CF
-    LANC -->|"service.local"| MDNS
-
-    CF -->|"edge name to WAN IP<br/>router DDNS"| ROUTER
-    CF -->|"wildcard to LAN IP<br/>ddclient, dynamic"| CADDY
-    CF -.->|"backend name, from Internet"| DEAD
-    MDNS -->|"host LAN IP"| CADDY
+    WANC -->|"① service.domain"| CF
+    CF -->|"① A record → WAN IP<br/>edge services only"| ROUTER
     ROUTER --> CADDY
 
-    CADDY -->|"reverse_proxy 127.0.0.1"| EDGE
-    CADDY -->|"reverse_proxy 127.0.0.1"| BACK
+    LANC -->|"② service.domain"| CF
+    WGC -->|"② service.domain"| CF
+    CF -->|"② wildcard * → LAN IP<br/>dynamic, all non-edge"| CADDY
+
+    LANC -->|"③ service.local"| MDNS
+    MDNS -->|"③ → LAN IP<br/>all UI services"| CADDY
+
+    CADDY --> EDGE
+    CADDY --> BACK
     CADDY -.->|"never exposed"| NONE
+    CF -.->|"backend name from Internet"| DEAD
+
+    classDef cloudflare fill:#F38020,stroke:#8a4a10,color:#ffffff,stroke-width:2px
+    classDef svc fill:#e8eefc,stroke:#2c5aa0,color:#000
+    classDef dead fill:#eeeeee,stroke:#999999,color:#666666
+    class CF cloudflare
+    class EDGE,BACK,NONE svc
+    class DEAD dead
+    style OUT fill:#fff5f5,stroke:#c0392b,stroke-width:2px
+    style IN fill:#f2fbf2,stroke:#27ae60,stroke-width:2px
+    style SVC fill:#ffffff,stroke:#2c5aa0,stroke-dasharray:4 3
+
+    linkStyle 0,1,2 stroke:#c0392b,stroke-width:2px
+    linkStyle 3,4,5 stroke:#2c5aa0,stroke-width:2px
+    linkStyle 6,7 stroke:#27ae60,stroke-width:2px
 ```
 
-**Key points**
+### The three paths
 
-- Only **two** DNS anchors are maintained dynamically: the edge names follow the
-  **WAN IP** (router DDNS), the wildcard `*` plus `@` follow the **current LAN IP**
-  (`ddclient` using `ip route get 1.1.1.1`, so any subnet works: 192.168, 172.16, 10.0).
-- Backend names deliberately resolve to a **private IP**. From the Internet the
-  connection dies at routing — that is the intended protection.
+| # | Path | DNS target | Covers | Used from |
+|---|------|-----------|--------|-----------|
+| **①** | DDNS → **router / external IP** | explicit A record → WAN IP | **only WAN-exposed** (edge) services | Internet |
+| **②** | DDNS → **internal IP** | wildcard `*` + `@` → LAN IP, dynamic | all services **without** an explicit WAN record | LAN, WireGuard |
+| **③** | **mDNS** → internal IP | `{service}.local` | **all** enabled UI services | LAN only |
+
+**Important nuance on ② — it does *not* cover every service.** In DNS, a specific
+record beats a wildcard. Because the edge services own an explicit A record
+pointing at the WAN IP, they resolve to the **WAN IP even from inside the LAN**.
+Reaching them from home therefore depends on the router supporting **hairpin NAT**
+(NAT loopback). The path that really covers *all* services from the LAN is ③ (`.local`).
+If hairpin NAT is unavailable, the options are split-horizon DNS or simply using
+`.local` internally.
+
+**Further key points**
+
+- Only **two** anchors are maintained dynamically: edge names follow the **WAN IP**
+  (router DDNS), the wildcard follows the **current LAN IP** (`ddclient` via
+  `ip route get 1.1.1.1` — works on 192.168, 172.16 and 10.0 alike).
+- Backend names deliberately resolve to a **private IP**; from the Internet the
+  connection dies at routing. That is the intended protection, not a bug.
 - Edge names stay **unproxied / grey cloud** (streaming ToS).
+- WireGuard clients use ② but **never** ③ — multicast does not traverse an L3 tunnel.
 
 ---
 
