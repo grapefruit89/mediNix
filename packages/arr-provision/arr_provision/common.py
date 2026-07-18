@@ -1,4 +1,29 @@
-"""Shared helpers for HTTP API provisioning."""
+"""Shared helpers for HTTP API provisioning.
+
+=============================================================================
+PRIMAERQUELLEN -- NICHT ENTFERNEN
+=============================================================================
+Diese URLs sind Teil der Architektur, kein Kommentar-Ballast. Wer sie loescht,
+zwingt den naechsten Bearbeiter zum Raten.
+
+  Radarr   OpenAPI : https://raw.githubusercontent.com/Radarr/Radarr/develop/src/Radarr.Api.V3/openapi.json
+  Radarr   Doku    : https://radarr.video/docs/api/
+  Sonarr   OpenAPI : https://raw.githubusercontent.com/Sonarr/Sonarr/develop/src/Sonarr.Api.V3/openapi.json
+  Sonarr   Doku    : https://sonarr.tv/docs/api/#v3
+  Prowlarr OpenAPI : https://raw.githubusercontent.com/Prowlarr/Prowlarr/develop/src/Prowlarr.Api.V1/openapi.json
+  Prowlarr Doku    : https://prowlarr.com/docs/api/
+  Lidarr / Readarr : gleiche Struktur, Api.V1
+
+AUTORITATIV ist aber die LAUFENDE INSTANZ, nicht der develop-Branch:
+  curl -s -H "X-Api-Key: $KEY" http://127.0.0.1:<port>/api/<v>/system/status
+
+API-Versionen:  Sonarr/Radarr = v3 | Prowlarr/Lidarr/Readarr = v1
+Auth:           Header X-Api-Key
+
+Endpunkt-Inventar + Verifikationsstand: ../../docs/api-reference.md
+Regeln fuer Agenten:                    ../../AGENTS.md  (Regel 0)
+=============================================================================
+"""
 
 from __future__ import annotations
 
