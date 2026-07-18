@@ -248,6 +248,29 @@ in {
       idleTimeoutSec = lib.mkOption { type = lib.types.int; default = 900; };
     };
 
+    # Phase B (P1-1): mDNS L1 -- {service}.local fuer alle UI-Dienste.
+    # Nie in Cloudflare (grok-review.md Fallstrick).
+    discovery = {
+      mdns = {
+        enable = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = ''
+            mDNS/Avahi: publiziert fuer jeden aktivierten UI-Dienst
+            {service}.local -> LAN-IP des Hosts (nicht 127.0.0.1).
+
+            Default an. Unabhaengig von grapefruitMedia.domain.
+            NIEMALS .local-Namen in Cloudflare oder Unicast-DNS eintragen.
+          '';
+        };
+        openFirewall = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = "UDP 5353 (mDNS) in der Firewall oeffnen, wenn Avahi aktiv ist.";
+        };
+      };
+    };
+
     vpn = {
       interface = lib.mkOption {
         type = lib.types.str;

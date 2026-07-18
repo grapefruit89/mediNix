@@ -3,19 +3,20 @@
 # domain: "50"
 # status: "active"
 # layer: 4
-# purpose: "Chamaelon-Ingress -- standalone caddy-media oder global Caddy vHosts fuer alle Dienste"
+# purpose: "Chamaelon-Ingress -- standalone caddy-media oder global Caddy vHosts (L1 .local + L2 domain)"
 # provides: [caddy-media (standalone), services.caddy.virtualHosts (global)]
-# requires: [grapefruitMedia.ingress, grapefruitMedia.domain]
-# tags: [caddy, ingress, reverse-proxy]
+# requires: [grapefruitMedia.ingress, grapefruitMedia.domain, grapefruitMedia.discovery.mdns]
+# tags: [caddy, ingress, reverse-proxy, mdns]
 # docs:
-#   - modules/50-media/claude-review.md
+#   - modules/50-media/grok-review.md
 #   - modules/50-media/README.md
 # ---
-# Bugfixes Phase 3 Nacharbeit (2026-07-15):
-#   Bug1: enabledServices-Filter (optionalAttrs false == {}, nicht null) -- gefixt
-#   Bug2: forward_auth Upstream enthielt Pfad (Caddy: uri als Subdirektive) -- gefixt
-#   Bug3: skipPaths war No-Op (Matcher definiert aber nie verdrahtet) -- gefixt
-#   Bug4: tls.mode=custom hatte keinen :443-Block, :80 ohne Redirect -- gefixt
+# Phase B (2026-07-15):
+#   P1-1 mDNS        -- ./mdns.nix (Avahi + {service}.local -> LAN-IP)
+#   P0-3 Doppel-Host -- immer {name}.local, plus {name}.{domain} wenn domain gesetzt
+#   P1-7 Global      -- vHost-Keys fuer .local (http://) und Domain (ACME-faehig)
+#
+# Fallstrick: .local nie in Cloudflare. domain nie auf .local enden lassen.
 {
   config,
   lib,
@@ -25,12 +26,11 @@
 let
   cfg = config.grapefruitMedia;
   domain = cfg.domain;
-  # P0-1/P0-3(L2-Teil): L2-vHosts nur wenn eine echte Domain gesetzt ist.
-  # Ohne Domain bleibt der Ingress leer -- die {service}.local-Matcher kommen
-  # mit der mDNS-Arbeit in Phase B (P1-1 + P0-3 vollstaendig) dazu.
   hasDomain = domain != null && domain != "";
   ports = cfg.ports;
   auth = cfg.ingress.auth;
+  tlsMode = cfg.ingress.tls.mode;
+  tlsOn = tlsMode != "off";
 
   isStandalone =
     cfg.ingress.enable
@@ -46,28 +46,32 @@ let
       || (cfg.ingress.mode == "auto" && config.services.caddy.enable)
     );
 
-  # Bug1 Fix: lib.optionalAttrs false ergibt {} (leeres Attrset), nicht null --
-  # filterAttrs (_: v: v != null) filterte deshalb nie. Gefixt: if/else null.
+  # Bug1 Fix: if/else null (optionalAttrs false == {} filterte nie).
   enabledServices = lib.filterAttrs (_: v: v != null) {
-    jellyfin       = if cfg.jellyfin.enable       then { port = ports.jellyfin; }       else null;
-    jellyseerr     = if cfg.jellyseerr.enable     then { port = ports.jellyseerr; }     else null;
-    sonarr         = if cfg.sonarr.enable         then { port = ports.sonarr; }         else null;
-    radarr         = if cfg.radarr.enable         then { port = ports.radarr; }         else null;
-    readarr        = if cfg.readarr.enable        then { port = ports.readarr; }        else null;
-    prowlarr       = if cfg.prowlarr.enable       then { port = ports.prowlarr; }       else null;
-    sabnzbd        = if cfg.sabnzbd.enable        then { port = ports.sabnzbd; }        else null;
+    jellyfin = if cfg.jellyfin.enable then { port = ports.jellyfin; } else null;
+    jellyseerr = if cfg.jellyseerr.enable then { port = ports.jellyseerr; } else null;
+    sonarr = if cfg.sonarr.enable then { port = ports.sonarr; } else null;
+    radarr = if cfg.radarr.enable then { port = ports.radarr; } else null;
+    readarr = if cfg.readarr.enable then { port = ports.readarr; } else null;
+    prowlarr = if cfg.prowlarr.enable then { port = ports.prowlarr; } else null;
+    sabnzbd = if cfg.sabnzbd.enable then { port = ports.sabnzbd; } else null;
     audiobookshelf = if cfg.audiobookshelf.enable then { port = ports.audiobookshelf; } else null;
-    navidrome      = if cfg.navidrome.enable      then { port = ports.navidrome; }      else null;
-    lidarr         = if cfg.lidarr.enable         then { port = ports.lidarr; }         else null;
+    navidrome = if cfg.navidrome.enable then { port = ports.navidrome; } else null;
+    lidarr = if cfg.lidarr.enable then { port = ports.lidarr; } else null;
   };
 
   hasForwardAuth = auth.mode == "forward-auth";
-  hasSkipPaths   = hasForwardAuth && auth.skipPaths != [ ];
-  skipPathsStr   = lib.concatStringsSep " " auth.skipPaths;
+  hasSkipPaths = hasForwardAuth && auth.skipPaths != [ ];
+  skipPathsStr = lib.concatStringsSep " " auth.skipPaths;
 
-  # Bug2 Fix: Caddy forward_auth-Syntax: <upstream> ohne Pfad + uri als Subdirektive.
-  # Kontext7 bestaetigt: forward_auth <upstream> { uri <pfad>; copy_headers ...; }
-  # forwardAuthUrl aufgeteilt in forwardAuthUpstream + forwardAuthUri (default /oauth2/auth).
+  # P0-3: Host-Liste pro Service -- L1 immer, L2 nur bei Domain.
+  # Caddy: @name host a [b ...]
+  hostList =
+    name:
+    lib.concatStringsSep " " (
+      [ "${name}.local" ] ++ lib.optional hasDomain "${name}.${domain}"
+    );
+
   mkForwardAuthBlock = ''
     forward_auth ${auth.forwardAuthUpstream} {
       uri ${auth.forwardAuthUri}
@@ -75,88 +79,8 @@ let
     }
   '';
 
-  # Bug3 Fix: skipPaths jetzt verdrahtet. Zwei handle-Bloecke: @<name>Skip geht direkt
-  # zur reverse_proxy, alles andere wird erst durch forward_auth geschleust.
-  mkSvcBlock =
-    name: svc:
-    let
-      proxy = "reverse_proxy http://127.0.0.1:${toString svc.port}";
-    in
-    ''
-      @${name} host ${name}.${domain}
-      handle @${name} {
-        ${
-          if hasSkipPaths then
-            ''
-              @${name}Skip path ${skipPathsStr}
-              handle @${name}Skip {
-                ${proxy}
-              }
-              handle {
-                ${mkForwardAuthBlock}
-                ${proxy}
-              }
-            ''
-          else if hasForwardAuth then
-            ''
-              ${mkForwardAuthBlock}
-              ${proxy}
-            ''
-          else
-            ''
-              ${proxy}
-            ''
-        }
-      }
-    '';
-
-  # Ohne gesetzte Domain (nur mDNS-Zukunft): keine L2-Routen erzeugen.
-  mkSvcRoutes =
-    if hasDomain then
-      lib.concatStringsSep "\n" (lib.mapAttrsToList mkSvcBlock enabledServices)
-    else
-      "";
-
-  # TLS-Direktive fuer den Standalone-Block
-  tlsDirective =
-    if cfg.ingress.tls.mode == "internal" then
-      "tls internal"
-    else if cfg.ingress.tls.mode == "custom" then
-      # Zertifikat kommt von security.acme/lego (ADR-032), nicht von Caddy-ACME
-      "tls ${cfg.ingress.tls.certFile} ${cfg.ingress.tls.keyFile}"
-    else
-      "";
-
-  # Bug4 Fix: tls.mode=custom bekommt jetzt :443-Block (wie internal).
-  # Bei aktivem TLS leitet :80 auf :443 um (308 Permanent Redirect).
-  # standaloneProtocol entfernt (war totes Code).
-  standaloneConfig = pkgs.writeText "Caddyfile-media-standalone" (
-    if cfg.ingress.tls.mode == "off" then
-      ''
-        :80 {
-          route /health {
-            respond "OK" 200
-          }
-          ${mkSvcRoutes}
-        }
-      ''
-    else
-      ''
-        :80 {
-          redir https://{host}{uri} 308
-        }
-        :443 {
-          ${tlsDirective}
-          route /health {
-            respond "OK" 200
-          }
-          ${mkSvcRoutes}
-        }
-      ''
-  );
-
-  # Globaler vHost extraConfig (Bug2+3 Fix: korrekte forward_auth + skipPaths)
-  mkGlobalExtraConfig =
+  # Inneres Handle (Auth + Proxy) -- Host-Matcher liegt aussen.
+  mkProxyBody =
     svc:
     let
       proxy = "reverse_proxy http://127.0.0.1:${toString svc.port}";
@@ -182,24 +106,163 @@ let
         ${proxy}
       '';
 
+  # Standalone: ein Matcher fuer alle Hosts des Dienstes (L1 + optional L2).
+  mkSvcBlock =
+    name: svc:
+    ''
+      @${name} host ${hostList name}
+      handle @${name} {
+        ${mkProxyBody svc}
+      }
+    '';
+
+  # Immer Routen erzeugen (auch ohne Domain -- dann nur .local).
+  mkSvcRoutes = lib.concatStringsSep "\n" (lib.mapAttrsToList mkSvcBlock enabledServices);
+
+  # Nur L1-Routen (fuer :80 bei tls=custom -- Domain geht auf :443).
+  mkLocalOnlyBlock =
+    name: svc:
+    ''
+      @${name}_local host ${name}.local
+      handle @${name}_local {
+        ${mkProxyBody svc}
+      }
+    '';
+  mkLocalOnlyRoutes = lib.concatStringsSep "\n" (
+    lib.mapAttrsToList mkLocalOnlyBlock enabledServices
+  );
+
+  # Nur L2-Routen (Domain).
+  mkDomainOnlyBlock =
+    name: svc:
+    ''
+      @${name}_dom host ${name}.${domain}
+      handle @${name}_dom {
+        ${mkProxyBody svc}
+      }
+    '';
+  mkDomainOnlyRoutes = lib.optionalString hasDomain (
+    lib.concatStringsSep "\n" (lib.mapAttrsToList mkDomainOnlyBlock enabledServices)
+  );
+
+  domainHostList = lib.concatStringsSep " " (
+    lib.mapAttrsToList (name: _: "${name}.${domain}") enabledServices
+  );
+
+  tlsDirective =
+    if tlsMode == "internal" then
+      "tls internal"
+    else if tlsMode == "custom" then
+      "tls ${cfg.ingress.tls.certFile} ${cfg.ingress.tls.keyFile}"
+    else
+      "";
+
+  # TLS-Policy (Phase B):
+  #   off:      alles auf :80 (L1 + L2)
+  #   internal: :80 -> https redir; :443 mit tls internal fuer L1+L2
+  #   custom:   L1 bleibt HTTP auf :80 (LE-Cert matcht .local nicht);
+  #             L2 :80 -> redir, L2 auf :443 mit custom cert
+  standaloneConfig = pkgs.writeText "Caddyfile-media-standalone" (
+    if !tlsOn then
+      ''
+        :80 {
+          route /health {
+            respond "OK" 200
+          }
+          ${mkSvcRoutes}
+        }
+      ''
+    else if tlsMode == "internal" then
+      ''
+        :80 {
+          redir https://{host}{uri} 308
+        }
+        :443 {
+          ${tlsDirective}
+          route /health {
+            respond "OK" 200
+          }
+          ${mkSvcRoutes}
+        }
+      ''
+    else
+      # custom
+      ''
+        :80 {
+          route /health {
+            respond "OK" 200
+          }
+          ${mkLocalOnlyRoutes}
+          ${lib.optionalString hasDomain ''
+            @domainHosts host ${domainHostList}
+            handle @domainHosts {
+              redir https://{host}{uri} 308
+            }
+          ''}
+        }
+        ${lib.optionalString hasDomain ''
+          :443 {
+            ${tlsDirective}
+            route /health {
+              respond "OK" 200
+            }
+            ${mkDomainOnlyRoutes}
+          }
+        ''}
+      ''
+  );
+
+  mkGlobalExtraConfig = svc: mkProxyBody svc;
+
+  # P1-7: pro Service .local-vHost (HTTP-only, kein ACME) + optional Domain-vHost.
+  globalLocalVhosts = lib.mapAttrs' (
+    name: svc:
+    lib.nameValuePair "http://${name}.local" {
+      extraConfig = mkGlobalExtraConfig svc;
+    }
+  ) enabledServices;
+
+  globalDomainVhosts = lib.optionalAttrs hasDomain (
+    lib.mapAttrs' (
+      name: svc:
+      lib.nameValuePair "${name}.${domain}" {
+        extraConfig = mkGlobalExtraConfig svc;
+      }
+    ) enabledServices
+  );
+
 in
 {
+  imports = [ ./mdns.nix ];
+
   config = lib.mkIf cfg.enable (lib.mkMerge [
+
+    # --- Assertions: Fallstrick domain endet nicht auf .local ---
+    {
+      assertions = [
+        {
+          assertion = !(hasDomain && lib.hasSuffix ".local" domain);
+          message = ''
+            [50-media] grapefruitMedia.domain endet auf ".local" ("${toString domain}").
+            .local ist ausschliesslich mDNS (RFC 6762) und darf nicht als Unicast-Domain
+            gesetzt werden. Nutze eine echte Domain (z.B. media.example.com) oder domain = null.
+          '';
+        }
+      ];
+    }
 
     # --- Standalone-Modus ---
     (lib.mkIf isStandalone {
       systemd.services.caddy-media = {
-        description = "Standalone Caddy Ingress for Media Stack (${cfg.ingress.tls.mode})";
+        description = "Standalone Caddy Ingress for Media Stack (${tlsMode})";
         after = [ "network.target" ];
         wantedBy = [ "multi-user.target" ];
 
         serviceConfig = {
           Type = "simple";
-          # P1-6: Caddyfile-Adapter explizit -- ohne --adapter caddyfile erwartet
-          # `caddy run --config` je nach Version JSON und scheitert am Caddyfile.
+          # P1-6: Caddyfile-Adapter explizit.
           ExecStart = "${pkgs.caddy}/bin/caddy run --adapter caddyfile --config ${standaloneConfig}";
 
-          # CAP_NET_BIND_SERVICE fuer Port 80/443
           AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
           CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" ];
 
@@ -221,18 +284,12 @@ in
       users.groups.caddy-media = { };
     })
 
-    # --- Global-Modus: vHosts fuer ALLE aktivierten Dienste ---
-    # Nur bei gesetzter Domain -- ohne Domain gibt es (noch) keine L2-vHosts.
-    (lib.mkIf (isGlobal && hasDomain) {
-      services.caddy.virtualHosts = lib.mapAttrs' (
-        name: svc:
-        lib.nameValuePair "${name}.${domain}" {
-          extraConfig = mkGlobalExtraConfig svc;
-        }
-      ) enabledServices;
+    # --- Global-Modus: L1 immer + L2 bei Domain (P0-3 / P1-7) ---
+    (lib.mkIf isGlobal {
+      services.caddy.virtualHosts = globalLocalVhosts // globalDomainVhosts;
     })
 
-    # --- Phase 3.2: Auth-Warnings ---
+    # --- Auth / TLS Warnings ---
     {
       warnings =
         lib.optional
@@ -269,15 +326,24 @@ in
           ''
             [50-media/ingress] tls.mode = "custom" erfordert
             grapefruitMedia.ingress.tls.certFile und .keyFile.
+          ''
+        ++ lib.optional
+          (
+            cfg.enable
+            && cfg.ingress.enable
+            && isStandalone
+            && tlsMode == "custom"
+            && !hasDomain
+          )
+          ''
+            [50-media/ingress] tls.mode = "custom" ohne domain: L2/HTTPS-Domain-vHosts
+            entfallen; nur {service}.local auf :80 (HTTP). Fuer HTTPS eine Domain setzen.
           '';
     }
 
-    # --- DNS-Kanon: grok-review.md (SSoT), Stand 2026-07-15 ---
-    # L1 mDNS  {service}.local  = immer (Avahi, Phase B) -- nie in Cloudflare.
-    # L2       {service}.{domain} = nur wenn cfg.domain gesetzt (hasDomain).
-    #          domain NIE auf .local enden lassen -- echte Domain fuer Unicast.
-    # Tiers/CF-Anker: siehe lib/service-tiers.nix + README (3-Routen-Modell).
-    # Diese Datei erzeugt L2-vHosts nur bei gesetzter Domain; der .local-Matcher
-    # kommt mit P1-1 (mDNS) + P0-3 (Doppel-Matcher) in Phase B dazu.
+    # --- DNS-Kanon (Phase B live) ---
+    # L1 mDNS  {service}.local  = discovery.mdns (./mdns.nix) + Caddy host matcher
+    # L2       {service}.{domain} = nur hasDomain; nie domain=*.local (assertion)
+    # Tiers/CF: lib/service-tiers.nix + README (3-Anker) -- Export Phase C
   ]);
 }

@@ -48,6 +48,8 @@ Nach `nixos-rebuild switch`: Dienste laufen auf `127.0.0.1`, Ingress auf `:80`.
 |--------|---------|--------------|
 | `grapefruitMedia.enable` | `false` | Modul aktivieren |
 | `grapefruitMedia.domain` | `null` | Optionale L2-Unicast-Domain für vHosts (`{service}.{domain}`). `null`/`""` = nur mDNS `{service}.local`. **Nie** auf `.local` enden lassen. |
+| `grapefruitMedia.discovery.mdns.enable` | `true` | Avahi: publiziert `{service}.local` → LAN-IP für alle enabled UI-Dienste. **Nie** in Cloudflare. |
+| `grapefruitMedia.discovery.mdns.openFirewall` | `true` | UDP 5353 für mDNS öffnen. |
 | `grapefruitMedia.storage.mediaRoot` | `/data` | Basis für Downloads + Mediathek |
 | `grapefruitMedia.storage.metadataDir` | `/var/lib/media-metadata` | Artwork-Cache |
 | `grapefruitMedia.secrets.autoGenerate` | `false` | API-Keys automatisch erzeugen |
@@ -152,14 +154,24 @@ grapefruitMedia.ingress.tls = {
 | **L1 mDNS** | `{service}.local` | **immer**, jeder enabled UI-Dienst | Multicast (Avahi) | **nie** |
 | **L2 Unicast** | `{service}.{domain}` | nur wenn `domain` gesetzt | Unicast (Cloudflare + optional Blocky) | ja, nach Tier |
 
-`.local` ist **Pflicht-LAN-Identität** (nicht Fallback) und kommt mit der
-mDNS-Arbeit in Phase B. `domain` ist die **zusätzliche** Schicht für HTTPS,
-SSO und WAN. Beide Namen landen am selben Caddy-Handle → `reverse_proxy`.
+`.local` ist **Pflicht-LAN-Identität** (nicht Fallback) — **Phase B ist live:**
+Avahi + `grapefruit-media-mdns-aliases` publizieren `{service}.local` → **LAN-IP**
+(dynamisch, kein Hardcode). Caddy matcht **immer** `{service}.local` und bei
+gesetzter Domain zusätzlich `{service}.{domain}` (ein Upstream pro Dienst).
+
+**TLS-Verhalten (Standalone):**
+- `tls.off` — L1 + L2 auf `:80`
+- `tls.internal` — L1 + L2 auf `:443` (Caddy-interne CA; Browser-Warnung ok)
+- `tls.custom` — L1 bleibt HTTP auf `:80` (öffentliches Cert matcht `.local` nicht);
+  L2 auf `:443` mit lego/ACME-Pfaden
+
+**Global-Caddy:** vHost `http://{service}.local` (kein ACME) + optional
+`{service}.{domain}` (Host kann `useACMEHost` setzen).
 
 **Fallstrick (unverhandelbar):** `.local` gehört **ausschließlich** ins
 Multicast-LAN. Niemals in Cloudflare, niemals als Unicast-Rewrite in
 Blocky/AdGuard, niemals als Let's-Encrypt-SAN. `domain` **nie** auf `.local`
-enden lassen — dafür eine echte Domain (`media.example.com`) setzen.
+enden lassen — Modul-Assertion bricht die Eval sonst ab.
 
 ### Service-Tiers (L2 / Cloudflare)
 
