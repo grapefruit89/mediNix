@@ -37,6 +37,7 @@ in
       {
         services.navidrome = {
           enable = true;
+          package = lib.mkIf (cfgGlobal.navidrome.package != null) cfgGlobal.navidrome.package;
           settings = {
             Address = "127.0.0.1";
             Port = port;

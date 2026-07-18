@@ -106,6 +106,9 @@ let
           inherit dataDir;
           settings.server.port = port;
           settings.server.bindaddress = "127.0.0.1";
+          # Nur setzen wenn der Konsument ein Override angegeben hat --
+          # sonst bleibt der nixpkgs-Default des Moduls gueltig.
+          package = lib.mkIf (cfg.${name}.package != null) cfg.${name}.package;
         };
 
         systemd.services.${name}.environment = {

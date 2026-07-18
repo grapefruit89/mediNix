@@ -37,6 +37,7 @@ in
           host = "127.0.0.1";
           inherit port;
           group = "media";
+          package = lib.mkIf (cfgGlobal.audiobookshelf.package != null) cfgGlobal.audiobookshelf.package;
         };
 
         users.users.audiobookshelf.extraGroups = lib.mkAfter [

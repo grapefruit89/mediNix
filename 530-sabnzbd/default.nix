@@ -37,6 +37,7 @@ in
       openFirewall = false;
       configFile = null;
       allowConfigWrite = true;
+      package = lib.mkIf (cfg.sabnzbd.package != null) cfg.sabnzbd.package;
       settings = {
         misc = {
           port = portSabnzbd;

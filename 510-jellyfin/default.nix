@@ -79,6 +79,7 @@ in
           services.jellyfin = {
             enable = true;
             openFirewall = false;
+            package = lib.mkIf (cfgJellyfin.package != null) cfgJellyfin.package;
           };
 
           fileSystems."/run/jellyfin-transcode" = {
@@ -254,6 +255,7 @@ in
             enable = true;
             port = portJellyseerr;
             openFirewall = false;
+            package = lib.mkIf (cfgJellyseerr.package != null) cfgJellyseerr.package;
           };
         }
         (factory.mkService {

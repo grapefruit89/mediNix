@@ -408,6 +408,7 @@ in
     services.recyclarr = {
       enable = true;
       schedule = cfg.schedule;
+      package = lib.mkIf (cfg.package != null) cfg.package;
       configuration = lib.mkMerge [
         (lib.mkIf cfgGlobal.sonarr.enable {
           sonarr.sonarr = {

@@ -14,6 +14,27 @@
 { config, lib, pkgs, ... }:
 let
   cfg = config.grapefruitMedia;
+
+  # Paket-Override je Dienst. Bewusst nullOr mit Default null statt eines
+  # hartkodierten pkgs.<name>: so bleibt der nixpkgs-Default des jeweiligen
+  # NixOS-Moduls die Wahrheit (kein Duplizieren von Upstream-Defaults, kein
+  # Bruch wenn ein Attributname sich upstream aendert). Nur wenn der Konsument
+  # etwas setzt, wird es durchgereicht.
+  mkPackageOption =
+    svc:
+    lib.mkOption {
+      type = lib.types.nullOr lib.types.package;
+      default = null;
+      defaultText = lib.literalExpression "null";
+      example = lib.literalExpression "pkgs.${svc}";
+      description = ''
+        Optionales Paket-Override fuer ${svc}.
+
+        null (Default) = das Paket, das das NixOS-Modul aus nixpkgs vorgibt.
+        Setzen, um eine abweichende Version, ein Overlay oder ein Downgrade bei
+        einem kaputten Upstream-Release zu verwenden.
+      '';
+    };
 in {
   imports = [
     ./500-media-ingress
@@ -49,26 +70,55 @@ in {
       '';
     };
 
-    # Service enable options
-    jellyfin.enable = lib.mkEnableOption "Jellyfin Media Server";
-    jellyseerr.enable = lib.mkEnableOption "Jellyseerr Request Manager";
-    sonarr.enable = lib.mkEnableOption "Sonarr TV Series Manager";
-    radarr.enable = lib.mkEnableOption "Radarr Movies Manager";
-    readarr.enable = lib.mkEnableOption "Readarr Books Manager";
-    prowlarr.enable = lib.mkEnableOption "Prowlarr Indexer Proxy";
-    sabnzbd.enable = lib.mkEnableOption "SABnzbd Usenet Downloader";
+    # Service enable options (+ optionales Paket-Override, siehe mkPackageOption)
+    jellyfin = {
+      enable = lib.mkEnableOption "Jellyfin Media Server";
+      package = mkPackageOption "jellyfin";
+    };
+    jellyseerr = {
+      enable = lib.mkEnableOption "Jellyseerr Request Manager";
+      package = mkPackageOption "jellyseerr";
+    };
+    sonarr = {
+      enable = lib.mkEnableOption "Sonarr TV Series Manager";
+      package = mkPackageOption "sonarr";
+    };
+    radarr = {
+      enable = lib.mkEnableOption "Radarr Movies Manager";
+      package = mkPackageOption "radarr";
+    };
+    readarr = {
+      enable = lib.mkEnableOption "Readarr Books Manager";
+      package = mkPackageOption "readarr";
+    };
+    prowlarr = {
+      enable = lib.mkEnableOption "Prowlarr Indexer Proxy";
+      package = mkPackageOption "prowlarr";
+    };
+    sabnzbd = {
+      enable = lib.mkEnableOption "SABnzbd Usenet Downloader";
+      package = mkPackageOption "sabnzbd";
+    };
     audiobookshelf = {
       enable = lib.mkEnableOption "Audiobookshelf Server";
+      package = mkPackageOption "audiobookshelf";
       enableQuickSync = lib.mkOption {
         type = lib.types.bool;
         default = true;
         description = "Enable Intel QSV GPU transcode mapping.";
       };
     };
-    navidrome.enable = lib.mkEnableOption "Navidrome Music Server";
-    lidarr.enable = lib.mkEnableOption "Lidarr Music Download Manager";
+    navidrome = {
+      enable = lib.mkEnableOption "Navidrome Music Server";
+      package = mkPackageOption "navidrome";
+    };
+    lidarr = {
+      enable = lib.mkEnableOption "Lidarr Music Download Manager";
+      package = mkPackageOption "lidarr";
+    };
     recyclarr = {
       enable = lib.mkEnableOption "Recyclarr custom format synchronization";
+      package = mkPackageOption "recyclarr";
       schedule = lib.mkOption {
         type = lib.types.str;
         default = "daily";
