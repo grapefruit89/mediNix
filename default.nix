@@ -42,6 +42,7 @@ in {
     ./510-jellyfin
     ./520-arr-stack
     ./520-arr-stack/secrets-generator.nix
+    ./525-provision
     ./530-sabnzbd
     ./540-audiobookshelf
     ./550-navidrome
@@ -490,6 +491,27 @@ in {
         type = lib.types.str;
         default = cfg.secrets.arrApiKeyFile;
         description = "Path to Readarr API key file.";
+      };
+      jellyseerrApiKeyFile = lib.mkOption {
+        type = lib.types.str;
+        default = "${cfg.secrets.secretsDir}/jellyseerr_api_key";
+        description = "Pfad zur Jellyseerr-API-Key-Datei (Provisionierung 525).";
+      };
+      sabnzbdApiKeyFile = lib.mkOption {
+        type = lib.types.str;
+        default = "${cfg.secrets.secretsDir}/sabnzbd_api_key";
+        description = ''
+          Pfad zur SABnzbd-API-Key-Datei. Wird von der Provisionierung (525) fuer
+          die Download-Client-Registrierung in den *arr benoetigt.
+        '';
+      };
+      jellyfinAdminPasswordFile = lib.mkOption {
+        type = lib.types.str;
+        default = "${cfg.secrets.secretsDir}/jellyfin_admin_password";
+        description = ''
+          Pfad zur Datei mit dem Jellyfin-Admin-Passwort. Nur fuer den einmaligen
+          Bootstrap durch die Provisionierung (Jellyfin-Setup + Seerr-Init).
+        '';
       };
       navidromeOidcFile = lib.mkOption {
         type = lib.types.path;
