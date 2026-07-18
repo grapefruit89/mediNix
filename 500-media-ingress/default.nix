@@ -106,7 +106,18 @@ let
         ${proxy}
       '';
 
+  # Auth-freier Body: nur Proxy, kein forward_auth.
+  mkProxyOnly = svc: "reverse_proxy http://127.0.0.1:${toString svc.port}";
+
+  # .local = vertraute LAN-Zone. Bei localBypass laeuft L1 OHNE forward_auth,
+  # damit "dumme" Geraete (Fire TV, Smart-TV, Sonos ...) ohne SSO drankommen.
+  # Kein Sicherheitsloch: .local ist Multicast-LAN-only, verlaesst das Netz nie,
+  # und die Dienste binden weiterhin ausschliesslich auf 127.0.0.1.
+  localBypass = cfg.ingress.auth.localBypass;
+  mkLocalBody = svc: if localBypass then mkProxyOnly svc else mkProxyBody svc;
+
   # Standalone: ein Matcher fuer alle Hosts des Dienstes (L1 + optional L2).
+  # Nur zulaessig wenn L1 und L2 dieselbe Auth-Policy haben.
   mkSvcBlock =
     name: svc:
     ''
@@ -125,12 +136,24 @@ let
     ''
       @${name}_local host ${name}.local
       handle @${name}_local {
-        ${mkProxyBody svc}
+        ${mkLocalBody svc}
       }
     '';
   mkLocalOnlyRoutes = lib.concatStringsSep "\n" (
     lib.mapAttrsToList mkLocalOnlyBlock enabledServices
   );
+
+  # Wenn .local auth-frei ist, aber die Domain forward_auth nutzt, duerfen L1/L2
+  # nicht mehr im selben Matcher liegen -- dann getrennte Bloecke erzeugen.
+  splitAuth = localBypass && hasForwardAuth;
+  mkAllRoutes =
+    if splitAuth then
+      lib.concatStringsSep "\n" [
+        mkLocalOnlyRoutes
+        mkDomainOnlyRoutes
+      ]
+    else
+      mkSvcRoutes;
 
   # Nur L2-Routen (Domain).
   mkDomainOnlyBlock =
@@ -169,7 +192,7 @@ let
           route /health {
             respond "OK" 200
           }
-          ${mkSvcRoutes}
+          ${mkAllRoutes}
         }
       ''
     else if tlsMode == "internal" then
@@ -182,7 +205,7 @@ let
           route /health {
             respond "OK" 200
           }
-          ${mkSvcRoutes}
+          ${mkAllRoutes}
         }
       ''
     else
@@ -218,7 +241,7 @@ let
   globalLocalVhosts = lib.mapAttrs' (
     name: svc:
     lib.nameValuePair "http://${name}.local" {
-      extraConfig = mkGlobalExtraConfig svc;
+      extraConfig = mkLocalBody svc;
     }
   ) enabledServices;
 
@@ -233,7 +256,10 @@ let
 
 in
 {
-  imports = [ ./mdns.nix ];
+  imports = [
+    ./mdns.nix
+    ./ddns.nix
+  ];
 
   config = lib.mkIf cfg.enable (lib.mkMerge [
 

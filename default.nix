@@ -188,6 +188,102 @@ in {
             Gilt global fuer alle vHosts im Ingress.
           '';
         };
+        localBypass = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = ''
+            L1 ({service}.local) ohne forward_auth ausliefern, auch wenn
+            auth.mode = "forward-auth" gesetzt ist.
+
+            Warum Default true: .local ist reines Multicast-LAN (RFC 6762) und
+            verlaesst das Netz nie -- die physische Netzgrenze ist hier die
+            Sicherheitsgrenze. So kommen Geraete ohne SSO-Faehigkeit (Fire TV,
+            Smart-TV, Sonos, Konsolen) ohne Passkey-Zwang an die Dienste,
+            waehrend {service}.{domain} weiterhin voll authentifiziert bleibt.
+
+            Kein Loch in der Absicherung: die Dienste binden weiterhin nur auf
+            127.0.0.1, direkter Zugriff auf IP:Port bleibt tot, und .local ist
+            von WAN und WireGuard aus grundsaetzlich nicht erreichbar.
+
+            Auf false setzen, wenn auch im LAN ausnahmslos Auth erzwungen werden soll.
+          '';
+        };
+      };
+    };
+
+    # DNS / Namens-Ableitung (Phase C) -- kennt KEINE IPs, keine feste Domain.
+    dns = {
+      mode = lib.mkOption {
+        type = lib.types.enum [ "host" "standalone" ];
+        default = "host";
+        description = ''
+          host (Default): Das Modul liefert nur Tier-Listen und vHost-Namen.
+            DDNS, ACME und Cloudflare macht der Host (heutiges q958-Verhalten).
+          standalone: Das Modul bringt seinen eigenen DDNS-Sync mit (./ddns.nix).
+            Fuer den Drop-in-Betrieb auf fremden Systemen.
+        '';
+      };
+
+      hostnames = lib.mkOption {
+        type = lib.types.attrsOf lib.types.str;
+        default = { };
+        example = {
+          navidrome = "music";
+          jellyseerr = "seerr";
+        };
+        description = ''
+          Optionaler Override: Servicename -> Hostname-Label. Ohne Eintrag wird der
+          Servicename verwendet. Erlaubt die Namenskonvention des Hosts abzubilden
+          (z.B. navidrome unter music.{domain}), ohne sie im Modul hart zu kennen.
+        '';
+      };
+
+      ddns = {
+        enable = lib.mkEnableOption "Eigener dynamischer DNS-Sync (nur bei dns.mode = standalone)";
+
+        zone = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          example = "example.com";
+          description = "Cloudflare-Zone. null = grapefruitMedia.domain verwenden.";
+        };
+
+        interval = lib.mkOption {
+          type = lib.types.str;
+          default = "5m";
+          description = "Pruefintervall des ddclient-Daemons (API-Call nur bei IP-Aenderung).";
+        };
+
+        wanJob = lib.mkOption {
+          type = lib.types.bool;
+          default = false;
+          description = ''
+            Zusaetzlicher Job, der die edge-wan-Namen auf die oeffentliche IP setzt.
+            Default aus: normalerweise macht das der Router per DynDNS. Nur
+            einschalten, wenn der Router das nicht kann.
+          '';
+        };
+
+        tokenCredential = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          example = "/var/lib/credstore.encrypted/CF_DDNS_API_TOKEN.cred";
+          description = ''
+            Pfad zu einem systemd-creds-verschluesselten Cloudflare-API-Token
+            (bevorzugt). Wird via LoadCredentialEncrypted geladen.
+            Token-Rechte minimal halten: Zone:Read + DNS:Edit, nur diese Zone.
+          '';
+        };
+
+        tokenFile = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          example = "/run/secrets/cloudflare_ddns_token";
+          description = ''
+            Alternative zu tokenCredential: Klartext-Pfad zur Laufzeit
+            (z.B. sops-nix/agenix). Genau eine der beiden Quellen setzen.
+          '';
+        };
       };
     };
 
