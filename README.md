@@ -216,6 +216,23 @@ Extern via `security.acme`/lego (DNS-01, ADR-032), Modul bekommt nur Cert-Pfade
 
 ---
 
+## Troubleshooting
+
+| Symptom | Ursache & Lösung |
+|---------|------------------|
+| `The option 'my.services.jellyfin' does not exist` | Altes `my.*`-Schema. Dieses Modul nutzt `grapefruitMedia.jellyfin.enable`. |
+| Build bricht: `vpn.dns ist leer` | Beabsichtigt (fail-closed). Setze einen Resolver, der **durch den Tunnel** erreichbar ist, z.B. den DNS des VPN-Providers. Nicht den Host-Resolver — das wäre ein DNS-Leak. |
+| `tls.mode = "custom"` ohne Zertifikat | `ingress.tls.certFile` + `keyFile` setzen, oder auf `"internal"`/`"off"` wechseln. |
+| `avahi-publish: No working network interface` | Kein LAN-Interface aktiv. Prüfen mit `ip route get 1.1.1.1`. |
+| `{service}.local` geht nicht über WireGuard | Systembedingt: mDNS ist L2-Multicast und passiert keinen L3-Tunnel. Über VPN `{service}.{domain}` nutzen. |
+| `{service}.local` geht auf dem Fire TV / Smart-TV nicht | Manche Android-/Fire-OS-Versionen lösen `.local`-Hostnamen nicht über die normalen DNS-APIs auf. Dann `{service}.{domain}` nutzen (LAN-IP via Wildcard). |
+| Edge-Dienst aus dem LAN nicht erreichbar | Edge-Namen haben einen eigenen A-Record auf die WAN-IP (spezifisch schlägt Wildcard) → der Router braucht **Hairpin-NAT**. Alternative: `.local`. |
+| *arr fordert Login trotz Auth-Proxy | `grapefruitMedia.authProxyPresent = true` setzen, damit `AUTH__METHOD=External` greift. |
+| Passkey-Login auf `.local` schlägt fehl | Ohne gültiges HTTPS kein Secure Context — WebAuthn verweigert. Für Passkeys `{service}.{domain}` nutzen. |
+| Dienst startet nicht, `.env` fehlt | Kein Problem: EnvironmentFile hat `-`-Prefix, fehlende Dateien werden ignoriert. Prüfe stattdessen `secrets.autoGenerate` oder die externen Secret-Pfade. |
+
+---
+
 ## Architektur-Entscheidungen
 
 Relevante ADRs im Haupt-Repo (`grapefruit89/Nix-Grok`):

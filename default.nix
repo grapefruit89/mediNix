@@ -375,8 +375,29 @@ in {
       };
       dns = lib.mkOption {
         type = lib.types.listOf lib.types.str;
-        default = [ "1.1.1.1" "1.0.0.1" ];
-        description = "DNS servers to configure for sandbox isolation.";
+        default = [ ];
+        example = [ "10.8.0.1" ];
+        description = ''
+          DNS-Server fuer die Usenet-Sandbox. Wird nach /etc/usenet-resolv.conf
+          geschrieben und in die confineten Dienste als /etc/resolv.conf gemountet.
+
+          Default ist bewusst LEER: ein stiller Public-DNS-Default (frueher
+          1.1.1.1) ist ein Sicherheitsproblem, weil er im Fehlerfall unbemerkt
+          greift. Bei aktivem usenet-confinement erzwingt eine Assertion, dass
+          hier explizit etwas gesetzt wird.
+
+          WICHTIG -- warum nicht der Host-Resolver: Der Host nutzt systemd-resolved
+          mit DoT. Wuerde die Sandbox darueber aufloesen, verliesse die Anfrage den
+          Host ueber die normale Uplink-Route und nicht durch den Tunnel -- genau
+          der DNS-Leak, den das Confinement verhindern soll.
+
+          Empfohlene Reihenfolge:
+            1. DNS des VPN-Providers (liegt im Tunnel, kein Leak zum ISP)
+            2. DoT-Resolver, geroutet durch den Tunnel (versteckt die Anfragen
+               zusaetzlich vor dem VPN-Provider, braucht einen DoT-Stub)
+            3. Public-Resolver im Klartext -- funktioniert, aber der Betreiber
+               sieht alle Anfragen
+        '';
       };
     };
 

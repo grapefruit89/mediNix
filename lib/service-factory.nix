@@ -55,6 +55,18 @@ let
           "~@privileged"
         ];
       }
+      // lib.optionalAttrs (profile == "node") {
+        # Node/libuv braucht Teile von @resources (sched_setaffinity, setrlimit),
+        # deshalb wie dotnet nur ~@privileged statt der vollen full-Variante.
+        # Bewusst KEIN DevicePolicy = "closed": Audiobookshelf kann QuickSync
+        # nutzen und braucht dann Zugriff auf den Render-Node -- der Zugriff wird
+        # ueber den privateDevices-Parameter gesteuert, nicht hier.
+        CapabilityBoundingSet = lib.mkForce "";
+        SystemCallFilter = lib.mkForce [
+          "@system-service"
+          "~@privileged"
+        ];
+      }
       // lib.optionalAttrs (profile == "streamer") {
         UMask = lib.mkForce "0002";
       };

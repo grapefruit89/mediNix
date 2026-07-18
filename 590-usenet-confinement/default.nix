@@ -157,6 +157,30 @@ let
 in
 {
   config = lib.mkIf (cfgGlobal.enable && cfgGlobal.usenet-confinement.enable) {
+    # Fail-closed: lieber Build-Fehler als ein stiller Public-DNS-Fallback.
+    assertions = [
+      {
+        assertion = cfg.dns != [ ];
+        message = ''
+          [50-media/usenet-confinement] grapefruitMedia.vpn.dns ist leer.
+
+          Die Sandbox braucht einen expliziten Resolver, der DURCH den Tunnel
+          erreichbar ist -- sonst droht ein DNS-Leak (der Host-Resolver wuerde
+          ueber die normale Uplink-Route aufloesen, nicht durch das VPN).
+
+          Setze z.B. den DNS des VPN-Providers:
+            grapefruitMedia.vpn.dns = [ "10.8.0.1" ];
+        '';
+      }
+      {
+        assertion = cfg.interface != "";
+        message = ''
+          [50-media/usenet-confinement] grapefruitMedia.vpn.interface ist leer.
+          Das Interface muss vom Host/VPN-Modul bereitgestellt werden (z.B. "privado").
+        '';
+      }
+    ];
+
     environment.systemPackages = [
       verifyBin
       statusBin
