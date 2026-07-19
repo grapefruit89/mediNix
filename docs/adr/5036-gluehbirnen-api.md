@@ -39,24 +39,19 @@ unvermeidbar sind**. Alles andere ist vorhersehbar und gehört automatisiert.
 grapefruitMedia = {
   enable = true;
 
-  # ── 1. Usenet-Zugang (Pflicht, wenn heruntergeladen werden soll) ──
+  # ── 1. Usenet-Zugang ── nur Zugangsdaten, Rest aus dem Katalog ──
   usenet.provider = {
-    host = "news.example.com";
-    port = 563;                              # Default
-    ssl = true;                              # Default
+    preset = "eweka";                        # Host/Port/SSL/Limits vorbelegt
     usernameFile = "/run/secrets/usenet-user";
     passwordFile = "/run/secrets/usenet-pass";
-    connections = 16;                        # Default, siehe unten
   };
 
-  # ── 2. Indexer (Pflicht, sonst wird nichts gefunden) ──
+  # ── 2. Indexer ── nur der API-Key, URL aus dem Katalog ──
   usenet.indexers = [
-    { name = "nzbgeek";
-      baseUrl = "https://api.nzbgeek.info";
-      apiKeyFile = "/run/secrets/nzbgeek-key"; }
+    { preset = "nzbgeek"; apiKeyFile = "/run/secrets/nzbgeek-key"; }
   ];
 
-  # ── 3. Präferenzen (Pflicht — bestimmt die Profile) ──
+  # ── 3. Präferenzen (bestimmt die Profile) ──
   preferences = {
     language = "de";                 # "de" | "en"
     quality = "1080p";               # "1080p" | "2160p"
@@ -67,11 +62,16 @@ grapefruitMedia = {
   storage.mediaRoot = "/data";
 
   # ── 5. Dienste (Preset statt Einzelschalter) ──
-  preset = "usenet-media";           # aktiviert das Standard-Bündel
+  preset = "usenet-media";
 };
 ```
 
-Alles andere hat Defaults.
+**Das ist die vollständige Konfiguration.** Zehn Zeilen, davon vier reine
+Dateipfade zu Secrets. Alles andere hat Defaults.
+
+Wer einen Provider oder Indexer nutzt, der nicht im Katalog steht, gibt die
+Felder weiterhin manuell an (siehe „Kataloge" unten) — der Katalog ist eine
+Abkürzung, keine Einschränkung.
 
 ### `preset`
 
@@ -187,13 +187,103 @@ deutsche Serien"). Ein Fallback, der ungefragt englische Releases lädt,
 `quality_sort = "top"` sorgt dafür, dass die Reihenfolge im `qualities`-Block die
 Präferenz bestimmt — Scores können sie **nicht** umkehren.
 
-| `preferences.quality` | Profil-Qualitäten (in dieser Reihenfolge) | `until_quality` |
-|-----------------------|-------------------------------------------|-----------------|
-| `"1080p"` | 1080p → 720p → 540p | 1080p |
-| `"2160p"` | 2160p → 1080p → 720p | 2160p |
+| `preferences.quality` | Kette (Reihenfolge = Präferenz) | `until_quality` |
+|-----------------------|----------------------------------|-----------------|
+| `"1080p"` | **1080p → 720p → 540p → 480p** | 1080p |
+| `"2160p"` | **2160p → 1080p → 720p → 540p → 480p** | 2160p |
 
-Was nicht in der Liste steht, wird nie geladen. 4k ist im 1080p-Profil schlicht
-**nicht enthalten** — kein negativer Score nötig (siehe Falle 3).
+Die Kette ist absteigend vollständig: Lieber eine schlechtere Auflösung als gar
+nichts — aber **nur**, wenn nichts Besseres existiert. Sobald später ein besseres
+Release auftaucht, greift `upgrade.allowed` und ersetzt es bis `until_quality`.
+
+**4k ist im 1080p-Profil schlicht nicht enthalten** — kein negativer Score nötig.
+Umgekehrt enthält das 4k-Profil 1080p und darunter als Rückfall, weil ein
+1080p-Release besser ist als kein Film.
+
+Was nicht in der Liste steht, wird nie geladen (siehe Falle 3).
+
+---
+
+## Kataloge statt Freitext
+
+Der Nutzer soll den API-Key eingeben — nicht die Endpunkt-URL nachschlagen.
+Deshalb bringt das Modul zwei Kataloge mit.
+
+### Warum `enum` das Nix-Äquivalent zum Dropdown ist
+
+Ein `types.enum [ "nzbgeek" "drunkenslug" … ]` liefert genau das, was ein
+Dropdown im Web leistet: begrenzte Auswahl, Tab-Completion in der Editor-
+Integration, und — der eigentliche Gewinn — **Validierung zur Bauzeit**. Ein
+Tippfehler bricht den Build mit einer Liste der gültigen Werte, statt zur
+Laufzeit einen kaputten Indexer zu erzeugen.
+
+### `lib/usenet-catalog.nix`
+
+```nix
+{
+  providers = {
+    eweka      = { host = "news.eweka.nl";       port = 563; ssl = true; maxConnections = 50; };
+    newshosting= { host = "news.newshosting.com"; port = 563; ssl = true; maxConnections = 100; };
+    # …
+  };
+
+  indexers = {
+    nzbgeek     = { baseUrl = "https://api.nzbgeek.info"; implementation = "Newznab";
+                    configContract = "NewznabSettings"; protocol = "usenet"; };
+    drunkenslug = { baseUrl = "…"; … };
+    # …
+  };
+}
+```
+
+### Verwendung
+
+```nix
+# Katalog-Eintrag: nur Zugangsdaten nötig
+usenet.provider = {
+  preset = "eweka";
+  usernameFile = "…"; passwordFile = "…";
+};
+
+# Katalog + Übersteuerung einzelner Felder
+usenet.provider = {
+  preset = "eweka";
+  connections = 30;            # überschreibt den Katalog-Default
+  usernameFile = "…"; passwordFile = "…";
+};
+
+# Ohne Katalog — vollständig manuell
+usenet.provider = {
+  host = "news.example.com"; port = 563; ssl = true;
+  usernameFile = "…"; passwordFile = "…";
+};
+```
+
+**Auflösungsregel:** explizit gesetztes Feld > Katalog-Eintrag > Modul-Default.
+Umgesetzt über `lib.mkDefault` auf den Katalogwerten, damit der Nutzer jedes Feld
+einzeln überstimmen kann, ohne den Preset aufzugeben.
+
+**Assertion:** Entweder `preset` **oder** `host` muss gesetzt sein — beides
+gleichzeitig ist erlaubt (Preset + Übersteuerung), keines von beidem bricht den
+Build mit klarer Meldung.
+
+### ⚠ Katalogdaten sind zu verifizieren
+
+Die oben genannten Hostnamen, Ports und Verbindungslimits sind **Platzhalter aus
+allgemeiner Kenntnis und ungeprüft**. Sie stehen hier, um die *Struktur* zu
+zeigen.
+
+Vor der Umsetzung: jeden Eintrag gegen die offizielle Doku des jeweiligen
+Anbieters prüfen und mit Datum vermerken. Ein falscher Hostname im Katalog ist
+schlimmer als gar kein Katalog — der Nutzer vertraut ihm.
+
+Gleiches gilt für die Indexer-`baseUrl`: Newznab-Endpunkte unterscheiden sich
+teils von der Website-Domain. Quelle ist die API-Seite des jeweiligen Indexers,
+nicht das Gedächtnis (AGENTS.md Regel 0).
+
+**Pflege-Realität:** Ein Katalog veraltet. Deshalb bleibt der manuelle Weg
+gleichwertig unterstützt, und der Katalog ist bewusst klein — nur die
+verbreitetsten Anbieter, nicht der Anspruch auf Vollständigkeit.
 
 ---
 
