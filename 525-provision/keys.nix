@@ -20,6 +20,7 @@ let
   sub = prov.keys;
   ports = cfg.ports;
   arrProvision = pkgs.callPackage ../packages/arr-provision { };
+  provision = import ../lib/provision-unit.nix { inherit lib; };
 
   anyArr = cfg.sonarr.enable || cfg.radarr.enable || cfg.prowlarr.enable || cfg.sabnzbd.enable;
   active = cfg.enable && prov.enable && sub.enable && anyArr;
@@ -42,42 +43,27 @@ in
     };
   };
 
-  config = lib.mkIf active {
-    systemd.services.arr-sync-keys = {
-      description = "Provision: apply declarative *arr/SABnzbd API keys";
-      after = svcDep;
-      wants = svcDep;
-      wantedBy = [ "multi-user.target" ];
+  config = lib.mkIf active (provision.mkProvisionUnit {
+    name = "arr-sync-keys";
+    description = "Provision: apply declarative *arr/SABnzbd API keys";
+    after = svcDep;
+    wants = svcDep;
 
-      startLimitIntervalSec = 600;
-
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-        # Root noetig: schreibt in /var/lib/<svc>-Configs und startet Units neu.
-        # Haertung ist ein bewusster Follow-up (siehe README/Issue).
-        User = "root";
-        Restart = "on-failure";
-        RestartSec = "30s";
-        StartLimitBurst = 3;
-      };
-
-      environment = {
-        ARR_HOST = "127.0.0.1";
-        SYNC_SONARR = if cfg.sonarr.enable then "1" else "0";
-        SYNC_RADARR = if cfg.radarr.enable then "1" else "0";
-        SYNC_PROWLARR = if cfg.prowlarr.enable then "1" else "0";
-        SYNC_SABNZBD = if cfg.sabnzbd.enable then "1" else "0";
-        SONARR_PORT = toString ports.sonarr;
-        RADARR_PORT = toString ports.radarr;
-        PROWLARR_PORT = toString ports.prowlarr;
-        SONARR_KEY_FILE = cfg.secrets.sonarrApiKeyFile;
-        RADARR_KEY_FILE = cfg.secrets.radarrApiKeyFile;
-        PROWLARR_KEY_FILE = cfg.secrets.prowlarrApiKeyFile;
-        SABNZBD_KEY_FILE = cfg.secrets.sabnzbdApiKeyFile;
-      };
-
-      script = lib.getExe arrProvision.arrKeysSync;
+    environment = {
+      ARR_HOST = "127.0.0.1";
+      SYNC_SONARR = if cfg.sonarr.enable then "1" else "0";
+      SYNC_RADARR = if cfg.radarr.enable then "1" else "0";
+      SYNC_PROWLARR = if cfg.prowlarr.enable then "1" else "0";
+      SYNC_SABNZBD = if cfg.sabnzbd.enable then "1" else "0";
+      SONARR_PORT = toString ports.sonarr;
+      RADARR_PORT = toString ports.radarr;
+      PROWLARR_PORT = toString ports.prowlarr;
+      SONARR_KEY_FILE = cfg.secrets.sonarrApiKeyFile;
+      RADARR_KEY_FILE = cfg.secrets.radarrApiKeyFile;
+      PROWLARR_KEY_FILE = cfg.secrets.prowlarrApiKeyFile;
+      SABNZBD_KEY_FILE = cfg.secrets.sabnzbdApiKeyFile;
     };
-  };
+
+    script = lib.getExe arrProvision.arrKeysSync;
+  });
 }
