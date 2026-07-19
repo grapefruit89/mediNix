@@ -53,9 +53,17 @@ grapefruitMedia = {
 
   # ── 3. Präferenzen (bestimmt die Profile) ──
   preferences = {
-    language = "de";                 # "de" | "en"
-    quality = "1080p";               # "1080p" | "2160p"
-    languageMode = "required";       # Default, siehe Semantik unten
+    # Profile, die in Sonarr UND Radarr angelegt werden.
+    # Pro Serie/Film wird eines davon gewählt -- so arbeiten die *arr.
+    profiles = [
+      { id = "de"; languages = [ "de" ]; default = true; }
+      { id = "en"; languages = [ "en" ]; }
+    ];
+    # Qualität getrennt je App -- Serien und Filme dürfen sich unterscheiden.
+    quality = {
+      series = "1080p";
+      movies = "1080p";              # z.B. "2160p" für 4k-Filme
+    };
   };
 
   # ── 4. Storage (Default vorhanden) ──
@@ -123,7 +131,53 @@ Gedächtnis. Siehe AGENTS.md Regel 0.
 Die in diesem ADR genannten IDs sind **ungeprüft** und vor der Umsetzung gegen
 die Quelle zu verifizieren.
 
-### 3. Auflösungen über negative Scores ausschließen
+### 3. „Recyclarr hat doch eine `language`-Option" — hat es nicht
+
+Ein wiederkehrender Vorschlag lautet, das ganze Score-Gating durch eine simple
+Whitelist zu ersetzen:
+
+```yaml
+quality_profiles:
+  - name: "German 1080p"
+    language: ["german", "english"]   # ❌ EXISTIERT NICHT
+```
+
+**Geprüft am Recyclarr-Schema** (`schemas/config/quality-profiles.json`,
+abgerufen 2026-07-18). Erlaubt sind ausschließlich:
+
+`trash_id` · `name` · `reset_unmatched_scores` · `score_set` · `upgrade` ·
+`min_format_score` · `min_upgrade_format_score` · `quality_sort` · `qualities`
+
+Das Schema setzt **`additionalProperties: false`**. Eine Config mit `language:`
+wird also nicht etwa ignoriert — sie **schlägt bei der Validierung fehl**.
+
+**Warum es das nicht gibt:** Sonarr v4 hat die Language-Profiles entfernt, Radarr
+hat Sprache aus den Quality-Profiles herausgenommen. Beide behandeln Sprache
+heute ausschließlich über Custom Formats. Genau deshalb macht TRaSH das
+Sprach-Gating über CF-Scores — nicht aus Vorliebe fürs Frickeln, sondern weil es
+der einzige verfügbare Weg ist. Der Vorschlag beschreibt Sonarr **v3**.
+
+**Merke:** Das Score-Gating unten ist kein Umweg. Es ist der Weg.
+
+### 4. Größenangaben sind MB/min, nicht GB/Stunde
+
+Ebenfalls aus demselben Vorschlag:
+
+```yaml
+- name: "WEBDL-1080p"
+  max: 75        # ❌ Kommentar sagte "75 GB pro Stunde"
+```
+
+Quality-Definitionen in Radarr/Sonarr sind **MB pro Minute**. 75 MB/min sind rund
+**4,5 GB/Stunde**, nicht 75. Eine Nutzeroption `maxSize = 75` mit der Bedeutung
+„GB" würde die Limits um Faktor ~800 verfehlen und praktisch jedes Release
+durchlassen oder blockieren.
+
+Wenn eine Größenoption angeboten wird, dann mit **expliziter Einheit im Namen**
+(`maxSizeMbPerMin`) — oder gar nicht, und stattdessen die TRaSH-Definitionen
+übernehmen.
+
+### 5. Auflösungen über negative Scores ausschließen
 
 Der Entwurf wollte 4k im 1080p-Profil mit `-25000` blockieren. Das ist fragil:
 Scores lassen sich durch andere Formate überkompensieren.
@@ -134,7 +188,57 @@ nicht der Score. Scores regeln die Präferenz *innerhalb* des Erlaubten.
 
 ---
 
-## Sprach-Semantik (der Kern)
+## Mehrere Profile statt einer globalen Sprache
+
+**Der reale Anwendungsfall:** Eine Person im Haushalt schaut deutsche Releases,
+eine andere gelegentlich englische. Das ist **kein** „Deutsch oder Englisch, egal
+was kommt" — es sind **zwei getrennte Profile**, zwischen denen pro Titel gewählt
+wird.
+
+Das passt exakt zur Arbeitsweise der *arr: **Das Quality-Profile hängt am
+einzelnen Titel**, nicht global an der Instanz. Eine deutsche Serie bekommt das
+deutsche Profil, ihre englische Serie das englische. Jellyseerr setzt beim
+Anlegen das Default-Profil, überschreibbar pro Anfrage.
+
+```nix
+preferences.profiles = [
+  { id = "de"; languages = [ "de" ]; default = true; }
+  { id = "en"; languages = [ "en" ]; }
+];
+```
+
+| Feld | Bedeutung |
+|------|-----------|
+| `id` | Kurzname, geht in den Profilnamen ein (`German 1080p`) |
+| `languages` | Liste — **mindestens eine** davon muss im Release enthalten sein |
+| `default` | Profil für neu angelegte Titel und als Seerr-Vorgabe; genau eines muss `true` sein |
+
+`languages` ist bewusst eine **Liste**: Wer beide Sprachen gleichwertig
+akzeptiert, schreibt `languages = [ "de" "en" ]` und bekommt ein Profil. Wer sie
+getrennt haben will, legt zwei Profile an. Beides ist ausdrückbar.
+
+### Qualität getrennt je App
+
+Sonarr und Radarr haben **eigene, unabhängige Quality-Profiles**. Deshalb ist die
+Auflösung keine Eigenschaft des Sprachprofils, sondern der App:
+
+```nix
+preferences.quality = { series = "1080p"; movies = "2160p"; };
+```
+
+Damit ist „4k-Filme, aber 1080p-Serien" ohne Sonderfall abgedeckt. Die Profile
+heißen dann `German 1080p` in Sonarr und `German 2160p` in Radarr.
+
+### Idee für später (ungeprüft)
+
+Jellyseerr kann Nutzern unterschiedliche Default-Profile zuweisen. Damit würde
+ihr Seerr-Konto automatisch auf das englische Profil zeigen, ohne dass jemand
+etwas auswählen muss. ⚠️ Ob und ab welcher Version das geht: **nicht verifiziert**
+— vor einer Zusage gegen die Seerr-Doku prüfen.
+
+---
+
+## Sprach-Semantik pro Profil
 
 Die entscheidende Präzisierung: **„Deutsch" heißt „Deutsch muss enthalten sein"**,
 nicht „ausschließlich Deutsch". Ein Release mit deutscher *und* englischer
@@ -347,6 +451,11 @@ können Zugangsdaten zur Laufzeit gelesen werden, ohne im Store zu landen.
 **Offene Fragen**
 1. Mehrere Provider (Backup-Server mit niedrigerer Priorität)? Die Option ist als
    Liste erweiterbar angelegt, aber Priorität/Failover ist ungeklärt.
-2. Getrennte Präferenzen für Filme und Serien (4k-Filme, 1080p-Serien)?
-   Aktuell eine globale Einstellung.
+2. ~~Getrennte Präferenzen für Filme und Serien?~~ **Gelöst** — `quality.series`
+   und `quality.movies` getrennt, weil Sonarr und Radarr ohnehin eigene
+   Quality-Profiles führen.
 3. Wie kommen die trash_ids ins Repo — vendored oder zur Bauzeit geholt?
+4. Können Profile pro App unterschiedlich sein (z.B. englisches Profil nur in
+   Radarr, nicht in Sonarr)? Aktuell werden alle Profile in beiden Apps angelegt.
+   Das ist harmlos (ungenutzte Profile stören nicht), aber ggf. unsauber.
+5. Jellyseerr-Nutzer automatisch auf ein Default-Profil mappen — verfügbar?
