@@ -22,7 +22,15 @@
 # (/var/lib/<svc>/config.xml) und starten Dienste ueber systemctl neu.
 # Sandboxing ist moeglich, muss aber am echten System erprobt werden --
 # bewusster Follow-up, nicht vergessen.
-{ lib }:
+{
+  # deadnix hat hier zu Recht gemeldet, dass lib nicht verwendet wird.
+  # Die Ellipse statt eines leeren Musters, weil Aufrufer weiterhin
+  # { inherit lib; } uebergeben -- ein Attributset-Muster ohne ... ist in Nix
+  # strikt und lehnt unerwartete Argumente mit
+  #   "function called with unexpected argument 'lib'"
+  # ab. Ellipse = ehrlich (wird nicht gebraucht) und tolerant zugleich.
+  ...
+}:
 {
   # mkProvisionUnit :: attrs -> nixos-config-fragment
   #

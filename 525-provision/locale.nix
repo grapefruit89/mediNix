@@ -26,10 +26,30 @@ let
   # Kategorien muessen zu den Download-Client-Kategorien passen (siehe
   # download-clients.nix), sonst landen Downloads im falschen Ordner.
   defaultCategories = [
-    { name = "tv"; dir = "tv"; newzbin = "tv"; order = 2; }
-    { name = "movies"; dir = "movies"; newzbin = "movies"; order = 1; }
-    { name = "audiobooks"; dir = "audiobooks"; newzbin = "audiobooks"; order = 3; }
-    { name = "music"; dir = "music"; newzbin = "music"; order = 5; }
+    {
+      name = "tv";
+      dir = "tv";
+      newzbin = "tv";
+      order = 2;
+    }
+    {
+      name = "movies";
+      dir = "movies";
+      newzbin = "movies";
+      order = 1;
+    }
+    {
+      name = "audiobooks";
+      dir = "audiobooks";
+      newzbin = "audiobooks";
+      order = 3;
+    }
+    {
+      name = "music";
+      dir = "music";
+      newzbin = "music";
+      order = 5;
+    }
   ];
 
   mkCategoryIni =

@@ -28,7 +28,7 @@ let
     inherit lib;
     ramGB = cfg.hardware.ramGB;
   };
-  ports = cfg.ports;
+  inherit (cfg) ports;
 
   # H4-Fix: gemeinsame Fabrik statt duplizierter Bloecke (alt: readarr-Block war
   # Kopie des lidarr-Blocks mit anderen Werten -- H4.2 in claude-review.md).
@@ -50,12 +50,10 @@ let
           after = [ "network.target" ];
           wantedBy = lib.mkForce [ ];
           environment = {
-            "${lib.strings.toUpper name}__AUTH__METHOD" =
-              if cfg.authProxyPresent then "External" else "Forms";
+            "${lib.strings.toUpper name}__AUTH__METHOD" = if cfg.authProxyPresent then "External" else "Forms";
             "${lib.strings.toUpper name}__LOG__ANALYTICSENABLED" = "false";
             "${lib.strings.toUpper name}__LOG__LEVEL" = "info";
-            "${lib.strings.toUpper name}__SERVER__PORT" =
-              toString (onDemand.internalPort publicPort);
+            "${lib.strings.toUpper name}__SERVER__PORT" = toString (onDemand.internalPort publicPort);
             "${lib.strings.toUpper name}__UPDATE__AUTOMATICALLY" = "false";
             "${lib.strings.toUpper name}__UPDATE__MECHANISM" = "external";
           }
@@ -97,25 +95,21 @@ let
 in
 {
   config = lib.mkMerge [
-    (lib.mkIf (cfg.enable && cfg.onDemand.enable && cfg.lidarr.enable) (
-      mkArrOnDemand {
-        name = "lidarr";
-        publicPort = ports.lidarr;
-        metadataDir = "${cfg.storage.metadataDir}/lidarr";
-        extraEnv = {
-          "LIDARR__UPDATE__BRANCH" = "master";
-        };
-      }
-    ))
-    (lib.mkIf (cfg.enable && cfg.onDemand.enable && cfg.readarr.enable) (
-      mkArrOnDemand {
-        name = "readarr";
-        publicPort = ports.readarr;
-        metadataDir = "${cfg.storage.metadataDir}/readarr";
-        extraEnv = {
-          "READARR__UPDATE__BRANCH" = "develop";
-        };
-      }
-    ))
+    (lib.mkIf (cfg.enable && cfg.onDemand.enable && cfg.lidarr.enable) (mkArrOnDemand {
+      name = "lidarr";
+      publicPort = ports.lidarr;
+      metadataDir = "${cfg.storage.metadataDir}/lidarr";
+      extraEnv = {
+        "LIDARR__UPDATE__BRANCH" = "master";
+      };
+    }))
+    (lib.mkIf (cfg.enable && cfg.onDemand.enable && cfg.readarr.enable) (mkArrOnDemand {
+      name = "readarr";
+      publicPort = ports.readarr;
+      metadataDir = "${cfg.storage.metadataDir}/readarr";
+      extraEnv = {
+        "READARR__UPDATE__BRANCH" = "develop";
+      };
+    }))
   ];
 }

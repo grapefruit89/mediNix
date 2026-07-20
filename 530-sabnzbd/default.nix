@@ -15,7 +15,6 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 let
@@ -49,7 +48,7 @@ in
 
     users = {
       groups = {
-        sabnzbd = {};
+        sabnzbd = { };
       };
       users.sabnzbd = {
         group = "sabnzbd";

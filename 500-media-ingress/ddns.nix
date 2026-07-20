@@ -30,9 +30,9 @@
 let
   cfg = config.grapefruitMedia;
   dnsCfg = cfg.dns;
-  ddns = dnsCfg.ddns;
+  inherit (dnsCfg) ddns;
 
-  domain = cfg.domain;
+  inherit (cfg) domain;
   hasDomain = domain != null && domain != "";
 
   tiers = import ../lib/service-tiers.nix { inherit lib; };
@@ -51,8 +51,13 @@ let
   ];
 
   derived = import ../lib/dns.nix {
-    inherit lib tiers domain enabledServices;
-    hostnames = dnsCfg.hostnames;
+    inherit
+      lib
+      tiers
+      domain
+      enabledServices
+      ;
+    inherit (dnsCfg) hostnames;
   };
 
   active = cfg.enable && dnsCfg.mode == "standalone" && ddns.enable;
@@ -61,8 +66,7 @@ let
 
   credName = "CF_DDNS_API_TOKEN";
   useCred = ddns.tokenCredential != null;
-  passwordFile =
-    if useCred then "/run/credentials/ddclient.service/${credName}" else ddns.tokenFile;
+  passwordFile = if useCred then "/run/credentials/ddclient.service/${credName}" else ddns.tokenFile;
 
   # Kernel fragen, mit welcher lokalen Quell-IP das Internet erreicht wird.
   lanIpCmd = "${pkgs.iproute2}/bin/ip route get 1.1.1.1 | ${pkgs.gnused}/bin/sed -n \"s/.*src \\([0-9.]*\\).*/\\1/p\"";
@@ -99,11 +103,11 @@ in
     services.ddclient = {
       enable = true;
       protocol = "cloudflare";
-      zone = zone;
+      inherit zone;
       # Cloudflare-API-Tokens erwarten "token" als Dummy-Username.
       username = "token";
-      passwordFile = passwordFile;
-      interval = ddns.interval;
+      inherit passwordFile;
+      inherit (ddns) interval;
 
       # Bewusst KEIN globales usev4/domains -- beide Jobs stehen in extraConfig,
       # sonst wuerde das Modul die Job-Trennung ueberschreiben.

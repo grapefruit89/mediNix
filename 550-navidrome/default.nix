@@ -23,7 +23,7 @@ let
     inherit lib;
     ramGB = cfgGlobal.hardware.ramGB;
   };
-  domain = cfgGlobal.domain;
+  inherit (cfgGlobal) domain;
   # P0-1/P1-2: OIDC-DiscoveryUrl braucht eine echte Domain. Ohne Domain wird der
   # gesamte Oidc-Block weggelassen statt eine https://auth.null-URL zu bauen.
   hasDomain = domain != null && domain != "";

@@ -18,7 +18,7 @@ let
   cfg = config.grapefruitMedia;
   prov = cfg.provision;
   sub = prov.profiles;
-  ports = cfg.ports;
+  inherit (cfg) ports;
   arrProvision = pkgs.callPackage ../packages/arr-provision { };
 
   anyArr = cfg.sonarr.enable || cfg.radarr.enable;

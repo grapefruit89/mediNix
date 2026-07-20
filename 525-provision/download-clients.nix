@@ -18,7 +18,7 @@ let
   cfg = config.grapefruitMedia;
   prov = cfg.provision;
   sub = prov.downloadClients;
-  ports = cfg.ports;
+  inherit (cfg) ports;
   arrProvision = pkgs.callPackage ../packages/arr-provision { };
 
   loopback = "127.0.0.1";
@@ -57,13 +57,19 @@ let
   targetsJson = builtins.toJSON (
     lib.mapAttrsToList (name: t: {
       inherit name;
-      inherit (t) port apiVersion category apiKeyFile;
+      inherit (t)
+        port
+        apiVersion
+        category
+        apiKeyFile
+        ;
     }) arrTargets
   );
 
   active = cfg.enable && prov.enable && sub.enable && cfg.sabnzbd.enable && arrTargets != { };
 
-  mkCategoryOption = svc: default:
+  mkCategoryOption =
+    svc: default:
     lib.mkOption {
       type = lib.types.str;
       inherit default;

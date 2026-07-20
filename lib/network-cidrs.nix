@@ -7,7 +7,15 @@
 # purpose: "CIDR-Konstanten fuer IP-Allowlists (loopback, private RFC-1918)"
 # tags: [lib, network, cidrs]
 # ---
-{ lib }:
+{
+  # deadnix hat hier zu Recht gemeldet, dass lib nicht verwendet wird.
+  # Die Ellipse statt eines leeren Musters, weil Aufrufer weiterhin
+  # { inherit lib; } uebergeben -- ein Attributset-Muster ohne ... ist in Nix
+  # strikt und lehnt unerwartete Argumente mit
+  #   "function called with unexpected argument 'lib'"
+  # ab. Ellipse = ehrlich (wird nicht gebraucht) und tolerant zugleich.
+  ...
+}:
 let
   loopbackV4 = "127.0.0.0/8";
   loopbackV6 = "::1/128";

@@ -30,10 +30,10 @@ let
 
   cfgJellyfin = cfg.jellyfin;
   cfgJellyseerr = cfg.jellyseerr;
-  domain = cfg.domain;
+  inherit (cfg) domain;
   portJellyfin = cfg.ports.jellyfin;
   portJellyseerr = cfg.ports.jellyseerr;
-  locale = cfg.locale;
+  inherit (cfg) locale;
   localeLang = locale.language or "en";
   localeUi = lib.replaceStrings [ "_" ] [ "-" ] (locale.default or "en_US.UTF-8");
   localeCc = lib.toUpper (lib.substring 3 2 localeUi);
@@ -45,8 +45,7 @@ let
   # Herstellerabstraktion (ADR-5041): Geraet, Pakete und ffmpeg-Methode kommen
   # aus lib/gpu.nix, nicht mehr hartkodiert aus einer Intel-Annahme.
   gpuLib = import ../lib/gpu.nix { inherit lib pkgs; };
-  accelChoice =
-    if cfg.hardware.accel == "auto" then gpuLib.detect config else cfg.hardware.accel;
+  accelChoice = if cfg.hardware.accel == "auto" then gpuLib.detect config else cfg.hardware.accel;
   gpu = gpuLib.resolve (gpuLib.normalize accelChoice);
 
   # Expliziter renderDevice-Override schlaegt die Ableitung.

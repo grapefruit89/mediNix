@@ -18,7 +18,7 @@
 let
   cfgGlobal = config.grapefruitMedia;
   cfg = cfgGlobal.recyclarr;
-  ports = cfgGlobal.ports;
+  inherit (cfgGlobal) ports;
 
   web1080pSizeLimits = [
     {
@@ -103,7 +103,7 @@ let
     _trash_id: score:
     lib.map (name: {
       inherit name;
-      score = score;
+      inherit score;
     }) profileNames;
 
   radarrLqAndRepack = [
@@ -407,7 +407,7 @@ in
 
     services.recyclarr = {
       enable = true;
-      schedule = cfg.schedule;
+      inherit (cfg) schedule;
       package = lib.mkIf (cfg.package != null) cfg.package;
       configuration = lib.mkMerge [
         (lib.mkIf cfgGlobal.sonarr.enable {

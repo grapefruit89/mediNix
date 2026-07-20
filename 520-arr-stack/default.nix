@@ -16,7 +16,6 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 let
@@ -82,7 +81,7 @@ let
     in
     lib.mkMerge [
       {
-        users.groups.${name} = {};
+        users.groups.${name} = { };
         users.users.${name} = {
           group = name;
           isSystemUser = true;

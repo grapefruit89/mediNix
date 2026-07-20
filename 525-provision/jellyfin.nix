@@ -19,8 +19,8 @@ let
   prov = cfg.provision;
   sub = prov.jellyfin;
   seerrCfg = prov.seerr;
-  ports = cfg.ports;
-  locale = cfg.locale;
+  inherit (cfg) ports;
+  inherit (cfg) locale;
   arrProvision = pkgs.callPackage ../packages/arr-provision { };
 
   active = cfg.enable && prov.enable && sub.enable && cfg.jellyfin.enable;

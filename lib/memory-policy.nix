@@ -75,7 +75,7 @@ in
     mkServiceLimits {
       oomScore = -800;
       forceOom = true;
-      cpuWeight = 300;   # Datenbank: blockiert sonst alles, was auf sie wartet
+      cpuWeight = 300; # Datenbank: blockiert sonst alles, was auf sie wartet
       ioWeight = 300;
       memoryMax = gb (lib.max 4 (lib.floor (ramGB * 0.3125)));
       memoryHigh = gb (lib.max 3 (lib.floor (ramGB * 0.25)));
@@ -90,8 +90,8 @@ in
     in
     mkServiceLimits {
       oomScore = 100;
-      cpuWeight = 250;   # Transkodierung darf nicht ruckeln -- der Nutzer sieht es sofort
-      ioWeight = 200;    # Lesen vom Medienspeicher waehrend der Wiedergabe
+      cpuWeight = 250; # Transkodierung darf nicht ruckeln -- der Nutzer sieht es sofort
+      ioWeight = 200; # Lesen vom Medienspeicher waehrend der Wiedergabe
       memoryMax = gb maxGB;
       memoryHigh = gb (high75 maxGB);
     };
@@ -104,8 +104,8 @@ in
     in
     mkServiceLimits {
       oomScore = 300;
-      cpuWeight = 40;    # Entpacken/Reparieren darf warten -- niemand schaut zu
-      ioWeight = 40;     # und es soll die Wiedergabe nicht ausbremsen
+      cpuWeight = 40; # Entpacken/Reparieren darf warten -- niemand schaut zu
+      ioWeight = 40; # und es soll die Wiedergabe nicht ausbremsen
       memoryMax = gb maxGB;
       memoryHigh = gb (high75 maxGB);
     };
@@ -114,7 +114,7 @@ in
   caddy =
     _:
     mkServiceLimits {
-      cpuWeight = 400;   # Reverse-Proxy: haengt er, haengt ALLES
+      cpuWeight = 400; # Reverse-Proxy: haengt er, haengt ALLES
       memoryMax = "768M";
       memoryHigh = "512M";
     };
@@ -124,7 +124,7 @@ in
     mkServiceLimits {
       oomScore = -900;
       forceOom = true;
-      cpuWeight = 300;   # Anmeldung blockiert sonst jeden Zugriff
+      cpuWeight = 300; # Anmeldung blockiert sonst jeden Zugriff
       memoryMax = "256M";
       memoryHigh = "192M";
     };
@@ -170,7 +170,7 @@ in
     _:
     mkServiceLimits {
       oomScore = 200;
-      cpuWeight = 100;   # Standard -- Hintergrundsuche, keine Interaktion
+      cpuWeight = 100; # Standard -- Hintergrundsuche, keine Interaktion
       memoryMax = "512M";
       memoryHigh = "384M";
     };
@@ -179,7 +179,7 @@ in
     _:
     mkServiceLimits {
       oomScore = 150;
-      cpuWeight = 200;   # Streaming -- hoerbare Aussetzer bei Mangel
+      cpuWeight = 200; # Streaming -- hoerbare Aussetzer bei Mangel
       memoryMax = "1G";
       memoryHigh = "768M";
     };
@@ -188,7 +188,7 @@ in
     _:
     mkServiceLimits {
       oomScore = 200;
-      cpuWeight = 200;   # Streaming, ggf. Transkodierung
+      cpuWeight = 200; # Streaming, ggf. Transkodierung
       memoryMax = "512M";
       memoryHigh = "384M";
     };

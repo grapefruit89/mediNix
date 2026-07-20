@@ -11,7 +11,11 @@
 #   - modules/50-media/README.md
 #   - modules/50-media/claude-review.md
 # ---
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  ...
+}:
 let
   cfg = config.grapefruitMedia;
 
@@ -35,7 +39,8 @@ let
         einem kaputten Upstream-Release zu verwenden.
       '';
     };
-in {
+in
+{
   imports = [
     ./500-media-ingress
     ./520-arr-stack/on-demand.nix
@@ -157,7 +162,11 @@ in {
         description = "Enable Caddy ingress mapping (reverse proxying subdomains).";
       };
       mode = lib.mkOption {
-        type = lib.types.enum [ "auto" "global" "standalone" ];
+        type = lib.types.enum [
+          "auto"
+          "global"
+          "standalone"
+        ];
         default = "auto";
         description = ''
           auto: Hook into global caddy if config.services.caddy.enable is true, fallback to standalone caddy-media if false.
@@ -167,7 +176,11 @@ in {
       };
       tls = {
         mode = lib.mkOption {
-          type = lib.types.enum [ "off" "internal" "custom" ];
+          type = lib.types.enum [
+            "off"
+            "internal"
+            "custom"
+          ];
           default = "off";
           description = ''
             TLS-Modus fuer den Standalone-Ingress:
@@ -194,7 +207,10 @@ in {
       };
       auth = {
         mode = lib.mkOption {
-          type = lib.types.enum [ "none" "forward-auth" ];
+          type = lib.types.enum [
+            "none"
+            "forward-auth"
+          ];
           default = "none";
           description = ''
             Authentifizierungsmodus fuer den Chameleon-Ingress.
@@ -233,7 +249,11 @@ in {
         skipPaths = lib.mkOption {
           type = lib.types.listOf lib.types.str;
           default = [ ];
-          example = [ "/metrics" "/health" "/api/v1/items" ];
+          example = [
+            "/metrics"
+            "/health"
+            "/api/v1/items"
+          ];
           description = ''
             Pfade die forward_auth umgehen (z.B. native App-APIs, Health-Endpoints).
             Gilt global fuer alle vHosts im Ingress.
@@ -265,7 +285,10 @@ in {
     # DNS / Namens-Ableitung (Phase C) -- kennt KEINE IPs, keine feste Domain.
     dns = {
       mode = lib.mkOption {
-        type = lib.types.enum [ "host" "standalone" ];
+        type = lib.types.enum [
+          "host"
+          "standalone"
+        ];
         default = "host";
         description = ''
           host (Default): Das Modul liefert nur Tier-Listen und vHost-Namen.
@@ -340,20 +363,62 @@ in {
 
     # Declarative Port Configuration (R4)
     ports = {
-      jellyfin = lib.mkOption { type = lib.types.port; default = 5001; };
-      jellyseerr = lib.mkOption { type = lib.types.port; default = 5002; };
-      sonarr = lib.mkOption { type = lib.types.port; default = 5003; };
-      radarr = lib.mkOption { type = lib.types.port; default = 5004; };
-      readarr = lib.mkOption { type = lib.types.port; default = 5005; };
-      prowlarr = lib.mkOption { type = lib.types.port; default = 5006; };
-      sabnzbd = lib.mkOption { type = lib.types.port; default = 5007; };
-      audiobookshelf = lib.mkOption { type = lib.types.port; default = 5008; };
-      navidrome = lib.mkOption { type = lib.types.port; default = 5009; };
-      lidarr = lib.mkOption { type = lib.types.port; default = 5010; };
-      exportarr-sonarr = lib.mkOption { type = lib.types.port; default = 4070; };
-      exportarr-radarr = lib.mkOption { type = lib.types.port; default = 4071; };
-      exportarr-prowlarr = lib.mkOption { type = lib.types.port; default = 4072; };
-      exportarr-lidarr = lib.mkOption { type = lib.types.port; default = 4073; };
+      jellyfin = lib.mkOption {
+        type = lib.types.port;
+        default = 5001;
+      };
+      jellyseerr = lib.mkOption {
+        type = lib.types.port;
+        default = 5002;
+      };
+      sonarr = lib.mkOption {
+        type = lib.types.port;
+        default = 5003;
+      };
+      radarr = lib.mkOption {
+        type = lib.types.port;
+        default = 5004;
+      };
+      readarr = lib.mkOption {
+        type = lib.types.port;
+        default = 5005;
+      };
+      prowlarr = lib.mkOption {
+        type = lib.types.port;
+        default = 5006;
+      };
+      sabnzbd = lib.mkOption {
+        type = lib.types.port;
+        default = 5007;
+      };
+      audiobookshelf = lib.mkOption {
+        type = lib.types.port;
+        default = 5008;
+      };
+      navidrome = lib.mkOption {
+        type = lib.types.port;
+        default = 5009;
+      };
+      lidarr = lib.mkOption {
+        type = lib.types.port;
+        default = 5010;
+      };
+      exportarr-sonarr = lib.mkOption {
+        type = lib.types.port;
+        default = 4070;
+      };
+      exportarr-radarr = lib.mkOption {
+        type = lib.types.port;
+        default = 4071;
+      };
+      exportarr-prowlarr = lib.mkOption {
+        type = lib.types.port;
+        default = 4072;
+      };
+      exportarr-lidarr = lib.mkOption {
+        type = lib.types.port;
+        default = 4073;
+      };
     };
 
     # System Configuration Defaults
@@ -364,7 +429,14 @@ in {
         description = "Total host RAM in GB, used to scale adaptive transcode memory rules.";
       };
       accel = lib.mkOption {
-        type = lib.types.enum [ "auto" "intel" "amd" "nvidia" "vaapi" "none" ];
+        type = lib.types.enum [
+          "auto"
+          "intel"
+          "amd"
+          "nvidia"
+          "vaapi"
+          "none"
+        ];
         default = "auto";
         description = ''
           Hersteller der Hardwarebeschleunigung fuer Transkodierung.
@@ -407,12 +479,21 @@ in {
     };
 
     locale = {
-      language = lib.mkOption { type = lib.types.str; default = "en"; };
-      default = lib.mkOption { type = lib.types.str; default = "en_US.UTF-8"; };
+      language = lib.mkOption {
+        type = lib.types.str;
+        default = "en";
+      };
+      default = lib.mkOption {
+        type = lib.types.str;
+        default = "en_US.UTF-8";
+      };
     };
 
     storage = {
-      enable = lib.mkOption { type = lib.types.bool; default = true; };
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+      };
       mediaRoot = lib.mkOption {
         type = lib.types.path;
         default = "/data";
@@ -426,9 +507,18 @@ in {
     };
 
     onDemand = {
-      enable = lib.mkOption { type = lib.types.bool; default = false; };
-      internalOffset = lib.mkOption { type = lib.types.int; default = 1000; };
-      idleTimeoutSec = lib.mkOption { type = lib.types.int; default = 900; };
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+      };
+      internalOffset = lib.mkOption {
+        type = lib.types.int;
+        default = 1000;
+      };
+      idleTimeoutSec = lib.mkOption {
+        type = lib.types.int;
+        default = 900;
+      };
     };
 
     # Phase B (P1-1): mDNS L1 -- {service}.local fuer alle UI-Dienste.

@@ -18,7 +18,7 @@ let
   cfg = config.grapefruitMedia;
   prov = cfg.provision;
   sub = prov.keys;
-  ports = cfg.ports;
+  inherit (cfg) ports;
   arrProvision = pkgs.callPackage ../packages/arr-provision { };
   provision = import ../lib/provision-unit.nix { inherit lib; };
 
@@ -43,27 +43,29 @@ in
     };
   };
 
-  config = lib.mkIf active (provision.mkProvisionUnit {
-    name = "arr-sync-keys";
-    description = "Provision: apply declarative *arr/SABnzbd API keys";
-    after = svcDep;
-    wants = svcDep;
+  config = lib.mkIf active (
+    provision.mkProvisionUnit {
+      name = "arr-sync-keys";
+      description = "Provision: apply declarative *arr/SABnzbd API keys";
+      after = svcDep;
+      wants = svcDep;
 
-    environment = {
-      ARR_HOST = "127.0.0.1";
-      SYNC_SONARR = if cfg.sonarr.enable then "1" else "0";
-      SYNC_RADARR = if cfg.radarr.enable then "1" else "0";
-      SYNC_PROWLARR = if cfg.prowlarr.enable then "1" else "0";
-      SYNC_SABNZBD = if cfg.sabnzbd.enable then "1" else "0";
-      SONARR_PORT = toString ports.sonarr;
-      RADARR_PORT = toString ports.radarr;
-      PROWLARR_PORT = toString ports.prowlarr;
-      SONARR_KEY_FILE = cfg.secrets.sonarrApiKeyFile;
-      RADARR_KEY_FILE = cfg.secrets.radarrApiKeyFile;
-      PROWLARR_KEY_FILE = cfg.secrets.prowlarrApiKeyFile;
-      SABNZBD_KEY_FILE = cfg.secrets.sabnzbdApiKeyFile;
-    };
+      environment = {
+        ARR_HOST = "127.0.0.1";
+        SYNC_SONARR = if cfg.sonarr.enable then "1" else "0";
+        SYNC_RADARR = if cfg.radarr.enable then "1" else "0";
+        SYNC_PROWLARR = if cfg.prowlarr.enable then "1" else "0";
+        SYNC_SABNZBD = if cfg.sabnzbd.enable then "1" else "0";
+        SONARR_PORT = toString ports.sonarr;
+        RADARR_PORT = toString ports.radarr;
+        PROWLARR_PORT = toString ports.prowlarr;
+        SONARR_KEY_FILE = cfg.secrets.sonarrApiKeyFile;
+        RADARR_KEY_FILE = cfg.secrets.radarrApiKeyFile;
+        PROWLARR_KEY_FILE = cfg.secrets.prowlarrApiKeyFile;
+        SABNZBD_KEY_FILE = cfg.secrets.sabnzbdApiKeyFile;
+      };
 
-    script = lib.getExe arrProvision.arrKeysSync;
-  });
+      script = lib.getExe arrProvision.arrKeysSync;
+    }
+  );
 }

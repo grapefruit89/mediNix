@@ -168,19 +168,20 @@ in
       # sowie <svc>.env (mit SONARR__AUTH__APIKEY=...).
       # Recyclarr nutzt die Rohkey-Dateien direkt (api_key._secret);
       # Exportarr nutzt LoadCredential auf dieselben Pfade.
-      secrets.sonarrApiKeyFile   = lib.mkDefault "/var/lib/secrets/sonarr_api_key";
-      secrets.radarrApiKeyFile   = lib.mkDefault "/var/lib/secrets/radarr_api_key";
+      secrets.sonarrApiKeyFile = lib.mkDefault "/var/lib/secrets/sonarr_api_key";
+      secrets.radarrApiKeyFile = lib.mkDefault "/var/lib/secrets/radarr_api_key";
       secrets.prowlarrApiKeyFile = lib.mkDefault "/var/lib/secrets/prowlarr_api_key";
-      secrets.lidarrApiKeyFile   = lib.mkDefault "/var/lib/secrets/lidarr_api_key";
-      secrets.readarrApiKeyFile  = lib.mkDefault "/var/lib/secrets/readarr_api_key";
+      secrets.lidarrApiKeyFile = lib.mkDefault "/var/lib/secrets/lidarr_api_key";
+      secrets.readarrApiKeyFile = lib.mkDefault "/var/lib/secrets/readarr_api_key";
 
       # K2-Fix: Auth-Proxy-Status aus q958-Config.
       # oauth2-proxy.enable kann fehlen (Option existiert nur wenn Modul aktiv) --
       # deshalb `or false` statt direktem Attribut-Zugriff.
       authProxyPresent = lib.mkDefault (
-        if config ? my && config.my ? services && config.my.services ? oauth2-proxy
-        then config.my.services.oauth2-proxy.enable
-        else false
+        if config ? my && config.my ? services && config.my.services ? oauth2-proxy then
+          config.my.services.oauth2-proxy.enable
+        else
+          false
       );
 
       # q958 hat vollwertigen Ingress (my.ingress.fromSpec, Caddy + forward_auth).

@@ -125,9 +125,18 @@ rec {
 
   mkService =
     {
+      # port wird in dieser Funktion nicht ausgewertet -- deadnix meldet das
+      # zu Recht. Der Parameter bleibt trotzdem, weil AUFRUFER ihn uebergeben
+      # (mkMediaService reicht die Service-Definition unveraendert durch).
+      # Entfernt man ihn, scheitert die Auswertung mit
+      #   "function 'mkService' called with unexpected argument 'port'"
+      # -- Attributset-Muster sind in Nix strikt.
+      # Bewusst hier dokumentiert statt entfernt: der Aufrufvertrag ist Teil
+      # der API, auch wenn diese eine Funktion den Wert nicht braucht.
+      # deadnix: skip
+      port ? null,
       config,
       name,
-      port ? null,
       readWritePaths ? [ ],
       readOnlyPaths ? [ ],
       privateDevices ? true,

@@ -18,8 +18,8 @@ let
   cfg = config.grapefruitMedia;
   prov = cfg.provision;
   sub = prov.seerr;
-  ports = cfg.ports;
-  locale = cfg.locale;
+  inherit (cfg) ports;
+  inherit (cfg) locale;
   arrProvision = pkgs.callPackage ../packages/arr-provision { };
 
   loopback = "127.0.0.1";
@@ -69,7 +69,8 @@ let
     }
   );
 
-  anyTarget = (cfg.sonarr.enable || cfg.radarr.enable) && cfg.jellyfin.enable && cfg.jellyseerr.enable;
+  anyTarget =
+    (cfg.sonarr.enable || cfg.radarr.enable) && cfg.jellyfin.enable && cfg.jellyseerr.enable;
   active = cfg.enable && prov.enable && sub.enable && anyTarget;
 
   mediaRoot = cfg.storage.mediaRoot;

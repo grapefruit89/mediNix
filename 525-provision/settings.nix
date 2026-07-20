@@ -18,7 +18,7 @@ let
   cfg = config.grapefruitMedia;
   prov = cfg.provision;
   sub = prov.settings;
-  ports = cfg.ports;
+  inherit (cfg) ports;
   arrProvision = pkgs.callPackage ../packages/arr-provision { };
 
   anyArr = cfg.sonarr.enable || cfg.radarr.enable;
@@ -44,8 +44,7 @@ in
         ++ lib.optional cfg.radarr.enable "radarr.service"
         ++ lib.optional cfg.recyclarr.enable "recyclarr.service";
       wants =
-        lib.optional cfg.sonarr.enable "sonarr.service"
-        ++ lib.optional cfg.radarr.enable "radarr.service";
+        lib.optional cfg.sonarr.enable "sonarr.service" ++ lib.optional cfg.radarr.enable "radarr.service";
       wantedBy = [ "multi-user.target" ];
 
       startLimitIntervalSec = 600;

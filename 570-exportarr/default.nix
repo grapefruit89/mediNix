@@ -18,7 +18,7 @@
 let
   cfgGlobal = config.grapefruitMedia;
   cfg = cfgGlobal.exporters;
-  ports = cfgGlobal.ports;
+  inherit (cfgGlobal) ports;
   tr = "${pkgs.coreutils}/bin/tr";
   grep = "${pkgs.gnugrep}/bin/grep";
 

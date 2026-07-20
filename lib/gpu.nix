@@ -30,25 +30,46 @@ let
       # ffmpeg-Methode, wie Jellyfin sie in encoding.xml erwartet
       hwaccel = "vaapi";
       # Geraeteknoten, die die Unit sehen darf
-      devices = [ "/dev/dri" "/dev/dri/card0" "/dev/dri/renderD128" ];
+      devices = [
+        "/dev/dri"
+        "/dev/dri/card0"
+        "/dev/dri/renderD128"
+      ];
       # Der Pfad, den ffmpeg als VAAPI-Geraet bekommt
       renderDevice = "/dev/dri/renderD128";
       # Laufzeitpakete. intel-media-driver deckt Gen8+ inkl. Arc/B-Serie ab;
       # vpl-gpu-rt ist die neuere oneVPL-Laufzeit fuer Arc und Xe.
-      packages = with pkgs; [ intel-media-driver vpl-gpu-rt libva-utils ];
+      packages = with pkgs; [
+        intel-media-driver
+        vpl-gpu-rt
+        libva-utils
+      ];
       # Gruppen, die der Dienst braucht
-      groups = [ "video" "render" ];
+      groups = [
+        "video"
+        "render"
+      ];
     };
 
     # ── AMD (GCN und neuer) ──────────────────────────────────────────────────
     amd = {
       description = "AMD über VAAPI (Mesa)";
       hwaccel = "vaapi";
-      devices = [ "/dev/dri" "/dev/dri/card0" "/dev/dri/renderD128" ];
+      devices = [
+        "/dev/dri"
+        "/dev/dri/card0"
+        "/dev/dri/renderD128"
+      ];
       renderDevice = "/dev/dri/renderD128";
       # Mesa bringt den VAAPI-Treiber mit; kein proprietaeres Paket noetig.
-      packages = with pkgs; [ mesa libva-utils ];
-      groups = [ "video" "render" ];
+      packages = with pkgs; [
+        mesa
+        libva-utils
+      ];
+      groups = [
+        "video"
+        "render"
+      ];
     };
 
     # ── NVIDIA ───────────────────────────────────────────────────────────────
@@ -67,7 +88,10 @@ let
       ];
       # NVIDIA kennt kein Render-Node im DRI-Sinn; ffmpeg waehlt per Index.
       renderDevice = "";
-      packages = with pkgs; [ nvidia-vaapi-driver libva-utils ];
+      packages = with pkgs; [
+        nvidia-vaapi-driver
+        libva-utils
+      ];
       groups = [ "video" ];
     };
 
@@ -100,9 +124,12 @@ let
         || (hostConfig.hardware.nvidia-container-toolkit.enable or false);
       hasGraphics = hostConfig.hardware.graphics.enable or false;
     in
-    if hasNvidia then "nvidia"
-    else if hasGraphics then "intel"   # VAAPI-Pfad; AMD nutzt denselben
-    else "none";
+    if hasNvidia then
+      "nvidia"
+    else if hasGraphics then
+      "intel" # VAAPI-Pfad; AMD nutzt denselben
+    else
+      "none";
 
   resolve = accel: vendors.${accel} or vendors.none;
 in
@@ -110,7 +137,14 @@ in
   inherit vendors detect resolve;
 
   # Die Auswahl, die default.nix als Option anbietet
-  accelTypes = [ "auto" "intel" "amd" "nvidia" "vaapi" "none" ];
+  accelTypes = [
+    "auto"
+    "intel"
+    "amd"
+    "nvidia"
+    "vaapi"
+    "none"
+  ];
 
   # "vaapi" ist ein Alias fuer den generischen VAAPI-Pfad (Intel ODER AMD),
   # fuer Leute, die es einfach halten wollen.

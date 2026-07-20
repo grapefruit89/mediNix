@@ -30,32 +30,31 @@
 let
   # Primaerquelle: Service -> Tier.
   byService = {
-    jellyfin       = "edge-wan";
-    jellyseerr     = "edge-wan";
+    jellyfin = "edge-wan";
+    jellyseerr = "edge-wan";
     audiobookshelf = "edge-wan";
-    navidrome      = "edge-wan";
+    navidrome = "edge-wan";
 
-    sonarr         = "backend-lan";
-    radarr         = "backend-lan";
-    readarr        = "backend-lan";
-    lidarr         = "backend-lan";
-    prowlarr       = "backend-lan";
-    sabnzbd        = "backend-lan";
+    sonarr = "backend-lan";
+    radarr = "backend-lan";
+    readarr = "backend-lan";
+    lidarr = "backend-lan";
+    prowlarr = "backend-lan";
+    sabnzbd = "backend-lan";
 
-    recyclarr      = "none";
-    exportarr      = "none";
+    recyclarr = "none";
+    exportarr = "none";
   };
 
-  servicesInTier =
-    tier: lib.attrNames (lib.filterAttrs (_: t: t == tier) byService);
+  servicesInTier = tier: lib.attrNames (lib.filterAttrs (_: t: t == tier) byService);
 in
 {
   inherit byService;
 
   # Abgeleitete Listen fuer Doku, Assertions und den spaeteren CF/DDNS-Export.
-  edgeServices    = servicesInTier "edge-wan";
+  edgeServices = servicesInTier "edge-wan";
   backendServices = servicesInTier "backend-lan";
-  noneServices    = servicesInTier "none";
+  noneServices = servicesInTier "none";
 
   # Lookup mit sicherem Default fuer Services, die (noch) nicht in der Map
   # stehen -- z.B. spaetere UIs vor ihrer bewussten Einordnung.

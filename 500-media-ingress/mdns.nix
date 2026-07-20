@@ -119,7 +119,7 @@ in
       enable = true;
       # Clients on this host resolve *.local via nss-mdns.
       nssmdns4 = lib.mkDefault true;
-      openFirewall = mdns.openFirewall;
+      inherit (mdns) openFirewall;
       publish = {
         enable = true;
         addresses = true;
