@@ -1,10 +1,57 @@
 # STATUS — Lagekarte mediNix
 
-**Stand:** 2026-07-20
+**Stand:** 2026-07-20, abends
 **Zweck:** Überblick behalten. Was steht, was wackelt, wo als Nächstes anfassen.
 
 > Diese Datei ist der Einstiegspunkt, wenn man den Faden verloren hat.
 > Sie ersetzt keine Issues — sie sagt, **in welcher Reihenfolge** man sie ansieht.
+
+---
+
+## 🟢 Was nachweislich LÄUFT — der Stand, auf den man sich verlassen kann
+
+**Auf echter Hardware in Betrieb** (q958, NixOS 26.05), geprüft von einem
+**anderen Rechner im LAN**:
+
+| Dienst | Adresse | Ergebnis |
+|--------|---------|----------|
+| **Sonarr** | `http://sonarr.local` | **HTTP 200 — benutzbar** |
+| **Prowlarr** | `http://prowlarr.local` | **HTTP 200 — benutzbar** |
+| Jellyfin | `http://jellyfin.local` | ❌ HTTP 502 — siehe unten |
+
+Damit ist die **gesamte Kette bewiesen**, nicht nur ein Einzelteil:
+
+1. Avahi publiziert `{service}.local` auf die LAN-IP
+2. IP-Ermittlung über die Default-Route (kein hartkodiertes Subnetz)
+3. Caddy nimmt auf `:80` an, Host-Matcher trifft den richtigen Dienst
+4. Das Port-Schema stimmt — Sonarr `5003`, Prowlarr `5006`
+5. `localBypass` greift: `.local` **ohne** forward_auth, also ohne Login
+
+Konfiguration dieses Laufs: `grapefruitMedia.enable = true`, Jellyfin + Sonarr +
+Prowlarr, **keine** Domain, **kein** VPN, **keine** Auth. mediNix war als
+Flake-Input eingebunden, nicht kopiert.
+
+> **Das ist die Basis.** Was hier steht, muss beim Weiterbauen laufen bleiben.
+
+---
+
+## 🔴 Offen: Jellyfin
+
+`preStart`-Crash-Loop ist behoben (L3), aber der Dienst fällt jetzt während der
+Datenbank-Migration um:
+
+```
+NRestarts=13
+JellyfinMigrationService.MigrateStepAsync
+SQLite Error 1: 'no such table: __EFMigrationsHistory'
+```
+
+Ein Wipe von `/var/lib/jellyfin` hat **nicht** gereicht. Unbelegte Vermutung:
+die vorkonfigurierten Seeds (`system.xml`, `encoding.xml`, …) werden eingespielt,
+bevor Jellyfin seine Datenbank anlegt. Nächster Schritt: einmal ohne Seeds
+starten.
+
+Vollständige Analyse aller drei gefundenen Laufzeitfehler: **`LEARNINGS.md`**
 
 ---
 
@@ -38,14 +85,24 @@ Einzige Ausgabe war eine **beabsichtigte** Warnung:
 AUTH__METHOD=Forms (lokaler Login).
 ```
 
-### Was das **nicht** heißt
+### Was das **nicht** hieß — und wie recht diese Warnung hatte
 
-Gebaut ≠ funktionsfähig. Bewiesen ist: der Nix-Code ist syntaktisch und
-typmäßig korrekt und erzeugt eine vollständige System-Closure. **Nicht**
-bewiesen ist, dass die Dienste starten, sich gegenseitig erreichen oder die
-provisionierten API-Aufrufe stimmen. Die in Abschnitt „Was wackelt" markierten
-ungeprüften Daten (trash_ids, Katalog-Hostnamen, vier API-Endpunkte) sind
-weiterhin ungeprüft — ein Build fasst sie nicht an.
+Gebaut ≠ funktionsfähig. Diese Einschränkung stand hier, bevor der erste
+Startversuch lief — und sie hat sich **noch am selben Tag bestätigt**: der
+fehlerfreie Build startete trotzdem nur **einen von drei** Diensten.
+
+Drei Laufzeitfehler, keiner davon durch Evaluieren oder Bauen auffindbar:
+fehlendes `publish.userServices` (kein `.local`), ein von tmpfiles als
+`root:root` angelegtes Elternverzeichnis (Sonarr startete nicht), ein
+`install -o/-g` ohne `CAP_CHOWN` (Jellyfin-Crash-Loop). Alle drei behoben,
+siehe `LEARNINGS.md`.
+
+> **Die Lehre für dieses Repo: ein grüner Build ist kein Freigabekriterium.**
+> Das Kriterium ist ein `nixosTest`, der die Dienste hochfährt (Issue #48).
+
+Weiterhin ungeprüft und von keinem Build berührt: die markierten Daten
+(trash_ids, Katalog-Hostnamen, vier API-Endpunkte) und sämtliche
+Provisionierungs-Aufrufe.
 
 ### 🔴 Konkrete Stolperfalle beim nächsten Rebuild auf q958
 
