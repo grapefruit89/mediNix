@@ -94,6 +94,19 @@ in
           };
 
           systemd.tmpfiles.rules = [
+            # Das Zustandsverzeichnis MUSS deklariert sein. Die Unit setzt
+            # ReadWritePaths=/var/lib/jellyfin, und ReadWritePaths verlangt ein
+            # EXISTIERENDES Verzeichnis -- fehlt es, scheitert schon das
+            # Mount-Namespacing:
+            #   "Failed to set up mount namespacing: /var/lib/jellyfin:
+            #    No such file or directory"
+            # Der Dienst kommt dann nie zum Start. Ohne diese Zeile ist das
+            # Modul weder neuinstallations- noch wischfest.
+            # 2026-07-20 auf q958 reproduziert (nach rm -rf /var/lib/jellyfin).
+            # Gleiche Fehlerklasse wie bei den *arr-Diensten, siehe LEARNINGS L2.
+            "d /var/lib/jellyfin 0700 jellyfin jellyfin -"
+            "d /var/lib/jellyfin/config 0700 jellyfin jellyfin -"
+            "d /var/cache/jellyfin 0700 jellyfin jellyfin -"
             "d /run/jellyfin-transcode 0750 jellyfin jellyfin -"
             "d ${cfg.storage.metadataDir}/jellyfin 0750 jellyfin media -"
           ];

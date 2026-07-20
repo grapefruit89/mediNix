@@ -66,6 +66,26 @@ let
           "@system-service"
           "~@privileged"
         ];
+
+        # 2026-07-20, q958: Audiobookshelf (Node 22) starb reproduzierbar mit
+        # SIGSYS / status=31/SYS, 10 Neustarts, dann start-limit-hit.
+        # Gegentest mit leerem SystemCallFilter: startet sofort und lauscht.
+        # Damit ist der Filter als Ursache BEWIESEN -- welcher Syscall genau
+        # blockiert wurde, ist NICHT ermittelt (dafuer braucht es die
+        # Syscall-Nummer aus dem Audit-Log).
+        #
+        # Deshalb bewusst kein Erweitern der Allowlist auf Verdacht, sondern:
+        # abgewiesene Syscalls liefern EPERM statt den Prozess zu toeten.
+        # Node behandelt EPERM als normalen Fehler. Die Haertung bleibt in
+        # Kraft -- nur die Reaktion ist nicht mehr toedlich.
+        #
+        # Sobald die Syscall-Nummer bekannt ist, gehoert sie hier explizit in
+        # die Allowlist und diese Zeile kann wieder weg.
+        SystemCallErrorNumber = lib.mkForce "EPERM";
+
+        # Fehlte im Vergleich zum full-Profil. Ohne native koennen Syscalls
+        # ueber eine fremde ABI den Filter umgehen -- eine Luecke, kein Feature.
+        SystemCallArchitectures = lib.mkForce "native";
       }
       // lib.optionalAttrs (profile == "streamer") {
         UMask = lib.mkForce "0002";

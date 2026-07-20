@@ -19,11 +19,27 @@ wieder. Ein Fehler, der als Regel formuliert ist, nicht.
 Der Build war **fehlerfrei** — und trotzdem startete nur **einer von drei**
 Diensten. Alle drei gefundenen Fehler sind reine Laufzeitfehler.
 
-| | |
-|---|---|
+**Endstand nach allen Fixes: 9 von 10 Diensten benutzbar.**
+
+| Dienst | Ergebnis |
+|--------|----------|
+| `sonarr.local` | ✅ HTTP 200 — nach L2 |
+| `radarr.local` | ✅ HTTP 200 — nach L2 |
+| `readarr.local` | ✅ HTTP 200 — nach L2 |
+| `lidarr.local` | ✅ HTTP 200 — nach L2 |
 | `prowlarr.local` | ✅ HTTP 200 — lief auf Anhieb |
-| `sonarr.local` | ✅ HTTP 200 — nach Fix L2 |
-| `jellyfin.local` | ❌ HTTP 502 — L3 behoben, neues Problem offen |
+| `sabnzbd.local` | ✅ HTTP 200 |
+| `navidrome.local` | ✅ HTTP 200 |
+| `jellyseerr.local` | ✅ HTTP 200 |
+| `audiobookshelf.local` | ✅ HTTP 200 — nach L4 |
+| `jellyfin.local` | ❌ HTTP 502 — L3 und L5 behoben, Migration offen |
+
+**Nicht getestet:** `560-recyclarr` (braucht geprüfte trash_ids, bewusst aus),
+`590-usenet-confinement` (braucht WireGuard-Key), `525-provision` (braucht
+API-Keys).
+
+**Erzeugt nichts:** `exporters.enable = true` legt weder Units noch Ports an —
+ungeklärt, eigener Prüfpunkt.
 
 ---
 
@@ -205,6 +221,108 @@ existierten.
 > **Regel:** Genau das ist der Preis der Doppelung — und der Grund, warum
 > `Nix-Grok/modules/50-media` seit 2026-07-20 stillgelegt ist. Änderungen
 > gehören ausschließlich hierher.
+
+---
+
+## L4 — Audiobookshelf starb an der eigenen Härtung
+
+**Symptom**
+
+```
+Main process exited, code=dumped, signal=SYS, status=31/SYS
+Scheduled restart job, restart counter is at 10
+Start request repeated too quickly → start-limit-hit
+```
+
+`SIGSYS` heißt: ein Syscall wurde vom seccomp-Filter blockiert und der Prozess
+dafür **getötet**. Kein Anwendungsfehler — die Härtung schoss den Dienst ab.
+
+**Diagnose**
+
+Gegentest mit leerem `SystemCallFilter`: Dienst startet sofort und lauscht auf
+5008. Damit ist der Filter als Ursache **bewiesen**.
+
+Der Widerspruch, der die Sache interessant macht:
+
+| | Audiobookshelf (`node`) | Navidrome (`full`) |
+|---|---|---|
+| Filter | `@system-service`, `~@privileged` | dieselben **plus** `~@resources` |
+| `SystemCallArchitectures` | **fehlte** | `native` |
+| Ergebnis | ❌ SIGSYS | ✅ läuft |
+
+Das `node`-Profil war **lockerer** und starb trotzdem.
+
+**Fix**
+
+Bewusst **kein** Erweitern der Allowlist auf Verdacht — welcher Syscall genau
+blockiert wurde, ist nicht ermittelt (dafür bräuchte es die Syscall-Nummer aus
+dem Audit-Log). Stattdessen:
+
+```nix
+SystemCallErrorNumber   = lib.mkForce "EPERM";   # nicht töten, sondern ablehnen
+SystemCallArchitectures = lib.mkForce "native";  # fehlte gegenüber full
+```
+
+Abgewiesene Syscalls liefern jetzt `EPERM` statt `SIGSYS`. Node behandelt das
+als normalen Fehler. **Die Härtung bleibt in Kraft** — nur die Reaktion ist
+nicht mehr tödlich. Danach: HTTP 200.
+
+**Regel**
+
+> `SystemCallFilter` ohne `SystemCallErrorNumber` **tötet** den Prozess. Für
+> Laufzeiten mit breiter Syscall-Nutzung (Node, JVM, .NET) ist `EPERM` die
+> richtige Vorgabe: man verliert im Zweifel eine Funktion statt den Dienst.
+>
+> Und: `SystemCallArchitectures = "native"` gehört in **jedes** Profil. Fehlt
+> es, können Syscalls über eine fremde ABI den Filter umgehen — das ist eine
+> Lücke, kein gelockertes Profil.
+
+> **Zur Ehrlichkeit:** Die Ursache ist eingegrenzt, nicht vollständig geklärt.
+> Sobald die Syscall-Nummer bekannt ist, gehört sie explizit in die Allowlist
+> und `SystemCallErrorNumber` kann wieder weg.
+
+---
+
+## L5 — Zustandsverzeichnisse fehlen: dasselbe Muster wie L2
+
+**Symptom**
+
+```
+jellyfin.service: Failed to set up mount namespacing:
+/var/lib/jellyfin: No such file or directory
+```
+
+Der Dienst kommt **gar nicht erst zum Start** — es scheitert schon das
+Einrichten des Mount-Namespace.
+
+**Ursache**
+
+Die Unit setzt `ReadWritePaths=/var/lib/jellyfin`. Diese Direktive verlangt ein
+**existierendes** Verzeichnis. Das Modul deklarierte aber nur Unterordner
+(`/run/jellyfin-transcode`, `metadataDir/jellyfin`) und nie das
+Zustandsverzeichnis selbst.
+
+Solange irgendetwas es zufällig anlegt, fällt das nicht auf. Nach einem
+`rm -rf /var/lib/jellyfin` — oder auf einer **frischen Installation** — ist der
+Dienst tot.
+
+**Fix**
+
+```nix
+"d /var/lib/jellyfin 0700 jellyfin jellyfin -"
+"d /var/lib/jellyfin/config 0700 jellyfin jellyfin -"
+"d /var/cache/jellyfin 0700 jellyfin jellyfin -"
+```
+
+**Regel**
+
+> Das ist **dieselbe Fehlerklasse wie L2** — nur an anderer Stelle. Wer ein
+> Verzeichnis in `ReadWritePaths`, `BindPaths` oder `StateDirectory` nennt,
+> muss es auch deklarieren.
+>
+> Prüffrage für jedes Modul: *Läuft es nach `rm -rf` seines Zustands­verzeichnisses
+> wieder an?* Wenn nein, ist es nicht neuinstallationsfest — und genau das
+> merkt man erst bei jemand anderem.
 
 ---
 
