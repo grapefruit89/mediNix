@@ -1,0 +1,38 @@
+# Einheitliche Zeichen- und Zeilenkonventionen — greift in praktisch jedem
+# Editor ohne Plugin (VS Code, JetBrains, vim, emacs, nano ab 7.0).
+#
+# Warum das hier steht: der CRLF-Ärger vom 2026-07-20. Ein unter Windows
+# ausgechecktes Repo trug CRLF, jede Datei galt als geändert, und Diffs waren
+# unlesbar. .gitattributes löst das für Git — .editorconfig löst es beim
+# Schreiben, also eine Stufe früher.
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Nix: zwei Leerzeichen, so formatiert nixfmt-rfc-style auch.
+[*.nix]
+indent_size = 2
+
+# Markdown: nachlaufende Leerzeichen sind dort ein Zeilenumbruch —
+# trimmen würde die Formatierung zerstören.
+[*.md]
+trim_trailing_whitespace = false
+
+# Shell-Skripte: CRLF wäre hier fatal. Ein \r landet im Interpreterpfad,
+# und der Aufruf endet mit "bad interpreter: No such file or directory".
+[*.sh]
+indent_size = 2
+end_of_line = lf
+
+[*.{yaml,yml,json}]
+indent_size = 2
+
+[Makefile]
+indent_style = tab

@@ -1,0 +1,70 @@
+# CI für mediNix.
+#
+# Was hier läuft, ist exakt dasselbe wie lokal `nix flake check` — kein
+# separater CI-Dialekt, keine doppelte Wahrheit. Wer lokal grün ist, ist es
+# auch hier.
+#
+# Warum das nötig wurde: Am 2026-07-20 lief der erste Build auf echter
+# Hardware — und fand drei Laufzeitfehler plus einen toten Import, der jeden
+# Build blockierte. Nichts davon hätte einen Menschen erreicht, bevor er
+# selbst gebaut hat. Genau diese Lücke schließt CI.
+
+name: check
+
+on:
+  push:
+    branches: [ main ]      # nur main — dieses Repo ist branchlos (AGENTS.md Regel -1)
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:        # von Hand auslösbar
+
+# Nur ein Lauf pro Branch: ein schneller zweiter Push soll den ersten
+# abbrechen, nicht zusätzlich Rechenzeit verbrauchen.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Repo auschecken
+        uses: actions/checkout@v4
+
+      - name: Nix installieren
+        uses: cachix/install-nix-action@v27
+        with:
+          # Flakes sind hier zwingend — das gesamte Repo ist ein Flake.
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            accept-flake-config = true
+
+      # Der eigentliche Lauf. --print-build-logs, damit im Fehlerfall die
+      # Meldung des Linters sichtbar ist und nicht nur "check failed".
+      - name: nix flake check
+        run: nix flake check --print-build-logs
+
+  # Getrennter Job, damit im Fehlerfall sofort sichtbar ist, WELCHE Art von
+  # Problem vorliegt — Formatierung oder Substanz.
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v27
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Formatierung prüfen
+        run: nix build .#checks.x86_64-linux.format --print-build-logs
+
+      - name: Anti-Patterns (statix)
+        run: nix build .#checks.x86_64-linux.statix --print-build-logs
+
+      - name: Toter Code (deadnix)
+        run: nix build .#checks.x86_64-linux.deadnix --print-build-logs
