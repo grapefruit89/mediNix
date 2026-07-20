@@ -1,6 +1,6 @@
 # STATUS — Lagekarte mediNix
 
-**Stand:** 2026-07-18
+**Stand:** 2026-07-20
 **Zweck:** Überblick behalten. Was steht, was wackelt, wo als Nächstes anfassen.
 
 > Diese Datei ist der Einstiegspunkt, wenn man den Faden verloren hat.
@@ -8,17 +8,44 @@
 
 ---
 
-## ⚠ Die eine Sache, die alles überlagert
+## ✅ Erledigt: der Stack ist evaluiert und gebaut
 
-**Nichts in diesem Repo wurde je evaluiert.** Die gesamte Arbeit entstand im
-Architekturbüro-Modus ohne Nix-Umgebung: kein `nix eval`, kein Dry-Build, kein
-Test. Rund 15 Commits ungeprüfter Nix-Code.
+**Am 2026-07-20 zum ersten Mal auf echter Hardware gebaut — fehlerfrei.**
 
-Das ist **kein Versehen**, sondern die bewusste Arbeitsteilung (AGENTS.md Regel 2).
-Aber es heißt: **Vor dem ersten produktiven Einsatz gehört ein Dry-Build auf ein
-echtes System.** Erwartbar sind Syntaxfehler, Tippfehler in Optionspfaden und
-Escaping-Probleme — besonders im `ddclient`-`sed`-Ausdruck und in den
-Recyclarr-YAML-Strukturen.
+Ausgeführt auf q958 (NixOS 26.05, x86_64):
+
+```
+nix eval  .#nixosConfigurations.check.config.system.build.toplevel.drvPath   → OK
+nix build .#nixosConfigurations.check.config.system.build.toplevel           → OK
+  /nix/store/902sjrmb7jj8p0l5w2f423n283kinf1d-nixos-system-nixos-26.05…
+```
+
+**Null Fehler.** Weder Syntaxfehler noch falsche Optionspfade noch
+Escaping-Probleme. Auch die beiden explizit als riskant markierten Stellen —
+der `ddclient`-`sed`-Ausdruck und die Recyclarr-YAML-Strukturen — sind
+durchgelaufen. Caddy wird korrekt in die Closure gezogen, der Ingress ist also
+verdrahtet.
+
+Möglich wurde das durch den neuen `flake.nix` samt `checks/minimal-host.nix`
+(vorher gab es keinen Einstiegspunkt, über den das Modul allein evaluierbar
+gewesen wäre — das war Issue #11).
+
+Einzige Ausgabe war eine **beabsichtigte** Warnung:
+
+```
+[50-media/arr-stack] Kein Forward-Auth-Proxy deklariert
+(grapefruitMedia.authProxyPresent = false) -- *arr-Apps laufen mit
+AUTH__METHOD=Forms (lokaler Login).
+```
+
+### Was das **nicht** heißt
+
+Gebaut ≠ funktionsfähig. Bewiesen ist: der Nix-Code ist syntaktisch und
+typmäßig korrekt und erzeugt eine vollständige System-Closure. **Nicht**
+bewiesen ist, dass die Dienste starten, sich gegenseitig erreichen oder die
+provisionierten API-Aufrufe stimmen. Die in Abschnitt „Was wackelt" markierten
+ungeprüften Daten (trash_ids, Katalog-Hostnamen, vier API-Endpunkte) sind
+weiterhin ungeprüft — ein Build fasst sie nicht an.
 
 ### 🔴 Konkrete Stolperfalle beim nächsten Rebuild auf q958
 
@@ -60,10 +87,17 @@ ist, **bricht der Build** — mit klarer Meldung. Das ist Absicht, soll aber nic
 
 Nach Risiko × Nutzen, nicht nach Bequemlichkeit:
 
-### 1. Dry-Build auf echtem System — **blockiert alles andere**
-Solange nichts evaluiert wurde, ist jede weitere Zeile Spekulation. Ein einziger
-Durchlauf deckt vermutlich mehrere Trivialfehler auf. **Das ist der wichtigste
-nächste Schritt, nicht ein weiteres Feature.**
+### 1. ~~Dry-Build auf echtem System~~ — **erledigt 2026-07-20**
+Durchgelaufen, null Fehler. Siehe oben. Damit ist die Blockade weg, die alles
+andere aufgehalten hat. `flake.nix` + `checks/` liegen jetzt im Repo, der Test
+ist jederzeit wiederholbar:
+
+```
+nix build .#nixosConfigurations.check.config.system.build.toplevel
+```
+
+**Neuer wichtigster Schritt:** ein `nixosTest` (Issue #48), der die Dienste
+tatsächlich startet. Der Build beweist Syntax, nicht Funktion.
 
 ### 2. `#12` — vhostMap im Ingress verdrahten
 Die DNS-Ableitung (`lib/dns.nix`) kennt Hostname-Overrides (`navidrome → music`),
