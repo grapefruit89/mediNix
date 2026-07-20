@@ -299,10 +299,38 @@ in
           # den alles laeuft, ging leer aus.
           CPUWeight = lib.mkDefault 400;
           IOWeight = lib.mkDefault 200;
-          # Ein Reverse-Proxy soll bei Speichermangel als LETZTES sterben.
-          OOMScoreAdjust = lib.mkDefault (-500);
+
+          # --- Dem Ingress darf der Speicher NIE ausgehen ---
+          #
+          # MemoryMax allein reicht dafuer NICHT -- das ist eine OBERGRENZE,
+          # also das Gegenteil einer Zusicherung. Was hier zaehlt:
+          #
+          #   MemoryMin  harte Reservierung. Speicher in diesem Bereich wird
+          #              vom Kernel NIEMALS zurueckgefordert, auch nicht unter
+          #              schwerem Druck. Das ist die eigentliche Garantie.
+          #   MemoryLow  weiche Reservierung. Wird erst angetastet, wenn sonst
+          #              nichts mehr geht.
+          #   MemoryMax  Obergrenze gegen Amoklauf -- schuetzt die ANDEREN
+          #              vor Caddy, nicht Caddy vor den anderen.
+          #
+          # Bewusst knapp bemessen: eine Reservierung nimmt allen anderen
+          # Diensten Speicher weg. 64M genuegt Caddy im Normalbetrieb
+          # deutlich; es geht um Ueberleben unter Druck, nicht um Komfort.
+          MemoryMin = lib.mkDefault "64M";
+          MemoryLow = lib.mkDefault "128M";
           MemoryMax = lib.mkDefault "768M";
           MemoryHigh = lib.mkDefault "512M";
+
+          # Bei Speichermangel als LETZTES sterben.
+          OOMScoreAdjust = lib.mkDefault (-500);
+
+          # OOMScoreAdjust wirkt auf den KERNEL-OOM-Killer. systemd-oomd ist
+          # ein zweiter, unabhaengiger Mechanismus, der nach Druck (PSI)
+          # entscheidet und OOMScoreAdjust IGNORIERT.
+          # 2026-07-20 gemessen: oomd war aktiv und ManagedOOMPreference stand
+          # auf "none" -- der Ingress war also trotz -500 abschussfaehig.
+          # "avoid" nimmt ihn aus der Auswahl.
+          ManagedOOMPreference = lib.mkDefault "avoid";
 
           AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
           CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" ];
