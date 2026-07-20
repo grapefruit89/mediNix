@@ -86,7 +86,30 @@ let
     }
     trap cleanup EXIT INT TERM
 
-    # Keep unit alive; restart via systemd if network changes (see path/network targets).
+    # Ohne diese Pruefung meldet der Dienst Erfolg, obwohl KEIN einziger Alias
+    # publiziert wurde: die avahi-publish-Prozesse laufen im Hintergrund, und
+    # 'wait' ohne lebende Kinder liefert 0. Genau das ist am 2026-07-20 auf q958
+    # passiert -- alle Publishes scheiterten mit "Failed to create entry group:
+    # Not permitted", die Unit lief nach 48ms mit status=0/SUCCESS aus, und
+    # Restart=on-failure griff deshalb NIE. Ein Dienst, der seinen eigenen
+    # Misserfolg nicht melden kann, ist schlimmer als einer, der abstuerzt.
+    sleep 2
+    alive=0
+    for p in $pids; do
+      if kill -0 "$p" 2>/dev/null; then
+        alive=$((alive + 1))
+      fi
+    done
+
+    if [ "$alive" -eq 0 ]; then
+      echo "grapefruit-media-mdns: kein einziger Alias konnte publiziert werden." >&2
+      echo "  Haeufigste Ursache: services.avahi.publish.userServices = false." >&2
+      exit 1
+    fi
+
+    echo "grapefruit-media-mdns: $alive Alias(e) aktiv"
+
+    # Unit am Leben halten; Neustart bei Netzwechsel ueber die path-Unit.
     wait
   '';
 in
