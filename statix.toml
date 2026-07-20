@@ -1,0 +1,39 @@
+# statix-Konfiguration.
+#
+# Grundhaltung: Regeln werden NICHT abgeschaltet, weil sie stören, sondern nur
+# wenn sie im konkreten Kontext das Gegenteil ihres Zwecks bewirken. Jede
+# Abschaltung braucht hier eine Begründung — sonst gehört sie nicht hierher.
+
+disabled = [
+  # ── manual_inherit_from ─────────────────────────────────────────────────
+  # statix schlägt vor, "domain = cfg.domain;" als "inherit (cfg) domain;"
+  # zu schreiben. Stilistisch richtig.
+  #
+  # NICHT abgeschaltet — dieser Hinweis ist nützlich und wurde umgesetzt.
+
+  # ── repeated_keys ───────────────────────────────────────────────────────
+  # Vorschlag: statt
+  #     systemd.tmpfiles.rules = [ ... ];
+  #     systemd.services.usenet-vpn-verify = { ... };
+  #     systemd.paths.usenet-vpn-carrier = { ... };
+  # zusammenfassen zu
+  #     systemd = { tmpfiles.rules = ...; services... = ...; paths... = ...; };
+  #
+  # Bewusst deaktiviert. Grund: In diesem Repo steht über jeder dieser
+  # Zuweisungen ein mehrzeiliger Kommentar, der genau diese eine Zuweisung
+  # erklärt — warum die Regel existiert, welcher Fehler dahintersteckt, was
+  # beim Ändern zu beachten ist (siehe 590-usenet-confinement, 500-media-ingress).
+  #
+  # Zusammenfassen würde diese Kommentare von ihren Zuweisungen trennen und
+  # einen 60-zeiligen systemd-Block erzeugen, in dem man nicht mehr sieht,
+  # welcher Kommentar zu welcher Zeile gehört. Der Lesbarkeitsgewinn der Regel
+  # kehrt sich hier ins Gegenteil.
+  #
+  # Wo kein erklärender Kommentar steht, darf und soll man zusammenfassen —
+  # dann ist die Regel im Recht. Deshalb ist das hier eine bewusste Ausnahme
+  # für dieses Repo, keine Aussage über die Regel an sich.
+  "repeated_keys",
+]
+
+# Nix-Version, gegen die statix prüft.
+nix_version = "2.4"
