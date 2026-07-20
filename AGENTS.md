@@ -5,6 +5,39 @@ der hier arbeitet. Lies das **vor** der ersten Änderung.
 
 ---
 
+## Regel −1 — Git: ausschließlich `main`. Keine Branches. Ausnahmslos.
+
+**Es gibt genau einen Branch: `main`.** Nicht „bevorzugt", nicht „meistens" —
+ausschließlich.
+
+Verboten, auch wenn es fachlich sinnvoll erscheint:
+
+- `git checkout -b`, `git switch -c` — kein Feature-Branch, kein Fix-Branch,
+  kein `wip/`
+- Pull Requests als Arbeitsweise. **Issues und Discussions sind ausdrücklich
+  erwünscht** — dieses Repo ist als Ideen- und Diskussionsraum gedacht. PRs nicht.
+- Vorschläge wie „lass uns das auf einem Branch ausprobieren"
+
+**Begründung — nicht technisch, sondern menschlich:** Der Mensch, dem dieses
+Repo gehört, verliert bei mehreren Branches den Überblick. Ein Agent, der einen
+Branch anlegt, erzeugt genau die Verwirrung, die diese Regel verhindern soll.
+Der technische Vorteil ist hier kleiner als der Schaden.
+
+**Stattdessen:**
+
+| Situation | Vorgehen |
+|-----------|----------|
+| Änderung ist riskant | Erst Dry-Build, dann committen |
+| Änderung ist unfertig | Nicht committen — im Arbeitsverzeichnis liegen lassen |
+| Etwas ausprobieren | Kopie unter `/tmp`, nicht im Repo |
+| Rückgängig machen | `git revert` — neuer Commit auf `main` |
+| Alten Stand ansehen | `git show <sha>:<pfad>` — kein Auschecken |
+
+Bereits existierende Branches: stehen lassen, nicht darauf arbeiten, nicht
+davon abzweigen. Nur `main` ist die Wahrheit.
+
+---
+
 ## Regel 0 — Originalquellen. Immer. Ausnahmslos.
 
 **Niemals eine API, eine Option, einen Paketnamen oder ein Schema aus dem
