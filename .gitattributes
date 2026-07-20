@@ -1,0 +1,31 @@
+# Zeilenenden — im Repo immer LF.
+#
+# Für ein Modul, das andere Leute einbinden sollen, ist das keine Kosmetik:
+# ein .sh mit CRLF scheitert mit "bad interpreter: No such file or directory",
+# weil das \r Teil des Interpreterpfads wird. Und ein CRLF-behafteter Baum
+# meldet unter Windows jede Datei als geändert, was jeden Diff unlesbar macht.
+#
+# Einmalig nach dem Einführen:
+#   git add --renormalize .
+
+* text=auto eol=lf
+
+*.nix    text eol=lf
+*.sh     text eol=lf
+*.bash   text eol=lf
+*.py     text eol=lf
+*.md     text eol=lf
+*.json   text eol=lf
+*.yaml   text eol=lf
+*.yml    text eol=lf
+*.toml   text eol=lf
+*.xml    text eol=lf
+*.conf   text eol=lf
+
+# Binärdateien niemals anfassen.
+*.png    binary
+*.jpg    binary
+*.gif    binary
+*.pdf    binary
+*.zip    binary
+*.gz     binary
