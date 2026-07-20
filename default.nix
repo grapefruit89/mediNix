@@ -591,6 +591,11 @@ in {
     # M9-Fix: users.groups.media zentral definiert statt in 4 einzelnen Service-Dateien
     # (510, 520, 530, 540 setzen alle media = {}; Merge-Semantik macht das sicher,
     # aber eine zentrale Definition ist klarer).
-    users.groups.media = {};
+    users.groups.media = { };
+
+    # Verbotsschilder an den Tueren, an denen wir uns die Finger geklemmt haben.
+    # Jede Pruefung steht fuer einen Fehler, der real passiert ist und Stunden
+    # gekostet hat -- Herleitung jeweils in LEARNINGS.md.
+    assertions = import ./lib/assertions.nix { inherit lib config; };
   };
 }
