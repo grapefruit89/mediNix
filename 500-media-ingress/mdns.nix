@@ -100,6 +100,12 @@ in
       publish = {
         enable = true;
         addresses = true;
+        # PFLICHT fuer avahi-publish: steuert disable-user-service-publishing
+        # in avahi-daemon.conf (nixpkgs avahi-daemon.nix:39). Ohne das wird
+        # JEDER Client-Publish abgewiesen -- auch als root:
+        #   "Failed to create entry group: Not permitted"
+        # Auf q958 am 2026-07-20 reproduziert und mit diesem Schalter behoben.
+        userServices = true;
         # workstation/hinfo optional -- addresses reichen fuer Alias-Publish.
       };
     };

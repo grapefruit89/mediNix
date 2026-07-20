@@ -95,6 +95,13 @@ let
       (lib.mkIf (metadataDir != null) {
         systemd.tmpfiles.rules = [
           "d ${metadataDir} 0775 ${name} media -"
+          # Elternverzeichnis MUSS vor MediaCover stehen. Sonst legt systemd-
+          # tmpfiles es beim Anlegen des Unterordners implizit als root:root an,
+          # und Dienste mit statischem User= (Sonarr, Radarr) koennen nicht
+          # schreiben -> "AppFolder /var/lib/sonarr is not writable", EPIC FAIL.
+          # Prowlarr entging dem nur, weil es DynamicUser + StateDirectory nutzt.
+          # Auf q958 am 2026-07-20 reproduziert.
+          "d /var/lib/${name} 0750 ${name} ${name} -"
           "d /var/lib/${name}/MediaCover 0755 ${name} ${name} -"
         ];
       })

@@ -109,7 +109,11 @@ in
                 exit 1
               fi
               if [ ! -f "$dst" ] || ! ${pkgs.diffutils}/bin/cmp -s "$src" "$dst"; then
-                install -m 0640 -o jellyfin -g jellyfin "$src" "$dst"
+                # Kein -o/-g: preStart laeuft bereits als User jellyfin und hat
+                # kein CAP_CHOWN -> "install: cannot change ownership ...:
+                # Operation not permitted", Unit endet in einer Crash-Loop.
+                # Der Eigentuemer stimmt ohnehin, weil der Prozess jellyfin ist.
+                install -m 0640 "$src" "$dst"
                 echo "jellyfin: synced config seed $seed"
               fi
             done
