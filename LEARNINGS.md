@@ -326,27 +326,67 @@ Dienst tot.
 
 ---
 
-## Noch offen: Jellyfin-Migrations-Schleife
+## L6 — Jellyfin: bekannter Upstream-Fehler, **nicht unser Problem**
 
-Nach L3 kommt Jellyfin bis zur Datenbank-Migration und fällt dort um.
+**Symptom**
 
 ```
-NRestarts=13
-Jellyfin.Server.Migrations.JellyfinMigrationService.MigrateStepAsync
-SQLite Error 1: 'no such table: __EFMigrationsHistory'
+InternalCodeMigration: Perform migration "20250420000000_CreateNetworkConfiguration"
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion") VALUES (…)
+[FTL] Error: SQLite Error 1: 'no such table: __EFMigrationsHistory'
+→ SIGABRT, Endlos-Neustart
 ```
 
-**Stand:** Der `preStart`-Fehler ist weg, der Dienst lauscht zeitweise auf
-`0.0.0.0:5001`, stürzt aber während der Migration ab. Ein Wipe von
-`/var/lib/jellyfin` hat **nicht** gereicht.
+**Ursache**
 
-**Vermutung, nicht belegt:** Die vorkonfigurierten Seeds (`system.xml`,
-`encoding.xml`, …) werden im `preStart` eingespielt, *bevor* Jellyfin seine
-Datenbank angelegt hat. Möglicherweise erwartet die Migration einen Zustand,
-den die Seeds vorwegnehmen.
+Ein Reihenfolgefehler **in Jellyfin 10.11 selbst**: die Migration schreibt in
+`__EFMigrationsHistory`, bevor sie diese Tabelle anlegt. Auf einer frischen
+Installation existiert die Tabelle nie — also scheitert es immer.
 
-**Nächster Schritt:** Einmal ohne Seeds starten lassen. Läuft es dann durch,
-ist die Ursache eingekreist.
+Belegt durch [jellyfin/jellyfin#17070](https://github.com/jellyfin/jellyfin/issues/17070):
+identischer Stacktrace, identische Migration, Version 10.11.11 — dieselbe, die
+nixpkgs 26.05 liefert. Der Melder hatte eine blanke Windows-Installation ohne
+jede Vorkonfiguration.
+
+> **Status upstream: „Closed as not planned", Projektfeld „Won't / Can't Fix".**
+> Es wird nicht repariert.
+
+**Zwei widerlegte eigene Hypothesen** — beide geprüft, beide falsch:
+
+1. *„Die Config-Seeds bringen Jellyfin dazu, eine Altinstallation anzunehmen."*
+   Gegentest mit neutralisiertem `preStart`: **derselbe Absturz.**
+2. *„Ein Wipe von `/var/lib/jellyfin` räumt eine halbfertige DB weg."*
+   Gewischt, mehrfach: **derselbe Absturz.**
+
+Der Weg zur Erkenntnis war am Ende **kein Debugging**, sondern eine Suche in
+den Upstream-Issues — genau das, was `AGENTS.md` Regel 0 vorschreibt und was
+ich zu spät getan habe.
+
+**Regel**
+
+> **Bei einem Absturz in einem Fremdpaket zuerst die Upstream-Issues
+> durchsuchen, bevor die eigene Konfiguration verdächtigt wird.** Zwei
+> widerlegte Hypothesen und mehrere Wipes hätte eine einzige Suchanfrage
+> erspart.
+>
+> Warnsignal: Wenn eine Fehlermeldung *inhaltlich unsinnig* ist — hier: eine
+> Migration auf einer Installation, die nichts zu migrieren hat — ist der
+> Fehler eher im Fremdcode als in der eigenen Konfiguration. Der Mensch hatte
+> genau das sofort gesagt: *„wir haben keine db, wir brauchen nix migrieren"*.
+
+**Lösungsweg (noch nicht umgesetzt)**
+
+mediNix hat für exakt diesen Fall bereits eine Option — die Beschreibung nennt
+den Anwendungsfall wörtlich:
+
+```nix
+grapefruitMedia.jellyfin.package = pkgs.…;   # "Downgrade bei einem kaputten
+                                             #  Upstream-Release"
+```
+
+Zu prüfen: welche Jellyfin-Version ohne diesen Fehler in nixpkgs verfügbar ist
+(10.10.x wäre der Kandidat), dann per `package`-Override festnageln und den
+Grund hier verlinken.
 
 ---
 
