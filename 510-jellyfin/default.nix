@@ -42,7 +42,16 @@ let
   # kaputten https://jellyfin.null-URL.
   hasDomain = domain != null && domain != "";
   jellyfinUrl = if hasDomain then "https://jellyfin.${domain}" else "";
-  vaapiDevice = cfg.hardware.renderDevice;
+  # Herstellerabstraktion (ADR-5041): Geraet, Pakete und ffmpeg-Methode kommen
+  # aus lib/gpu.nix, nicht mehr hartkodiert aus einer Intel-Annahme.
+  gpuLib = import ../lib/gpu.nix { inherit lib pkgs; };
+  accelChoice =
+    if cfg.hardware.accel == "auto" then gpuLib.detect config else cfg.hardware.accel;
+  gpu = gpuLib.resolve (gpuLib.normalize accelChoice);
+
+  # Expliziter renderDevice-Override schlaegt die Ableitung.
+  vaapiDevice =
+    if cfg.hardware.renderDevice != null then cfg.hardware.renderDevice else gpu.renderDevice;
 
   jellyfinConfigSeeds = pkgs.runCommand "jellyfin-config-seeds" { } ''
     mkdir -p $out
@@ -68,7 +77,10 @@ in
     {
       assertions = lib.optionals (cfg.enable && cfgJellyfin.enable) [
         {
-          assertion = vaapiDevice != "";
+          # Nur der VAAPI-Pfad braucht ein Render-Geraet. Bei NVENC waehlt
+          # ffmpeg per Index, bei none wird gar nicht beschleunigt --
+          # ein leeres vaapiDevice ist dort KEIN Fehler.
+          assertion = gpu.hwaccel != "vaapi" || vaapiDevice != "";
           message = "[jellyfin] grapefruitMedia.hardware.renderDevice muss gesetzt sein (VA-API QuickSync).";
         }
       ];

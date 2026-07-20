@@ -289,6 +289,21 @@ in
           # P1-6: Caddyfile-Adapter explizit.
           ExecStart = "${pkgs.caddy}/bin/caddy run --adapter caddyfile --config ${standaloneConfig}";
 
+          # Der Ingress ist der Engpass: haengt Caddy, haengt JEDER Dienst --
+          # auch die, die selbst genug Rechenzeit haetten. Deshalb das hoechste
+          # Gewicht im Stack (Jellyfin 250, *arr 100, SABnzbd 40).
+          #
+          # 2026-07-20 gemessen: caddy-media hatte gar kein CPUWeight, weil die
+          # Policy in lib/memory-policy.nix den Namen "caddy" adressiert, die
+          # Unit hier aber "caddy-media" heisst. Ausgerechnet der Dienst, durch
+          # den alles laeuft, ging leer aus.
+          CPUWeight = lib.mkDefault 400;
+          IOWeight = lib.mkDefault 200;
+          # Ein Reverse-Proxy soll bei Speichermangel als LETZTES sterben.
+          OOMScoreAdjust = lib.mkDefault (-500);
+          MemoryMax = lib.mkDefault "768M";
+          MemoryHigh = lib.mkDefault "512M";
+
           AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
           CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" ];
 

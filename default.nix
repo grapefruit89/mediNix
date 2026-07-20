@@ -363,10 +363,46 @@ in {
         default = 16;
         description = "Total host RAM in GB, used to scale adaptive transcode memory rules.";
       };
+      accel = lib.mkOption {
+        type = lib.types.enum [ "auto" "intel" "amd" "nvidia" "vaapi" "none" ];
+        default = "auto";
+        description = ''
+          Hersteller der Hardwarebeschleunigung fuer Transkodierung.
+
+          Aus dieser EINEN Angabe werden abgeleitet: Geraeteknoten fuer
+          DeviceAllow, Laufzeitpakete, Benutzergruppen und die ffmpeg-Methode
+          in der Jellyfin-Konfiguration. Vorher war all das auf Intel
+          festgenagelt -- wer mit einer NVIDIA-Karte kam, bekam still
+          CPU-Transkodierung ohne Fehlermeldung.
+
+            auto    Aus der Host-Konfiguration ableiten (siehe unten)
+            intel   QuickSync/VAAPI, Gen8+ inkl. Arc und B-Serie
+            amd     VAAPI ueber Mesa
+            nvidia  NVENC/NVDEC -- andere Geraeteknoten als DRI!
+            vaapi   generischer VAAPI-Pfad (Intel oder AMD)
+            none    Software-Transkodierung auf der CPU
+
+          EHRLICHE EINSCHRAENKUNG zu "auto": Nix evaluiert rein und kann die
+          Hardware zur Bauzeit nicht abfragen. "auto" wertet aus, was der Host
+          ueber sich konfiguriert hat (hardware.nvidia.*, hardware.graphics.*),
+          nicht was physisch steckt. Das traegt, weil ein NVIDIA-Nutzer ohnehin
+          den Treiber aktivieren muss. Im Zweifel explizit setzen.
+        '';
+      };
+
       renderDevice = lib.mkOption {
-        type = lib.types.str;
-        default = "/dev/dri/renderD128";
-        description = "Path to host GPU render device for QuickSync ffmpeg transcode.";
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = ''
+          Pfad zum Render-Node, ueberschreibt die Ableitung aus accel.
+
+          null (Default) = aus accel ableiten. Nur setzen, wenn mehrere GPUs
+          im System stecken und eine bestimmte gemeint ist -- etwa
+          /dev/dri/renderD129 fuer die zweite Karte.
+
+          Bei accel = "nvidia" wirkungslos: NVIDIA kennt kein Render-Node im
+          DRI-Sinn, ffmpeg waehlt die Karte per Index.
+        '';
       };
     };
 

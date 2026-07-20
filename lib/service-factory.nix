@@ -19,21 +19,35 @@ let
       privateDevices ? true,
       profile ? "full", # full | dotnet | node | streamer
       extra ? { },
+      # Chamaeleon-Prinzip (ADR-5040): standardmaessig setzt das Modul nur
+      # DEFAULTS. Wer im Rest seines Systems etwas anderes bestimmt hat --
+      # GPU durchreichen, NAS einbinden, eigenes Profil -- gewinnt.
+      #
+      # Nix-Prioritaeten: mkForce = 50, normale Zuweisung = 100,
+      # mkDefault = 1000. Niedriger gewinnt. Mit mkDefault schlaegt also jede
+      # gewoehnliche Zuweisung des Nutzers unsere Vorgabe -- ohne dass er
+      # mkForce schreiben muss.
+      #
+      # enforce = true kehrt das um (mkForce): fuer Betreiber, die die
+      # Haertung gegen versehentliches Aufweichen schuetzen wollen.
+      enforce ? false,
     }:
     let
+      # harden = die Prioritaetsfunktion. Eine Stelle, nicht 26.
+      harden = if enforce then lib.mkForce else lib.mkDefault;
       base = {
-        ProtectSystem = lib.mkForce "strict";
-        ProtectHome = lib.mkForce true;
-        PrivateTmp = lib.mkForce true;
-        PrivateDevices = lib.mkForce privateDevices;
-        NoNewPrivileges = lib.mkForce true;
-        ProtectKernelTunables = lib.mkForce true;
-        ProtectKernelModules = lib.mkForce true;
-        ProtectControlGroups = lib.mkForce true;
-        RestrictRealtime = lib.mkForce (profile != "streamer");
-        RestrictSUIDSGID = lib.mkForce true;
-        LockPersonality = lib.mkForce true;
-        RestrictAddressFamilies = lib.mkForce [
+        ProtectSystem = harden "strict";
+        ProtectHome = harden true;
+        PrivateTmp = harden true;
+        PrivateDevices = harden privateDevices;
+        NoNewPrivileges = harden true;
+        ProtectKernelTunables = harden true;
+        ProtectKernelModules = harden true;
+        ProtectControlGroups = harden true;
+        RestrictRealtime = harden (profile != "streamer");
+        RestrictSUIDSGID = harden true;
+        LockPersonality = harden true;
+        RestrictAddressFamilies = harden [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
@@ -41,16 +55,16 @@ let
         ReadWritePaths = readWritePaths;
       }
       // lib.optionalAttrs (profile == "full") {
-        CapabilityBoundingSet = lib.mkForce "";
-        DevicePolicy = lib.mkForce "closed";
-        SystemCallFilter = lib.mkForce [
+        CapabilityBoundingSet = harden "";
+        DevicePolicy = harden "closed";
+        SystemCallFilter = harden [
           "@system-service"
           "~@privileged"
           "~@resources"
         ];
       }
       // lib.optionalAttrs (profile == "dotnet") {
-        SystemCallFilter = lib.mkForce [
+        SystemCallFilter = harden [
           "@system-service"
           "~@privileged"
         ];
@@ -61,8 +75,8 @@ let
         # Bewusst KEIN DevicePolicy = "closed": Audiobookshelf kann QuickSync
         # nutzen und braucht dann Zugriff auf den Render-Node -- der Zugriff wird
         # ueber den privateDevices-Parameter gesteuert, nicht hier.
-        CapabilityBoundingSet = lib.mkForce "";
-        SystemCallFilter = lib.mkForce [
+        CapabilityBoundingSet = harden "";
+        SystemCallFilter = harden [
           "@system-service"
           "~@privileged"
         ];
@@ -81,14 +95,14 @@ let
         #
         # Sobald die Syscall-Nummer bekannt ist, gehoert sie hier explizit in
         # die Allowlist und diese Zeile kann wieder weg.
-        SystemCallErrorNumber = lib.mkForce "EPERM";
+        SystemCallErrorNumber = harden "EPERM";
 
         # Fehlte im Vergleich zum full-Profil. Ohne native koennen Syscalls
         # ueber eine fremde ABI den Filter umgehen -- eine Luecke, kein Feature.
-        SystemCallArchitectures = lib.mkForce "native";
+        SystemCallArchitectures = harden "native";
       }
       // lib.optionalAttrs (profile == "streamer") {
-        UMask = lib.mkForce "0002";
+        UMask = harden "0002";
       };
     in
     lib.mkMerge [
@@ -167,6 +181,12 @@ rec {
       gpuExtra =
         if useGPU then
           {
+            # Bewusst mkForce, nicht harden: die GPU-Durchreichung MUSS die
+            # Basisvorgabe PrivateDevices=true schlagen, sonst kann Jellyfin
+            # nicht auf /dev/dri zugreifen und Transkodierung faellt auf CPU
+            # zurueck. Wer useGPU=true setzt, hat sich bereits entschieden.
+            # (Ausserdem liegt dieser Block in einem anderen let-Scope, in dem
+            # die harden-Funktion nicht sichtbar ist.)
             PrivateDevices = lib.mkForce false;
             DeviceAllow = [
               "/dev/dri rw"
@@ -190,10 +210,10 @@ rec {
       inherit readWritePaths;
       extraSystemd = lib.mkMerge [
         {
-          Restart = lib.mkForce "always";
-          RestartSec = lib.mkForce "5s";
-          RuntimeDirectory = lib.mkForce "${name}-transcode";
-          RuntimeDirectoryMode = lib.mkForce "0700";
+          Restart = lib.mkDefault "always";
+          RestartSec = lib.mkDefault "5s";
+          RuntimeDirectory = lib.mkDefault "${name}-transcode";
+          RuntimeDirectoryMode = lib.mkDefault "0700";
           ReadOnlyPaths = readOnlyPaths;
         }
         gpuExtra

@@ -31,12 +31,25 @@ let
   # Helper: berechnet MemoryHigh aus MemoryMax (75%, mindestens 1 GB)
   high75 = maxGB: lib.max 1 (lib.floor (maxGB * 0.75));
 
+  # CPU kennt kein OOM: ein Prozess, der zu viel will, TOETET niemanden --
+  # er verlangsamt die anderen. Deshalb kein Limit, sondern eine Gewichtung.
+  #
+  # CPUWeight (systemd-Default 100, Bereich 1-10000) wirkt NUR bei Konkurrenz.
+  # Ist die Maschine langweilig, darf jeder Dienst alles nutzen -- im Gegensatz
+  # zu CPUQuota, das auch im Leerlauf deckelt und damit Rechenzeit verschenkt.
+  # Deshalb setzen wir bewusst CPUWeight und NICHT CPUQuota.
+  #
+  # Die Leiter spiegelt OOMScoreAdjust: wer beim Speichermangel zuletzt stirbt,
+  # bekommt bei CPU-Konkurrenz am meisten. Begruendung ist dieselbe -- ein
+  # stockender Film faellt sofort auf, ein langsamerer Download nicht.
   mkServiceLimits =
     {
       oomScore ? null,
       memoryMax ? null,
       memoryHigh ? null,
       forceOom ? false,
+      cpuWeight ? null,
+      ioWeight ? null,
     }:
     let
       oom =
@@ -49,6 +62,8 @@ let
       OOMScoreAdjust = oom;
       MemoryMax = if memoryMax != null then lib.mkDefault memoryMax else null;
       MemoryHigh = if memoryHigh != null then lib.mkDefault memoryHigh else null;
+      CPUWeight = if cpuWeight != null then lib.mkDefault cpuWeight else null;
+      IOWeight = if ioWeight != null then lib.mkDefault ioWeight else null;
     };
 in
 {
@@ -60,6 +75,8 @@ in
     mkServiceLimits {
       oomScore = -800;
       forceOom = true;
+      cpuWeight = 300;   # Datenbank: blockiert sonst alles, was auf sie wartet
+      ioWeight = 300;
       memoryMax = gb (lib.max 4 (lib.floor (ramGB * 0.3125)));
       memoryHigh = gb (lib.max 3 (lib.floor (ramGB * 0.25)));
     };
@@ -73,6 +90,8 @@ in
     in
     mkServiceLimits {
       oomScore = 100;
+      cpuWeight = 250;   # Transkodierung darf nicht ruckeln -- der Nutzer sieht es sofort
+      ioWeight = 200;    # Lesen vom Medienspeicher waehrend der Wiedergabe
       memoryMax = gb maxGB;
       memoryHigh = gb (high75 maxGB);
     };
@@ -85,6 +104,8 @@ in
     in
     mkServiceLimits {
       oomScore = 300;
+      cpuWeight = 40;    # Entpacken/Reparieren darf warten -- niemand schaut zu
+      ioWeight = 40;     # und es soll die Wiedergabe nicht ausbremsen
       memoryMax = gb maxGB;
       memoryHigh = gb (high75 maxGB);
     };
@@ -93,6 +114,7 @@ in
   caddy =
     _:
     mkServiceLimits {
+      cpuWeight = 400;   # Reverse-Proxy: haengt er, haengt ALLES
       memoryMax = "768M";
       memoryHigh = "512M";
     };
@@ -102,11 +124,14 @@ in
     mkServiceLimits {
       oomScore = -900;
       forceOom = true;
+      cpuWeight = 300;   # Anmeldung blockiert sonst jeden Zugriff
       memoryMax = "256M";
       memoryHigh = "192M";
     };
 
   # ── Tier 3 — Observability ──────────────────────────────────────────────────
+  # Observability darf im Zweifel warten -- Logs verlieren nur Aktualitaet,
+  # keine Substanz.
   loki =
     _:
     let
@@ -116,6 +141,8 @@ in
     in
     mkServiceLimits {
       oomScore = 300;
+      cpuWeight = 30;
+      ioWeight = 30;
       memoryMax = maxStr;
       memoryHigh = highStr;
     };
@@ -124,6 +151,7 @@ in
     _:
     mkServiceLimits {
       oomScore = 200;
+      cpuWeight = 30;
       memoryMax = "512M";
       memoryHigh = "384M";
     };
@@ -132,6 +160,7 @@ in
     _:
     mkServiceLimits {
       oomScore = 200;
+      cpuWeight = 50;
       memoryMax = "512M";
       memoryHigh = "384M";
     };
@@ -141,6 +170,7 @@ in
     _:
     mkServiceLimits {
       oomScore = 200;
+      cpuWeight = 100;   # Standard -- Hintergrundsuche, keine Interaktion
       memoryMax = "512M";
       memoryHigh = "384M";
     };
@@ -149,6 +179,7 @@ in
     _:
     mkServiceLimits {
       oomScore = 150;
+      cpuWeight = 200;   # Streaming -- hoerbare Aussetzer bei Mangel
       memoryMax = "1G";
       memoryHigh = "768M";
     };
@@ -157,6 +188,7 @@ in
     _:
     mkServiceLimits {
       oomScore = 200;
+      cpuWeight = 200;   # Streaming, ggf. Transkodierung
       memoryMax = "512M";
       memoryHigh = "384M";
     };
