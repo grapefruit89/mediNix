@@ -1,0 +1,8 @@
+
+# ── Lokales Betriebswissen — NIEMALS committen ──────────────────────────────
+# Enthaelt Zugangswege, IPs und Pfade der konkreten Maschine.
+# Was allgemein gilt, gehoert nach AGENTS.md / LEARNINGS.md.
+CLAUDE.local.md
+*.local.md
+.claude/
+.env
