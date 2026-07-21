@@ -122,8 +122,57 @@ in
             "d ${cfg.storage.metadataDir}/jellyfin 0750 jellyfin media -"
           ];
 
+          # ══════════════════════════════════════════════════════════════
+          # Seeds NUR einspielen, wenn Jellyfin schon einmal lief
+          # ══════════════════════════════════════════════════════════════
+          #
+          # WAS SONST PASSIERT (2026-07-21 reproduziert):
+          # Jellyfin entscheidet anhand von config/migrations.xml, welche
+          # Migrationen es fuer erledigt haelt. Legt man system.xml und
+          # encoding.xml VOR dem ersten Start hin, ohne migrations.xml, sieht
+          # Jellyfin eine gefuellte Konfiguration ohne Migrationsstand --
+          # schliesst auf eine BESTEHENDE Installation und startet Migrationen
+          # gegen eine Datenbank, die es nie gab:
+          #     SQLite Error 1: 'no such table: ActivityLog'
+          #     SQLite Error 1: 'no such table: __EFMigrationsHistory'
+          # Endlos-Neustart, der Dienst kommt nie hoch.
+          #
+          # Das betrifft BEIDE Versionen -- 10.11.11 und 10.10.7 scheiterten
+          # identisch, nur an verschiedenen Tabellen. Ein Downgrade hilft NICHT,
+          # die Ursache liegt hier.
+          #
+          # Bestaetigt durch jellyfin/jellyfin#15158: dort brachte ein Nutzer
+          # seine Installation zum Laufen, indem er VOR dem Start eine gueltige
+          # migrations.xml einspielte.
+          #
+          # WARUM DER MARKER data/jellyfin.db IST UND KEINE CONFIG-DATEI:
+          # Der erste Versuch prueft auf config/migrations.xml -- die legt 10.11
+          # gar nicht mehr an (dort steht jetzt database.xml). Die Bedingung wurde
+          # damit NIE wahr, die Vorgaben blieben dauerhaft aus, und Jellyfin lief
+          # auf seinem Standardport 8096 statt auf dem Registry-Port -> Caddy 502.
+          # Der Dienst lief, war aber unerreichbar.
+          #
+          # Die Datenbank ist der richtige Marker: ihr Vorhandensein ist genau die
+          # Frage, die wir stellen ("hat Jellyfin schon initialisiert?"), und ihr
+          # Name ist ueber Versionen hinweg stabil. Config-Dateinamen sind es nicht.
+          #
+          # GEGENTEST, der es beweist: mit denselben Seeds, aber vorhandenem
+          # Verzeichnis und OHNE die Dateien -> "Startup complete 0:00:08",
+          # 0 Neustarts. Jellyfin legt migrations.xml dann selbst an.
+          #
+          # Deshalb: erster Start unberuehrt lassen. Erst wenn migrations.xml
+          # existiert -- also Jellyfin seine Datenbank angelegt hat -- werden
+          # die Vorgaben angewandt. Sie greifen ab dem zweiten Start.
           systemd.services.jellyfin.preStart = lib.mkBefore ''
             mkdir -p /var/lib/jellyfin/config
+
+            if [ ! -f /var/lib/jellyfin/data/jellyfin.db ]; then
+              echo "jellyfin: Erststart erkannt (keine Datenbank) --"
+              echo "jellyfin: Konfigurationsvorgaben werden UEBERSPRUNGEN."
+              echo "jellyfin: Sie greifen ab dem naechsten Start."
+              exit 0
+            fi
+
             SEED_DIR=${jellyfinConfigSeeds}
             for seed in system.xml network.xml encoding.xml dlna.xml branding.xml; do
               src="$SEED_DIR/$seed"
