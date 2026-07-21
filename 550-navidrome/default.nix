@@ -54,6 +54,26 @@ in
         };
 
         # -Prefix: systemd ignoriert fehlende Datei → Navidrome startet ohne OIDC bis Secrets gesetzt
+        # Navidrome MUSS in die Media-Gruppe.
+        #
+        # 2026-07-20 gemessen: es war als einziger Wiedergabe-Dienst NICHT
+        # drin (Gruppen: navidrome). Dass es trotzdem an die Musik kam, lag
+        # allein daran, dass /data/media/music mit drwxrwxr-x fuer ALLE lesbar
+        # war -- also an einer zu weiten Berechtigung, nicht an korrekter
+        # Konfiguration.
+        #
+        # Sobald jemand die Rechte enger zieht (o-rx), was der Sinn eines
+        # Gruppenmodells ist, faellt Navidrome aus. Und es schreibt selbst
+        # nichts in die Bibliothek, weshalb der Fehler auch beim Testen nicht
+        # auffaellt -- er zeigt sich erst, wenn die Rechte stimmen.
+        #
+        # Alle anderen Dienste machen es bereits so:
+        #   520-arr-stack:88     extraGroups = [ "media" ]
+        #   530-sabnzbd:56       extraGroups = [ "media" ]
+        #   540-audiobookshelf   group = "media"
+        #   510-jellyfin:220     users.users.jellyfin.extraGroups
+        users.users.navidrome.extraGroups = lib.mkAfter [ "media" ];
+
         systemd.services.navidrome.serviceConfig.EnvironmentFile = [
           "-${cfgGlobal.secrets.navidromeOidcFile}"
         ];
