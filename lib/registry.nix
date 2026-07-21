@@ -149,6 +149,24 @@ let
       tier = "edge-wan";
       ui = true;
     };
+    # Feishin: alternative Oberflaeche fuer Navidrome/Jellyfin/OpenSubsonic.
+    #
+    # BESONDERHEIT static = true: feishin-web sind reine statische Dateien
+    # (index.html + assets), kein Server. Caddy liefert sie direkt aus --
+    # kein eigener Prozess, keine Unit, kein belegter Port.
+    #
+    # Die Nummer 544 vergeben wir trotzdem: sie ordnet den Dienst dem
+    # Playback-Block zu und haelt die Tabelle vollstaendig. Der daraus
+    # abgeleitete Port 5440 wird nicht benutzt.
+    #
+    # Feishin ERSETZT Navidrome nicht -- es spricht dessen API. Ohne einen
+    # laufenden Musikserver zeigt es nur eine Anmeldemaske.
+    feishin = {
+      number = 544;
+      tier = "edge-wan";
+      ui = true;
+      static = true;
+    };
 
     # ── 550 access ─────────────────────────────────────────────────────
     jellyseerr = {
@@ -196,6 +214,11 @@ let
   # ══════════════════════════════════════════════════════════════════════
   # ABLEITUNG
   # ══════════════════════════════════════════════════════════════════════
+  # static: Dienste ohne eigenen Prozess. Caddy liefert ihre Dateien direkt
+  # aus (file_server statt reverse_proxy). Default false -- die allermeisten
+  # Dienste lauschen auf einem Port.
+  isStatic = svc: svc.static or false;
+
   portOf = svc: svc.number * 10;
   uidOf = svc: 1000 + svc.number;
 
@@ -219,6 +242,10 @@ in
   # Dienste mit Oberfläche — ersetzt die Namensliste in mdns.nix
   # und die Dienst-Map im Ingress
   uiServices = lib.attrNames withUi;
+
+  # Dienste, die Caddy als statische Dateien ausliefert statt sie zu proxen
+  staticServices = lib.attrNames (lib.filterAttrs (_: isStatic) services);
+  isStaticService = name: (services.${name} or { }).static or false;
 
   # ══════════════════════════════════════════════════════════════════════
   # FIXE MEDIA-GRUPPE — die eine bewusste Ausnahme von der Isomorphie

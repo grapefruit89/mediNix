@@ -24,6 +24,7 @@
   ...
 }:
 let
+  registry = import ../lib/registry.nix { inherit lib; };
   cfg = config.grapefruitMedia;
   inherit (cfg) domain;
   hasDomain = domain != null && domain != "";
@@ -42,20 +43,43 @@ let
     cfg.ingress.enable
     && ((cfg.ingress.mode == "global") || (cfg.ingress.mode == "auto" && config.services.caddy.enable));
 
-  # Bug1 Fix: if/else null (optionalAttrs false == {} filterte nie).
-  enabledServices = lib.filterAttrs (_: v: v != null) {
-    jellyfin = if cfg.jellyfin.enable then { port = ports.jellyfin; } else null;
-    jellyseerr = if cfg.jellyseerr.enable then { port = ports.jellyseerr; } else null;
-    sonarr = if cfg.sonarr.enable then { port = ports.sonarr; } else null;
-    radarr = if cfg.radarr.enable then { port = ports.radarr; } else null;
-    readarr = if cfg.readarr.enable then { port = ports.readarr; } else null;
-    prowlarr = if cfg.prowlarr.enable then { port = ports.prowlarr; } else null;
-    sabnzbd = if cfg.sabnzbd.enable then { port = ports.sabnzbd; } else null;
-    audiobookshelf = if cfg.audiobookshelf.enable then { port = ports.audiobookshelf; } else null;
-    navidrome = if cfg.navidrome.enable then { port = ports.navidrome; } else null;
-    lidarr = if cfg.lidarr.enable then { port = ports.lidarr; } else null;
-  };
-
+  # Frueher standen hier zehn handgeschriebene Zeilen -- dieselbe Information
+  # wie in der Port-Tabelle und der mDNS-Liste, ein drittes Mal. Wer einen
+  # Dienst hinzufuegte und diese eine Zeile vergass, bekam einen laufenden
+  # Dienst ohne vHost: erreichbar nur ueber den Port, nicht ueber seinen Namen.
+  #
+  # Jetzt kommt die Menge aus registry.uiServices.
+  #
+  # static kennzeichnet Dienste OHNE eigenen Prozess -- Feishin besteht nur aus
+  # statischen Dateien. Caddy liefert sie direkt aus, statt sie zu proxen.
+  enabledServices = lib.filterAttrs (_: v: v != null) (
+    lib.genAttrs registry.uiServices (
+      name:
+      if (cfg.${name}.enable or false) then
+        let
+          isStatic = registry.isStaticService name;
+        in
+        {
+          port = ports.${name} or 0;
+          static = isStatic;
+          # NICHT "cfg.${name}.package or pkgs.feishin-web" -- der or-Operator
+          # greift nur, wenn das Attribut FEHLT. Hier existiert es und hat den
+          # Wert null (Default der package-Option), also liefert or das null
+          # weiter. Ergebnis waere "root * " mit leerem Pfad, und Caddy
+          # lieferte ein leeres Verzeichnis aus, ohne zu meckern.
+          # Am 2026-07-21 genau so passiert.
+          staticRoot =
+            if !isStatic then
+              null
+            else if (cfg.${name}.package or null) != null then
+              toString cfg.${name}.package
+            else
+              toString pkgs.feishin-web;
+        }
+      else
+        null
+    )
+  );
   hasForwardAuth = auth.mode == "forward-auth";
   hasSkipPaths = hasForwardAuth && auth.skipPaths != [ ];
   skipPathsStr = lib.concatStringsSep " " auth.skipPaths;
@@ -76,7 +100,11 @@ let
   mkProxyBody =
     svc:
     let
-      proxy = "reverse_proxy http://127.0.0.1:${toString svc.port}";
+      proxy =
+        if (svc.static or false) then
+          mkStaticBody svc
+        else
+          "reverse_proxy http://127.0.0.1:${toString svc.port}";
     in
     if hasSkipPaths then
       ''
@@ -100,7 +128,25 @@ let
       '';
 
   # Auth-freier Body: nur Proxy, kein forward_auth.
-  mkProxyOnly = svc: "reverse_proxy http://127.0.0.1:${toString svc.port}";
+  # Statische Dienste haben keinen Prozess zum Proxen -- Caddy liefert ihre
+  # Dateien selbst aus.
+  #
+  # try_files ist zwingend: Feishin ist eine Single-Page-App. Ohne die Zeile
+  # gibt ein Neuladen auf /albums einen 404, weil dieser Pfad als Datei
+  # gesucht wird. Alles muss auf index.html zeigen, die Anwendung uebernimmt
+  # das Routing selbst.
+  mkStaticBody = svc: ''
+    root * ${svc.staticRoot}
+    try_files {path} /index.html
+    file_server
+  '';
+
+  mkProxyOnly =
+    svc:
+    if (svc.static or false) then
+      mkStaticBody svc
+    else
+      "reverse_proxy http://127.0.0.1:${toString svc.port}";
 
   # .local = vertraute LAN-Zone. Bei localBypass laeuft L1 OHNE forward_auth,
   # damit "dumme" Geraete (Fire TV, Smart-TV, Sonos ...) ohne SSO drankommen.
