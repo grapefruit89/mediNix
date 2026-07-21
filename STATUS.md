@@ -93,6 +93,7 @@ Wer das „repariert", arbeitet an einem Phantom.
 
 | Frage | Datei |
 |---|---|
+| Neue Maschine einrichten | `docs/ONBOARDING.md` |
 | Wie hängt alles zusammen | `docs/ARCHITEKTUR.md` |
 | Etwas ist kaputt | `docs/RUNBOOK.md` |
 | Port, UID, Tier, mDNS | `lib/registry.nix` |

@@ -168,6 +168,7 @@ Vollständig in `LEARNINGS.md` (L1–L7). Die teuersten:
 | Regeln zu **einem** Modul | `CLAUDE.md` im jeweiligen Ordner |
 | Zugangswege, Ports, Fallen dieser Maschine | `CLAUDE.local.md` (gitignored) |
 | Was wir schmerzhaft gelernt haben | `LEARNINGS.md` |
+| Neue Maschine, von null bis läuft | `docs/ONBOARDING.md` |
 | Wie die Teile zusammenhängen | `docs/ARCHITEKTUR.md` |
 | Etwas ist kaputt — Fehler, Diagnose, Fix | `docs/RUNBOOK.md` |
 | Momentaufnahme, wo wir stehen | `STATUS.md` |

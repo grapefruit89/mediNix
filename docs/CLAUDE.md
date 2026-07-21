@@ -24,6 +24,7 @@ verifizieren und zwingt ihn zum Raten.
 
 | Datei | Rolle |
 |---|---|
+| `ONBOARDING.md` | Von der leeren Maschine bis elf laufende Dienste, mit Prüfung je Schritt |
 | `ARCHITEKTUR.md` | Wie devNIX, mediNix, q958 und Claude Code zusammenhängen |
 | `RUNBOOK.md` | Fehler → Diagnose → Behebung, je Abschnitt ein `error_pattern` |
 | `adr/` | Entscheidungen mit Begründung |

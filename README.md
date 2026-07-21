@@ -3,6 +3,10 @@
 Portables NixOS-Modul für den kompletten Heimmedien-Stack:
 Jellyfin · Sonarr · Radarr · Lidarr · Readarr · Prowlarr · SABnzbd · Audiobookshelf · Navidrome.
 
+
+> **Neue Maschine?** `docs/ONBOARDING.md` führt von der leeren Maschine bis
+> zu elf laufenden Diensten — sieben Schritte, jeder mit seiner Prüfung.
+
 ## Quickstart (fremdes System)
 
 ```nix

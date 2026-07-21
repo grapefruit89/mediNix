@@ -167,6 +167,7 @@ hinreichen. Und dann: nur stdlib, keine externen Abhängigkeiten.
 | API-Endpunkte + Verifikationsstand | `docs/api-reference.md` |
 | Provisionierungs-Architektur | `docs/adr/5035-provision-driver-architecture.md` |
 | Port, UID, Tier, mDNS-Menge (SSoT) | `lib/registry.nix` |
+| Neue Maschine einrichten | `docs/ONBOARDING.md` |
 | Wie die Teile zusammenhängen | `docs/ARCHITEKTUR.md` |
 | Etwas ist kaputt | `docs/RUNBOOK.md` |
 | Wo stehen wir gerade | `STATUS.md` |
