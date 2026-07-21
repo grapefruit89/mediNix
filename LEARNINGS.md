@@ -422,3 +422,46 @@ Für mediNix heißt das nichts, für die Fehlersuche viel:
 
 > **Regel:** Wenn manche Hosts erreichbar sind und andere nicht, zuerst prüfen,
 > ob es an IPv4/IPv6 liegt — nicht am Dienst.
+
+---
+
+## L7 — Ein Dienst, der eine bestehende Installation vermutet, migriert ins Leere
+
+**Symptom.** Jellyfin startete auf einer frischen Installation nie:
+
+```
+SQLite Error 1: 'no such table: ActivityLog'
+```
+
+Endlos-Neustart. Betraf 10.11.11 **und** 10.10.7, nur an verschiedenen Tabellen.
+
+**Was ich zuerst annahm — und was falsch war.** Ich hielt es fuer einen
+Versionsfehler und pinnte 10.10.7 aus einem alten nixpkgs-Stand. Der Downgrade
+aenderte nichts. Die Annahme war nie geprueft, sie war nur plausibel.
+
+**Die Ursache.** mediNix legte Konfigurationsdateien an, *bevor* Jellyfin je
+lief. Jellyfin fand eine gefuellte Konfiguration ohne Migrationsstand, schloss
+auf eine bestehende Installation und migrierte eine Datenbank, die es nicht gab.
+
+**Der Beweis.** Gegentest mit denselben Vorgaben, aber nicht eingespielt:
+`Startup complete 0:00:08`, 0 Neustarts. Deckt sich mit jellyfin/jellyfin#15158,
+wo ein Nutzer genau umgekehrt half — indem er den Migrationsstand *vorab* setzte.
+
+**Die allgemeine Form.** Wer den Zustand eines Diensts vorbelegt, muss dessen
+Erkennungslogik kennen. Viele Dienste unterscheiden Erst- von Folgestart an
+*einer* Datei. Legt man andere Dateien an, aber diese eine nicht, entsteht ein
+Zustand, den der Dienst nie vorgesehen hat: halb installiert.
+
+**Der zweite Fehler, gleich danach.** Mein erster Marker war
+`config/migrations.xml` — die 10.11 gar nicht mehr anlegt. Die Bedingung wurde
+nie wahr, die Vorgaben blieben dauerhaft aus, Jellyfin lief auf seinem
+Standardport 8096 statt dem Registry-Port. Der Dienst lief und war trotzdem
+unerreichbar (Caddy 502).
+
+> **Merksatz:** Als Marker taugt nur, was der Dienst *zwingend* anlegt, nicht
+> was er *derzeit* anlegt. `data/jellyfin.db` ist ueber Versionen stabil,
+> Config-Dateinamen sind es nicht.
+
+**Und ein Werkzeugfehler:** `systemd-run` gibt der Unit einen minimalen PATH.
+`nixos-rebuild switch` scheitert darin mit `[Errno 2] ... 'test'`. Zum Abkoppeln
+langlaufender Befehle `setsid nohup ... &` nehmen, nicht `systemd-run`.
