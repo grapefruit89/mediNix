@@ -158,9 +158,27 @@ let
     };
 
     # ── 560 observability ──────────────────────────────────────────────
-    # Metriken-Endpunkt, keine Oberfläche für Menschen.
-    exportarr = {
+    # Ein Exporter je *arr-Dienst. Jeder bekommt eine eigene Nummer statt
+    # eines Sammeleintrags -- sonst braeuchte man wieder eine Nebenrechnung
+    # ("Basisport plus Versatz"), und genau die wollte das Schema abschaffen.
+    # Keine Oberfläche für Menschen, deshalb ui = false und tier = none.
+    exportarr-sonarr = {
       number = 561;
+      tier = "none";
+      ui = false;
+    };
+    exportarr-radarr = {
+      number = 562;
+      tier = "none";
+      ui = false;
+    };
+    exportarr-prowlarr = {
+      number = 563;
+      tier = "none";
+      ui = false;
+    };
+    exportarr-lidarr = {
+      number = 564;
       tier = "none";
       ui = false;
     };

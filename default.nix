@@ -362,64 +362,24 @@ in
     };
 
     # Declarative Port Configuration (R4)
-    ports = {
-      jellyfin = lib.mkOption {
+    ports = lib.mapAttrs (
+      name: default:
+      lib.mkOption {
         type = lib.types.port;
-        default = 5001;
-      };
-      jellyseerr = lib.mkOption {
-        type = lib.types.port;
-        default = 5002;
-      };
-      sonarr = lib.mkOption {
-        type = lib.types.port;
-        default = 5003;
-      };
-      radarr = lib.mkOption {
-        type = lib.types.port;
-        default = 5004;
-      };
-      readarr = lib.mkOption {
-        type = lib.types.port;
-        default = 5005;
-      };
-      prowlarr = lib.mkOption {
-        type = lib.types.port;
-        default = 5006;
-      };
-      sabnzbd = lib.mkOption {
-        type = lib.types.port;
-        default = 5007;
-      };
-      audiobookshelf = lib.mkOption {
-        type = lib.types.port;
-        default = 5008;
-      };
-      navidrome = lib.mkOption {
-        type = lib.types.port;
-        default = 5009;
-      };
-      lidarr = lib.mkOption {
-        type = lib.types.port;
-        default = 5010;
-      };
-      exportarr-sonarr = lib.mkOption {
-        type = lib.types.port;
-        default = 4070;
-      };
-      exportarr-radarr = lib.mkOption {
-        type = lib.types.port;
-        default = 4071;
-      };
-      exportarr-prowlarr = lib.mkOption {
-        type = lib.types.port;
-        default = 4072;
-      };
-      exportarr-lidarr = lib.mkOption {
-        type = lib.types.port;
-        default = 4073;
-      };
-    };
+        inherit default;
+        description = ''
+          Port fuer ${name}.
+
+          Default kommt aus lib/registry.nix und ist dort abgeleitet:
+          Port = Ordnernummer x 10. Vorher standen hier vierzehn von Hand
+          gepflegte Zahlen -- ohne erkennbares System und ohne Schutz gegen
+          Kollisionen.
+
+          Ueberschreiben ist weiterhin moeglich, etwa wenn ein Port auf dem
+          Host schon belegt ist.
+        '';
+      }
+    ) (import ./lib/registry.nix { inherit lib; }).ports;
 
     # System Configuration Defaults
     hardware = {
