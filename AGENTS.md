@@ -93,19 +93,28 @@ Wer das ungeprüft übernimmt, arbeitet an Phantom-Problemen.
 
 ---
 
-## Regel 2 — Wir sind das Architekturbüro
+## Regel 2 — Wer bauen kann, muss bauen
 
-**Hier wird entworfen, nicht gebaut.** Es gibt in dieser Umgebung kein Nix, keine
-Evaluation, keinen Dry-Build. Fehler werden später auf dem echten System
-gefunden und behoben.
+Diese Regel hat sich am 2026-07-21 umgedreht. Sie lautete früher „Wir sind das
+Architekturbüro — hier wird entworfen, nicht gebaut, es gibt kein Nix". Das galt,
+solange nur von einem Windows-Rechner aus gearbeitet wurde.
 
-Daraus folgt der Auftrag: **Den Leuten, die bauen, so viel Denkarbeit wie möglich
-abnehmen.** Ein Entwurf ist fertig, wenn er mechanisch umsetzbar ist — mit
-konkreten Signaturen, Migrationstabellen, benannten Fallstricken und einer
-Reihenfolge. Nicht, wenn die Idee klar ist.
+**Läuft der Agent auf q958, gilt das Gegenteil:** Nix ist da, systemd ist da,
+`sudo` braucht kein Passwort. Dann ist eine Behauptung ohne Prüfung eine
+vermeidbare Nachlässigkeit — nicht mehr eine Umgebungsgrenze.
 
-Was das *nicht* heißt: Sorgfalt sparen. Gerade weil hier nichts kompiliert,
-muss der Entwurf präziser sein als üblich.
+| Wo der Agent läuft | Was er schuldet |
+|---|---|
+| **auf q958** | Ausführen. `nix eval`, Dry-Build, Dienst starten, `curl`. Kein „das müsste man mal prüfen" |
+| **ohne Nix** (Windows, Web, Review) | Sauber entwerfen **und** kennzeichnen, was ungeprüft ist — mit dem Befehl dazu, der es prüfen würde |
+
+Im zweiten Fall gilt der alte Auftrag weiter: den Leuten, die bauen, so viel
+Denkarbeit wie möglich abnehmen. Ein Entwurf ist fertig, wenn er mechanisch
+umsetzbar ist — konkrete Signaturen, benannte Fallstricke, eine Reihenfolge.
+Nicht, wenn die Idee klar ist.
+
+Eine ehrlich markierte Lücke ist brauchbar. Eine unmarkierte Vermutung ist
+gefährlich.
 
 ---
 
@@ -157,8 +166,11 @@ hinreichen. Und dann: nur stdlib, keine externen Abhängigkeiten.
 | Erreichbarkeit LAN/WAN/VPN, TLS | `docs/network-topology.md` |
 | API-Endpunkte + Verifikationsstand | `docs/api-reference.md` |
 | Provisionierungs-Architektur | `docs/adr/5035-provision-driver-architecture.md` |
-| DNS-Tier-Zuordnung (SSoT) | `lib/service-tiers.nix` |
+| Port, UID, Tier, mDNS-Menge (SSoT) | `lib/registry.nix` |
 | Optionen-Referenz | `default.nix` |
+| Betriebsanweisung für Claude Code | `CLAUDE.md` + `.claude/rules/` |
+| Regeln zu **einem** Modul | `CLAUDE.md` im jeweiligen Ordner |
+| Was schiefging und warum | `LEARNINGS.md` |
 
 Bei Widerspruch gewinnt die speziellere Datei — und der Widerspruch gehört
 aufgelöst, nicht umschifft.
