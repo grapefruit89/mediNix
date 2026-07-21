@@ -26,18 +26,13 @@ let
 
   # Gleiche UI-Menge wie Ingress (kein recyclarr/exportarr).
   # optionalString liefert "" wenn aus -- filter auf nicht-leer.
-  enabledNames = lib.filter (n: n != "") [
-    (lib.optionalString cfg.jellyfin.enable "jellyfin")
-    (lib.optionalString cfg.jellyseerr.enable "jellyseerr")
-    (lib.optionalString cfg.sonarr.enable "sonarr")
-    (lib.optionalString cfg.radarr.enable "radarr")
-    (lib.optionalString cfg.readarr.enable "readarr")
-    (lib.optionalString cfg.prowlarr.enable "prowlarr")
-    (lib.optionalString cfg.sabnzbd.enable "sabnzbd")
-    (lib.optionalString cfg.audiobookshelf.enable "audiobookshelf")
-    (lib.optionalString cfg.navidrome.enable "navidrome")
-    (lib.optionalString cfg.lidarr.enable "lidarr")
-  ];
+  # Frueher stand hier eine handgepflegte Liste aller UI-Dienste -- dieselbe
+  # Information wie im Ingress und in der Port-Tabelle, dreifach geschrieben.
+  # Ein neuer Dienst, den jemand hier zu ergaenzen vergass, war erreichbar und
+  # trotzdem unauffindbar: Port da, vHost da, aber kein {name}.local.
+  # Jetzt kommt die Menge aus der Registry (ui = true).
+  registry = import ../lib/registry.nix { inherit lib; };
+  enabledNames = lib.filter (n: cfg.${n}.enable or false) registry.uiServices;
 
   # avahi-publish -a haelt den Alias solange der Prozess laeuft.
   # IP dynamisch aus dem Default-Route-Interface (kein hardcodiertes 192.168.x).
