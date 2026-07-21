@@ -1,9 +1,17 @@
+# ---
+# id: 5035
+# title: "Provision: Treiber pro API-Familie statt Skript pro Aufgabe"
+# status: "accepted"
+# note: "Entwurf, noch nicht gebaut"
+# date: "2026-07-18"
+# related: [5034, 5036, 5037]
+# tags: ["provision", "treiber", "systemd", "oneshot", "arr", "prowlarr"]
+# error_pattern: "provision|treiber|driver|arr-provision|oneshot|prowlarr.*sync"
+# ---
+
 # ADR-5035 — Provision: Treiber pro API-Familie statt Skript pro Aufgabe
 
-**Status:** accepted (Entwurf, noch nicht gebaut)
-**Datum:** 2026-07-18
 **Kontext:** `525-provision/` + `packages/arr-provision/`
-**Verwandt:** ADR-5034 (Scope-Cut arr-provision), Issue #49, #48
 
 ---
 

@@ -1,9 +1,17 @@
+# ---
+# id: 5036
+# title: "Glühbirnen-API: die minimale Pflichtkonfiguration"
+# status: "accepted"
+# note: "Entwurf, noch nicht gebaut"
+# date: "2026-07-18"
+# related: [5035, 5037]
+# tags: ["api", "optionen", "profil", "katalog", "defaults", "kiss"]
+# error_pattern: "gluehbirne|glühbirne|pflichtkonfiguration|minimale.*konfig|profil.*sprache"
+# ---
+
 # ADR-5036 — Glühbirnen-API: die minimale Pflichtkonfiguration
 
-**Status:** accepted (Entwurf, noch nicht gebaut)
-**Datum:** 2026-07-18
 **Betrifft:** `default.nix`, `530-sabnzbd/`, `560-recyclarr/`, `525-provision/`
-**Verwandt:** ADR-5035 (Treiber-Architektur), Issue #49
 
 ---
 

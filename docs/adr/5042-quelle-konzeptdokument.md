@@ -1,3 +1,18 @@
+> ## Hinweis — dies ist KEIN ADR
+>
+> Dieses Dokument ist die **Quelle**, aus der ADR-5042 entstanden ist: ein
+> Brainstorm-Ergebnis, kritisch überarbeitet. Es hat bewusst kein
+> ADR-Frontmatter und ist nicht über `error_pattern` auffindbar.
+>
+> **Die Entscheidung steht in [`5042-pfadisomorphie.md`](5042-pfadisomorphie.md).**
+> Dieses Dokument erklärt nur, woher sie kommt — und was davon beim
+> Übernehmen begründet abgelehnt wurde.
+>
+> Es liegt in `adr/`, weil es zu ADR-5042 gehört. Wer nach einer Entscheidung
+> sucht, liest das andere.
+
+---
+
 # Nix-Grok · Modul `50-media` — Pfadisomorphie-Konzept
 
 **Stand:** Ergebnis einer Konzeptions-Session (Chat-Brainstorm mit DeepSeek als Ideengeber, hier kritisch geprüft, korrigiert und finalisiert).

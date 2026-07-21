@@ -1,9 +1,17 @@
+# ---
+# id: 5037
+# title: "Daten statt Code: Kataloge und Regeln statt Wiederholung"
+# status: "accepted"
+# note: "Entwurf, noch nicht gebaut"
+# date: "2026-07-18"
+# related: [5035, 5036]
+# tags: ["recyclarr", "katalog", "scoring", "trash-id", "daten", "provision"]
+# error_pattern: "recyclarr|trash_id|katalog|scoring|daten statt code"
+# ---
+
 # ADR-5037 — Daten statt Code: Kataloge und Regeln statt Wiederholung
 
-**Status:** accepted (Entwurf, noch nicht gebaut)
-**Datum:** 2026-07-18
 **Betrifft:** `560-recyclarr/`, `525-provision/`, `lib/`
-**Verwandt:** ADR-5036 (Glühbirnen-API), ADR-5035 (Treiber-Architektur)
 
 ---
 
