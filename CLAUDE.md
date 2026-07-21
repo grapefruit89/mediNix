@@ -74,7 +74,9 @@ Befehl ist kein Ergebnis.
 git add -A && git commit -m "..."
 
 # 2. Werkzeuge
-nix run nixpkgs#nixfmt-rfc-style -- $(find . -name '*.nix' -not -path './.git/*')
+NIXFILES=$(find . -name '*.nix' -not -path './.git/*')
+nix run nixpkgs#nixfmt -- $NIXFILES
+nix run nixpkgs#nixf-diagnose -- --ignore=sema-unused-def-lambda-noarg-formal $NIXFILES
 nix run nixpkgs#statix -- check .
 nix run nixpkgs#deadnix -- --fail .
 

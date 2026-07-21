@@ -39,10 +39,16 @@
       };
 
       # ── Formatter ────────────────────────────────────────────────────────
-      # nixfmt-rfc-style ist der offizielle Nix-Formatstandard (RFC 166).
+      # nixfmt ist der offizielle Nix-Formatter (RFC 166) und das, was die
+      # nixpkgs-CI selbst benutzt (ci/treefmt.nix).
+      #
+      # NICHT nixfmt-rfc-style verwenden: seit 2025-07-14 nur noch ein Alias auf
+      # nixfmt ("is now the same as pkgs.nixfmt which should be used instead",
+      # pkgs/top-level/aliases.nix). Store-Pfade sind bitgleich.
+      # nixfmt-classic ist entfernt, nixpkgs-fmt ist Community und nicht in der CI.
       # Bewusst nicht alejandra oder nixpkgs-fmt: wer sich an den Standard
       # haelt, muss Fremden nichts erklaeren.
-      formatter.${system} = pkgs.nixfmt-rfc-style;
+      formatter.${system} = pkgs.nixfmt;
 
       # ── Checks ───────────────────────────────────────────────────────────
       checks.${system} = {
@@ -51,7 +57,7 @@
         eval = self.nixosConfigurations.check.config.system.build.toplevel;
 
         # 2. Ist alles formatiert? --check aendert nichts, es meldet nur.
-        format = mkCheck "format" [ pkgs.nixfmt-rfc-style ] ''
+        format = mkCheck "format" [ pkgs.nixfmt ] ''
           nixfmt --check $(find . -name '*.nix' -not -path './.git/*') \
             || { echo ""; echo "Nicht formatiert. Beheben mit:  nix fmt"; exit 1; }
         '';
@@ -76,7 +82,8 @@
       # nix develop -> alle Werkzeuge im PATH, ohne globale Installation.
       devShells.${system}.default = pkgs.mkShell {
         packages = with pkgs; [
-          nixfmt-rfc-style
+          nixfmt
+          nixf-diagnose
           statix
           deadnix
           nix-tree
