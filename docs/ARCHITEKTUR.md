@@ -205,7 +205,31 @@ Bei Widerspruch gewinnt die speziellere Datei. Ein Widerspruch gehört
 
 ---
 
-## 8. Was bewusst nicht hier steht
+## 8. Unfertiges und bewusst Unbenutztes
+
+Drei Stellen sehen lebendig aus und sind es nicht. Alle drei per Gegentest
+belegt: entfernt man sie, bleibt der Store-Pfad bitgleich.
+
+| Was | Zustand | Warum es bleibt |
+|---|---|---|
+| `registry.uids` | berechnet, 0 Leser | Trägt die Entscheidung aus ADR-5042. Verdrahtung erfordert UID-Migration mit `chown -R` |
+| `registry.mediaGid` | berechnet, 0 Leser | dito, real ist GID 990 statt 3000 |
+| `compat-my.nix` | 208 Zeilen, niemand importiert sie | AGENTS.md Regel 3: bewusst außerhalb des Flake-Exports, für den Fall Nix-Grok |
+
+**Warum nicht gelöscht:** Alle drei tragen eine Absicht. Gelöscht verschwände
+die Absicht, das Problem bliebe — nur unsichtbar. Ein Feld, das berechnet und
+unbenutzt ist, ist der schlechteste Zustand: es sieht erledigt aus. Deshalb
+steht die Begründung jeweils direkt an der Stelle im Code.
+
+**Was NICHT tot ist, obwohl es so aussieht:** `lib/service-tiers.nix` ist eine
+Weiterleitung auf die Registry und wird von `500-media-ingress/ddns.nix`
+importiert. Eine Suche nach `registry.byService` findet nichts — der Zugriff
+läuft über die Weiterleitung. Wer hier aufräumen will, prüft erst den
+Gegentest, nicht die Textsuche.
+
+---
+
+## 9. Was bewusst nicht hier steht
 
 - **Wie man einen Dienst hinzufügt** → `CLAUDE.md` im jeweiligen `5xx`-Ordner
 - **Wie man baut und aktiviert** → `.claude/rules/betrieb.md`

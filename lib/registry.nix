@@ -228,8 +228,40 @@ in
 {
   inherit services;
 
-  # Port und UID je Dienst — ersetzt die 14 handgepflegten Port-Optionen
+  # Port je Dienst — ersetzt die 14 handgepflegten Port-Optionen.
+  # Wird benutzt: default.nix leitet daraus die Port-Defaults ab.
   ports = lib.mapAttrs (_: portOf) services;
+
+  # ══════════════════════════════════════════════════════════════════════
+  # uids — BERECHNET, ABER BEWUSST NOCH NICHT VERDRAHTET
+  # ══════════════════════════════════════════════════════════════════════
+  #
+  # Gegengeprüft am 2026-07-21: dieses Feld hat NULL Leser. Entfernt man es,
+  # bleibt der Store-Pfad der Prüfkonfiguration bitgleich — es ist wirkungslos.
+  #
+  # Es steht trotzdem hier, weil es eine ENTSCHEIDUNG trägt, keine Vergesslichkeit:
+  # ADR-5042 legt fest, dass UIDs isomorph aus der Nummer folgen sollen.
+  # Löschte man das Feld, verschwände die Entscheidung mitsamt Begründung — das
+  # Problem bliebe, nur unsichtbar.
+  #
+  #   Soll (dieses Feld)      Ist (auf q958 gemessen)
+  #   sonarr   1512           sonarr   274
+  #   radarr   1513           radarr   275
+  #   jellyfin 1541           jellyfin 993
+  #
+  # WAS DIE VERDRAHTUNG KOSTET — und warum sie nicht nebenbei passiert:
+  # Die *arr-Module aus nixpkgs legen ihre Benutzer selbst an. Eine feste UID
+  # erzwingt `users.users.<dienst>.uid = registry.uids.<dienst>` PLUS einen
+  # einmaligen `chown -R` über /var/lib/<dienst>, sonst gehören die vorhandenen
+  # Dateien nach dem Switch niemandem mehr. Ohne diesen Schritt startet kein
+  # einziger Dienst mehr.
+  #
+  # WARUM ES TROTZDEM DRINGEND IST: automatisch vergebene UIDs liegen unter
+  # /var/lib/nixos. Bei Impermanence mit tmpfs-Wurzel ist das nach dem Neustart
+  # weg — die Dienste bekommen neue UIDs, und die Mediendateien gehören
+  # plötzlich niemandem. Genau der Fall, vor dem ADR-5042 warnt.
+  #
+  # Status: offen. Siehe STATUS.md, Punkt 2 der nächsten Sitzung.
   uids = lib.mapAttrs (_: uidOf) services;
 
   # Tier-Zuordnung — ersetzt lib/service-tiers.nix
@@ -268,5 +300,12 @@ in
   # 3000 gewählt, weil:
   #   < 1000  ist bei NixOS für Systemkonten reserviert (misc/ids.nix)
   #   = 1000  ist auf den meisten Systemen der erste echte Benutzer
+  # ⚠ Ebenfalls BERECHNET, ABER NICHT VERDRAHTET (Stand 2026-07-21).
+  # Gemessen auf q958: die media-Gruppe hat GID 990, automatisch vergeben —
+  # nicht 3000. Entfernt man dieses Feld, bleibt der Store-Pfad bitgleich.
+  #
+  # Zum Verdrahten genügt `users.groups.media.gid = registry.mediaGid;` plus
+  # ein einmaliger `chgrp -R` über /data/media. Weniger Aufwand als die UIDs,
+  # aber dasselbe Impermanence-Risiko.
   mediaGid = 3000;
 }

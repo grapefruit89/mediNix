@@ -17,8 +17,14 @@ Die GID ist die **bewusste** Ausnahme: waere sie isomorph, bekaeme jeder Dienst
 seine eigene Gruppe, und der gemeinsame Bibliothekszugriff braeche.
 
 > **Ehrlicher Stand:** `uids` und `mediaGid` werden berechnet und **nirgends
-> benutzt** (0 Referenzen). Real: Sonarr UID 274, media-GID 990. Die Isomorphie
-> ist bei Ports umgesetzt, bei UIDs **nicht**.
+> benutzt** — durch Gegentest belegt: entfernt man sie, bleibt der Store-Pfad
+> bitgleich. Real: Sonarr UID 274, media-GID 990. Die Isomorphie ist bei Ports
+> umgesetzt, bei UIDs **nicht**.
+>
+> Beide Felder sind ausführlich in `registry.nix` selbst kommentiert — inklusive
+> dessen, was die Verdrahtung kostet (UID-Migration mit `chown -R`, sonst startet
+> kein Dienst mehr). **Nicht löschen:** sie tragen die Entscheidung aus ADR-5042.
+> Gelöscht wäre das Problem unsichtbar, nicht gelöst.
 
 ## service-factory.nix — das Chamaeleon
 

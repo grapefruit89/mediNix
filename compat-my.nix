@@ -1,3 +1,35 @@
+# ══════════════════════════════════════════════════════════════════════════
+# NICHT EINGEBUNDEN — und das ist Absicht, kein Versehen
+# ══════════════════════════════════════════════════════════════════════════
+#
+# Diese Datei wird von KEINER anderen Datei importiert. Gegengeprüft am
+# 2026-07-21: entfernt man sie, bleibt der Store-Pfad der Prüfkonfiguration
+# bitgleich. Sie hat im Normalbetrieb null Wirkung.
+#
+# WARUM SIE TROTZDEM HIER LIEGT
+#
+# AGENTS.md Regel 3 (Portabilität) sagt wörtlich: keine `my.*`-Referenz im
+# portablen Kern — "nur `compat-my.nix`, die nicht Teil des Flake-Exports ist".
+#
+# Der Zweck ist ein Übergang: `my.*` ist der Options-Namensraum von Nix-Grok.
+# mediNix benutzt ausschließlich `grapefruitMedia.*`, damit es auf einem
+# fremden System funktioniert, das kein `my.*` kennt. Wer mediNix in eine
+# bestehende Nix-Grok-Konfiguration einbinden will, importiert diese Datei
+# ZUSÄTZLICH und von Hand — dann werden die alten `my.*`-Werte auf die neuen
+# Optionen abgebildet.
+#
+# Würde sie im Kern eingebunden, wäre mediNix wieder an Nix-Grok gekettet und
+# der ganze Zweck der Herauslösung dahin.
+#
+# WANN SIE WEG KANN
+#
+# Sobald feststeht, dass niemand mediNix mehr in eine `my.*`-Konfiguration
+# einbindet. Nix-Grok ist seit dem 2026-07-20 stillgelegt; sobald es
+# endgültig aufgegeben wird, ist diese Datei löschbar.
+#
+# Bis dahin: nicht löschen, nicht importieren, nicht "aufräumen".
+# ══════════════════════════════════════════════════════════════════════════
+
 # ---
 # meta:
 #   layer: 3
