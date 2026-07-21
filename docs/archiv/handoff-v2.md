@@ -1,3 +1,31 @@
+> ## ⚠ ARCHIVIERT — nicht als Wahrheit lesen
+>
+> **Archiviert am 2026-07-21.** Dieses Dokument beschreibt einen Zielzustand
+> oder Prüfstand von **vor** der Registry-Umstellung. Es kennt weder
+> `lib/registry.nix` noch die abgeleiteten Ports (Nummer × 10) noch den
+> Jellyfin-Seed-Fix.
+>
+> **Wo die Wahrheit heute steht:**
+>
+> | Frage | Datei |
+> |---|---|
+> | Port, UID, Tier, mDNS-Menge | `lib/registry.nix` |
+> | Warum es so entschieden wurde | `docs/adr/` |
+> | Was schiefging und warum | `LEARNINGS.md` |
+> | Wie die Teile zusammenhängen | `docs/ARCHITEKTUR.md` |
+> | Etwas ist kaputt | `docs/RUNBOOK.md` |
+>
+> **Warum es trotzdem hier liegt und nicht gelöscht wurde:** Code-Kommentare
+> verweisen namentlich auf Befunde aus diesem Dokument (K2, K3, K4, H4.2 …).
+> Wer diese Stellen versteht, braucht die Begründung. Gelöscht wäre die
+> Begründung weg und die Kommentare unlesbar.
+>
+> **Was daraus noch gilt:** die *Begründungen* einzelner Befunde. **Was nicht
+> mehr gilt:** jede Aussage der Form „dieses Dokument ist die SSoT für …".
+> Diese Rolle hat die Registry übernommen.
+
+---
+
 # Handoff v2 — Umsetzungsplan Phasen 0–5 für modules/50-media (grapefruitMedia)
 
 **Stand:** 2026-07-15, nach Umsetzung von Block 1 (Claude) und Blöcken 2/3/4/5 (Folge-Session).

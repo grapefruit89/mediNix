@@ -162,11 +162,15 @@ hinreichen. Und dann: nur stdlib, keine externen Abhängigkeiten.
 
 | Thema | Datei |
 |-------|-------|
-| Naming / DNS / Ingress — Zielzustand | `grok-review.md` |
+| Naming / DNS / Ingress | `lib/registry.nix` — abgeleitet, nicht gepflegt |
 | Erreichbarkeit LAN/WAN/VPN, TLS | `docs/network-topology.md` |
 | API-Endpunkte + Verifikationsstand | `docs/api-reference.md` |
 | Provisionierungs-Architektur | `docs/adr/5035-provision-driver-architecture.md` |
 | Port, UID, Tier, mDNS-Menge (SSoT) | `lib/registry.nix` |
+| Wie die Teile zusammenhängen | `docs/ARCHITEKTUR.md` |
+| Etwas ist kaputt | `docs/RUNBOOK.md` |
+| Wo stehen wir gerade | `STATUS.md` |
+| Historische Begründungen (K2, K4 …) | `docs/archiv/` — **kein** Zielzustand |
 | Optionen-Referenz | `default.nix` |
 | Betriebsanweisung für Claude Code | `CLAUDE.md` + `.claude/rules/` |
 | Regeln zu **einem** Modul | `CLAUDE.md` im jeweiligen Ordner |

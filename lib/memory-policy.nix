@@ -5,7 +5,7 @@
 #   purpose: systemd MemoryMax/MemoryHigh und OOMScoreAdjust pro Dienst-Tier
 #   docs:
 #     - docs/adr/003-oom-cgroup-isolation.md
-#     - docs/memory_oom.md
+#     - docs/RUNBOOK.md (Abschnitt 8: Speicherdruck)
 #   tags:
 #     - oom
 #     - systemd

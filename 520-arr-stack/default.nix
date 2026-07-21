@@ -10,7 +10,7 @@
 # state_dir: "/var/lib/{name}"
 # tags: [arr, servarr, media, security]
 # docs:
-#   - modules/50-media/claude-review.md
+#   - docs/archiv/claude-review.md
 #   - docs/adr/5030-media-stack-factory-hardening.md
 # ---
 {

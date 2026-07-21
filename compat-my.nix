@@ -4,7 +4,7 @@
 #   role: module
 #   purpose: Kompat-Adapter my.* → grapefruitMedia.* — Eval-Fix nach 50-media-Rewrite (Review K1/H2/H3)
 #   docs:
-#     - modules/50-media/claude-review.md
+#     - docs/archiv/claude-review.md
 #     - docs/adr/011-unified-port-uid-schema.md
 #   tags:
 #     - media

@@ -1,9 +1,37 @@
+> ## ⚠ ARCHIVIERT — nicht als Wahrheit lesen
+>
+> **Archiviert am 2026-07-21.** Dieses Dokument beschreibt einen Zielzustand
+> oder Prüfstand von **vor** der Registry-Umstellung. Es kennt weder
+> `lib/registry.nix` noch die abgeleiteten Ports (Nummer × 10) noch den
+> Jellyfin-Seed-Fix.
+>
+> **Wo die Wahrheit heute steht:**
+>
+> | Frage | Datei |
+> |---|---|
+> | Port, UID, Tier, mDNS-Menge | `lib/registry.nix` |
+> | Warum es so entschieden wurde | `docs/adr/` |
+> | Was schiefging und warum | `LEARNINGS.md` |
+> | Wie die Teile zusammenhängen | `docs/ARCHITEKTUR.md` |
+> | Etwas ist kaputt | `docs/RUNBOOK.md` |
+>
+> **Warum es trotzdem hier liegt und nicht gelöscht wurde:** Code-Kommentare
+> verweisen namentlich auf Befunde aus diesem Dokument (K2, K3, K4, H4.2 …).
+> Wer diese Stellen versteht, braucht die Begründung. Gelöscht wäre die
+> Begründung weg und die Kommentare unlesbar.
+>
+> **Was daraus noch gilt:** die *Begründungen* einzelner Befunde. **Was nicht
+> mehr gilt:** jede Aussage der Form „dieses Dokument ist die SSoT für …".
+> Diese Rolle hat die Registry übernommen.
+
+---
+
 > **ABGELÖST:** Dieses Dokument (v1) wurde durch [`handoff-v2.md`](handoff-v2.md) ersetzt (Stand 2026-07-15).
 > Phasen 0–5 sind dort definiert. Hier nur noch als Referenz für die ursprünglichen Block-Beschreibungen.
 
 # Handoff: Umsetzung der Review-Findings (Blöcke 2–7)
 
-**Basis:** `modules/50-media/claude-review.md` (NICHT verändern!)
+**Basis:** `docs/archiv/claude-review.md` (NICHT verändern!)
 **Stand:** 2026-07-15 — Block 1 ist umgesetzt (siehe unten). Dieses Dokument beschreibt die
 restlichen Blöcke so, dass ein beliebiges Modell/Entwickler sie umsetzen kann.
 Abschließendes Review erfolgt danach durch Claude.

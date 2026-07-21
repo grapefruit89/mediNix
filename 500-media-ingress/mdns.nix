@@ -8,7 +8,7 @@
 # requires: [grapefruitMedia.discovery.mdns]
 # tags: [mdns, avahi, discovery, lan]
 # docs:
-#   - modules/50-media/grok-review.md
+#   - docs/archiv/grok-review.md
 #   - modules/50-media/README.md
 # ---
 # Fallstrick (UNVERHANDELBAR):

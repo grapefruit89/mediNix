@@ -9,7 +9,7 @@
 # tags: [media, options, module-root]
 # docs:
 #   - modules/50-media/README.md
-#   - modules/50-media/claude-review.md
+#   - docs/archiv/claude-review.md
 # ---
 {
   config,
@@ -83,7 +83,7 @@ in
         null (Default) oder "" = KEINE L2-Namen. Die L1-mDNS-Identitaet
         {service}.local laeuft davon unabhaengig immer (Phase B).
 
-        WICHTIG (grok-review.md Fallstrick): NIEMALS auf .local enden lassen --
+        WICHTIG (docs/archiv/grok-review.md Fallstrick): NIEMALS auf .local enden lassen --
         .local ist ausschliesslich Multicast-DNS (RFC 6762) und gehoert nie in
         Cloudflare oder einen Unicast-Rewrite. Fuer L2 eine echte Domain setzen
         (z.B. media.example.com), aufgeloest via Cloudflare/Blocky.
@@ -164,7 +164,7 @@ in
         vor den *arr-Apps aktiv ist und Header-Authentifizierung durchfuehrt.
         Bei true: AUTH__METHOD=External (Proxy authentifiziert).
         Bei false (Standard): AUTH__METHOD=Forms (Nutzer meldet sich direkt an).
-        NIEMALS true ohne echten Proxy -- siehe claude-review.md K2.
+        NIEMALS true ohne echten Proxy -- siehe docs/archiv/claude-review.md K2.
       '';
     };
 
@@ -496,7 +496,7 @@ in
     };
 
     # Phase B (P1-1): mDNS L1 -- {service}.local fuer alle UI-Dienste.
-    # Nie in Cloudflare (grok-review.md Fallstrick).
+    # Nie in Cloudflare (docs/archiv/grok-review.md Fallstrick).
     discovery = {
       mdns = {
         enable = lib.mkOption {
@@ -570,7 +570,7 @@ in
       sonarrApiKeyFile = lib.mkOption {
         type = lib.types.str;
         default = cfg.secrets.arrApiKeyFile;
-        description = "Path to Sonarr API key file (per-service, see K4 in claude-review.md).";
+        description = "Path to Sonarr API key file (per-service, see K4 in docs/archiv/claude-review.md).";
       };
       radarrApiKeyFile = lib.mkOption {
         type = lib.types.str;
@@ -630,7 +630,7 @@ in
           Generate a shared Arr API key and per-service env files at boot
           (520-arr-stack/secrets-generator.nix). Default off: overwrites
           existing <service>.env files and uses one shared key for all
-          services -- see claude-review.md K4 before enabling.
+          services -- see docs/archiv/claude-review.md K4 before enabling.
         '';
       };
     };
@@ -646,7 +646,7 @@ in
     };
   };
 
-  # Review K3 (claude-review.md): Der fruehere allowedTCPPorts-Block (13 Ports
+  # Review K3 (docs/archiv/claude-review.md): Der fruehere allowedTCPPorts-Block (13 Ports
   # pauschal offen) wurde entfernt. Dienste binden an 127.0.0.1 und werden
   # ausschliesslich ueber den Ingress exponiert. LAN-Exposition muss ein
   # Konsument explizit selbst konfigurieren.

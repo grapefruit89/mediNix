@@ -7,12 +7,13 @@
 # purpose: "Leitet DNS-Namen (edge/backend/vhost) aus Tier-Map + Hostname-Overrides ab"
 # tags: [lib, dns, tiers, ddns]
 # docs:
-#   - modules/50-media/grok-review.md
+#   - docs/archiv/grok-review.md
 #   - modules/50-media/docs/network-topology.md
 # ---
 #
 # Reine Ableitungs-Funktion -- kennt KEINE IPs, KEINE feste Domain, KEINEN Provider.
-# Quelle der Wahrheit ist lib/service-tiers.nix; hier kommen nur die Namen dazu.
+# Quelle der Wahrheit ist lib/registry.nix. lib/service-tiers.nix ist nur noch
+# eine Weiterleitung darauf (Kompatibilitaet); hier kommen nur die Namen dazu.
 #
 # Hostname != Servicename ist ausdruecklich erlaubt (navidrome -> "music",
 # jellyseerr -> "seerr"), damit das Modul die Namenskonvention des Hosts abbilden

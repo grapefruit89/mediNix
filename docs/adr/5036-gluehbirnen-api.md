@@ -343,6 +343,13 @@ Laufzeit einen kaputten Indexer zu erzeugen.
 ### Verwendung
 
 ```nix
+
+> **Hinweis (2026-07-21):** Die unten beschriebenen Dateien unter `lib/`
+> (`recyclarr-formats.nix`, `recyclarr-scoring.nix`, `ingress-lib.nix`,
+> `usenet-catalog.nix`) sind **NOCH NICHT UMGESETZT**. Dieses ADR beschreibt
+> einen Entwurf, kein vorhandenes Verzeichnis — wer die Dateien sucht, findet
+> sie nicht, und das ist kein Fehler.
+
 # Katalog-Eintrag: nur Zugangsdaten nötig
 usenet.provider = {
   preset = "eweka";

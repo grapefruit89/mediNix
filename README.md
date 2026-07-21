@@ -143,9 +143,13 @@ grapefruitMedia.ingress.tls = {
 
 ## DNS & Namensschema
 
-> **Kanon:** `grok-review.md` ist die SSoT für Naming/DNS/Ingress. Ältere
-> Aussagen in `handoff-v2.md`/`claude-review*.md` („kein `.local`", `home.arpa")
-> sind überholt und gelten nicht mehr.
+> **Kanon:** `lib/registry.nix` ist die einzige Wahrheit für Port, UID, Tier
+> und mDNS-Menge. Ports folgen der Ordnernummer × 10 (Sonarr 512 → 5120).
+>
+> Ältere Dokumente unter `docs/archiv/` beanspruchen diese Rolle teils für sich
+> (`grok-review.md`: „SSoT für Naming/DNS/Ingress"). **Das gilt nicht mehr.**
+> Sie sind aufgehoben, weil Code-Kommentare auf ihre Befunde verweisen — nicht,
+> weil ihr Zielzustand noch aktuell wäre.
 
 ### Zwei Namensebenen
 

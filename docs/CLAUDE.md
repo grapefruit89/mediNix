@@ -19,3 +19,23 @@ ein Groessenlimit laeuft, wird das **markiert** — nicht geraten und weitergema
 Die Quell-URLs dort sind Architektur, kein Kommentar-Ballast. Wer sie bei einem
 Refactoring entfernt, nimmt dem naechsten Bearbeiter die Moeglichkeit zu
 verifizieren und zwingt ihn zum Raten.
+
+## Was in docs/ liegt
+
+| Datei | Rolle |
+|---|---|
+| `ARCHITEKTUR.md` | Wie devNIX, mediNix, q958 und Claude Code zusammenhängen |
+| `RUNBOOK.md` | Fehler → Diagnose → Behebung, je Abschnitt ein `error_pattern` |
+| `adr/` | Entscheidungen mit Begründung |
+| `api-reference.md` | Endpunkte samt Verifikationsstand (✅/⚠️/❌) |
+| `network-topology.md` | Erreichbarkeit LAN/WAN/VPN, TLS |
+| `archiv/` | **Überholt.** Aufgehoben, weil Code-Kommentare auf Befunde darin verweisen (K2, K4, H4.2). Kein Zielzustand mehr — jede „SSoT"-Aussage darin gilt nicht |
+
+## Neuen Runbook-Eintrag anlegen
+
+Vier Pflichtteile, sonst ist er wertlos:
+
+1. `error_pattern` — maschinenlesbar, sonst findet ihn niemand
+2. Das Symptom **wörtlich**, nicht umschrieben
+3. Die **widerlegte Erstannahme** — der am häufigsten weggelassene Teil
+4. Der Gegentest, der die Ursache belegt

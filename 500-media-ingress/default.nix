@@ -8,7 +8,7 @@
 # requires: [grapefruitMedia.ingress, grapefruitMedia.domain, grapefruitMedia.discovery.mdns]
 # tags: [caddy, ingress, reverse-proxy, mdns]
 # docs:
-#   - modules/50-media/grok-review.md
+#   - docs/archiv/grok-review.md
 #   - modules/50-media/README.md
 # ---
 # Phase B (2026-07-15):

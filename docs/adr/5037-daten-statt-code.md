@@ -54,6 +54,13 @@ abzuleiten**. Jedes Custom Format bekommt eine *Rolle*; der Score ergibt sich au
 Rolle + `languageMode`.
 
 ```nix
+
+> **Hinweis (2026-07-21):** Die unten beschriebenen Dateien unter `lib/`
+> (`recyclarr-formats.nix`, `recyclarr-scoring.nix`, `ingress-lib.nix`,
+> `usenet-catalog.nix`) sind **NOCH NICHT UMGESETZT**. Dieses ADR beschreibt
+> einen Entwurf, kein vorhandenes Verzeichnis — wer die Dateien sucht, findet
+> sie nicht, und das ist kein Fehler.
+
 # lib/recyclarr-formats.nix  -- reine DATEN, kein Verhalten
 {
   german = {
