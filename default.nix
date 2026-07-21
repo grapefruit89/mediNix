@@ -41,20 +41,34 @@ let
     };
 in
 {
-  imports = [
-    ./500-media-ingress
-    ./520-arr-stack/on-demand.nix
-    ./510-jellyfin
-    ./520-arr-stack
-    ./520-arr-stack/secrets-generator.nix
-    ./525-provision
-    ./530-sabnzbd
-    ./540-audiobookshelf
-    ./550-navidrome
-    ./560-recyclarr
-    ./570-exportarr
-    ./590-usenet-confinement
-  ];
+  # Ordner mit dreistelliger Nummer werden automatisch eingebunden.
+  #
+  # Damit entfaellt die letzte von urspruenglich sieben Stellen, die man fuer
+  # einen neuen Dienst anfassen musste. Uebrig bleiben zwei: eine Zeile in
+  # lib/registry.nix, plus der Ordner selbst.
+  #
+  # ZUR SORTIERUNG -- und einer verbreiteten Fehlannahme:
+  # Man liest oft, die Reihenfolge von Nix-Imports sei bedeutsam, weil spaetere
+  # Module fruehere ueberschreiben. Fuer das NixOS-MODULSYSTEM stimmt das NICHT.
+  # Am 2026-07-20 empirisch geprueft: zwei Module, die dieselbe Option
+  # unterschiedlich setzen, erzeugen in BEIDEN Reihenfolgen denselben FEHLER --
+  # kein "letzter gewinnt". Vorrang regeln ausschliesslich mkForce, mkDefault
+  # und mkOverride.
+  #
+  # Sortiert wird trotzdem: nicht fuer die Auswertung, sondern damit Fehler-
+  # meldungen und Ablaufverfolgungen in einer nachvollziehbaren Reihenfolge
+  # erscheinen. Dreistellige Praefixe sortieren lexikographisch wie numerisch.
+  #
+  # Nur ORDNER, nie Einzeldateien: was in einem Ordner liegt, bindet dessen
+  # default.nix ein. Ohne diese Regel wuerde der Scan Dateien uebersehen --
+  # genau das war bei 520-arr-stack der Fall, bevor es selbstversorgend wurde.
+  imports =
+    let
+      entries = builtins.readDir ./.;
+      isModuleDir = name: type: type == "directory" && builtins.match "^[0-9]{3}-.*" name != null;
+      dirs = builtins.sort (a: b: a < b) (builtins.attrNames (lib.filterAttrs isModuleDir entries));
+    in
+    map (d: ./. + "/${d}") dirs;
 
   options.grapefruitMedia = {
     enable = lib.mkEnableOption "Standalone Media Stack Module";

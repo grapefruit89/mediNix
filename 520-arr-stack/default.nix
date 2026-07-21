@@ -166,6 +166,21 @@ let
     );
 in
 {
+  # Jeder Ordner bindet seine eigenen Dateien ein.
+  #
+  # Vorher hingen on-demand.nix und secrets-generator.nix an der OBERSTEN
+  # Ebene, waehrend 500-media-ingress und 525-provision ihre Dateien selbst
+  # einbinden. Diese Inkonsistenz war der einzige Grund, warum ein reiner
+  # Ordner-Scan nicht ausgereicht haette -- er haette die beiden Dateien
+  # stillschweigend verloren.
+  #
+  # Regel: Was in einem Ordner liegt, bindet dessen default.nix ein.
+  # Die oberste Ebene kennt nur Ordner, nie Einzeldateien.
+  imports = [
+    ./on-demand.nix
+    ./secrets-generator.nix
+  ];
+
   config = lib.mkMerge [
     (lib.mkMerge (lib.mapAttrsToList mkArr arrApps))
     {
