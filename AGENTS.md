@@ -163,6 +163,7 @@ hinreichen. Und dann: nur stdlib, keine externen Abhängigkeiten.
 | Thema | Datei |
 |-------|-------|
 | Naming / DNS / Ingress | `lib/registry.nix` — abgeleitet, nicht gepflegt |
+| Nummernschema (projektübergreifend) | `devNIX` ADR-8000 Dezimalrahmen — die Verfassung |
 | Erreichbarkeit LAN/WAN/VPN, TLS | `docs/network-topology.md` |
 | API-Endpunkte + Verifikationsstand | `docs/api-reference.md` |
 | Provisionierungs-Architektur | `docs/adr/5035-provision-driver-architecture.md` |

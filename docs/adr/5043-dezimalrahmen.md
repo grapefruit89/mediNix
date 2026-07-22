@@ -11,7 +11,7 @@
 
 # ADR-5043 — Der Dezimalrahmen für mediNix
 
-Die projektübergreifende Regel steht in `devNIX/docs/dezimalrahmen.md`. Dieses
+Die projektübergreifende Regel steht in `devNIX/docs/adr/8000-dezimalrahmen.md`. Dieses
 ADR ist ihre **konkrete Anwendung auf mediNix** samt Migration.
 
 ## Das Problem
