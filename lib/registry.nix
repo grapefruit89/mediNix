@@ -29,7 +29,7 @@
 # Abgeleitet wird nur, was sonst eine WILLKÜRLICHE Zahl wäre:
 #
 #   Port = Nummer × 10        5120 statt 8989 — niemand merkt sich 8989
-#   UID  = Projekt×1000+Rest  5032 statt einer vergebenen Zufallszahl
+#   UID  = Nummer×10  5320 statt einer vergebenen Zufallszahl
 #
 # NICHT abgeleitet wird, was bereits einen sprechenden Namen hat:
 #
@@ -236,20 +236,20 @@ in
   ports = lib.mapAttrs (_: portOf) services;
 
   # ══════════════════════════════════════════════════════════════════════
-  # uids — VERDRAHTET über 590-leitplanken (bei wireFixedUids = true)
+  # uids — VERDRAHTET über 59-leitplanken (bei wireFixedUids = true)
   # ══════════════════════════════════════════════════════════════════════
   #
-  # Verdrahtet am 2026-07-22: 590-leitplanken setzt users.users.<dienst>.uid
+  # Verdrahtet am 2026-07-22: 59-leitplanken setzt users.users.<dienst>.uid
   # aus diesem Feld, sobald grapefruitMedia.wireFixedUids = true. Auf q958 aktiv
-  # (sonarr 5032, jellyfin 5051). Die einmalige Migration: scripts/migrate-uids.sh.
+  # (sonarr 5320, jellyfin 5510). Die einmalige Migration: scripts/migrate-uids.sh.
   #
   # Es steht trotzdem hier, weil es eine ENTSCHEIDUNG trägt, keine Vergesslichkeit:
   # ADR-5042 legt fest, dass UIDs isomorph aus der Nummer folgen sollen.
   # Löschte man das Feld, verschwände die Entscheidung mitsamt Begründung — das
   # Problem bliebe, nur unsichtbar.
   #
-  #   Formel: Projekt × 1000 + Rest   (532 → 5032)
-  #   Auf q958 verdrahtet: sonarr 5032, radarr 5033, jellyfin 5051
+  #   Formel: Nummer × 10   (532 → 5320)
+  #   Auf q958 verdrahtet: sonarr 5320, radarr 5330, jellyfin 5510
   #
   # WAS DIE VERDRAHTUNG KOSTET — und warum sie nicht nebenbei passiert:
   # Die *arr-Module aus nixpkgs legen ihre Benutzer selbst an. Eine feste UID
@@ -317,7 +317,7 @@ in
   # Es gibt keinen Port 5000: Ports sind Nummer×10, und 500 ist die Ingress-
   # Block-ID (X0 ist nie ein Dienst). Also keine Verwechslung mit dem Portraum.
   #
-  # ⚠ VERDRAHTET (Stand 2026-07-22) über 590-leitplanken bei wireFixedUids.
+  # ⚠ VERDRAHTET (Stand 2026-07-22) über 59-leitplanken bei wireFixedUids.
   # Auf q958 aktiv: media-GID = 5000. Die einmalige chown/usermod-Migration
   # steht in scripts/migrate-uids.sh (check|apply).
   mediaGid = 5000;

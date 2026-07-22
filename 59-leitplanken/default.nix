@@ -13,7 +13,7 @@
 #
 # Setzt die festen UIDs/GID, die die Registry ableitet:
 #   GID = Projekt × 1000 = 5000   (media-Gruppe, geteilt)
-#   UID = Projekt × 1000 + Rest   (5031 prowlarr … 5053 navidrome)
+#   UID = Nummer × 10   (5310 prowlarr … 5530 navidrome)
 #
 # OPT-IN über `grapefruitMedia.wireFixedUids`. Aus per Default, weil feste UIDs
 # eine einmalige `chown`-Migration der State-Verzeichnisse brauchen — sonst

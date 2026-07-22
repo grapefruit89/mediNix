@@ -10,7 +10,7 @@
 # state_dir: "/var/lib/sabnzbd"
 # tags: [sabnzbd, usenet, downloader]
 # docs:
-#   - docs/adr/5031-usenet-confinement.md
+#   - docs/adr/5310-usenet-confinement.md
 # ---
 {
   config,

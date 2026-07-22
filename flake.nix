@@ -192,8 +192,8 @@
             machine.wait_for_unit("audiobookshelf.service")
             machine.wait_for_open_port(5530)
             machine.wait_for_open_port(5520)
-            machine.succeed("test $(id -u navidrome) -eq 5053")
-            machine.succeed("test $(id -u audiobookshelf) -eq 5052")
+            machine.succeed("test $(id -u navidrome) -eq 5530")
+            machine.succeed("test $(id -u audiobookshelf) -eq 5520")
             machine.succeed("test $(getent group media | cut -d: -f3) -eq 5000")
           '';
         };
