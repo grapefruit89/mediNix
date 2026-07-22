@@ -101,7 +101,7 @@ Drei Stellen, an denen es lautlos bricht:
 lib/registry.nix          ← die eine Tabelle
    │
    ├─ Port  = Nummer × 10 ──────► Dienstmodule, Caddy-vHosts
-   ├─ UID   = 1000 + Nummer ────► (berechnet, NOCH NICHT verdrahtet)
+   ├─ UID   = Projekt×1000+Rest ► verdrahtet via wireFixedUids (532→5032)
    ├─ tier  ────────────────────► Ingress: edge-wan / backend-lan / none
    ├─ ui    ────────────────────► mDNS-Namen + vHost-Menge
    └─ static ───────────────────► file_server statt reverse_proxy
@@ -116,10 +116,9 @@ bleiben sprechend (`sonarr.service`, `/var/lib/sonarr`). Eine Zahl ersetzt eine
 Zahl — das ist Gewinn. Eine Zahl ersetzt einen Namen — das ist Verlust.
 Ausführlich in `docs/adr/5042-pfadisomorphie.md`.
 
-> **Ehrliche Lücke:** `registry.uids` und `registry.mediaGid` werden berechnet
-> und **nirgends benutzt** (0 Referenzen). Real ist Sonarr UID 274 und die
-> media-GID 990, automatisch vergeben. Die Isomorphie ist bei Ports umgesetzt,
-> bei UIDs nicht. Wer hier arbeitet: nicht so tun, als sei das erledigt.
+> **Stand 2026-07-22:** `registry.uids` und `registry.mediaGid` sind über
+> `590-leitplanken` **verdrahtet** (Opt-in `wireFixedUids`). Auf q958 aktiv:
+> Sonarr UID 5032, media-GID 5000. Isomorphie bei Ports UND UIDs umgesetzt.
 
 ---
 
@@ -212,8 +211,8 @@ belegt: entfernt man sie, bleibt der Store-Pfad bitgleich.
 
 | Was | Zustand | Warum es bleibt |
 |---|---|---|
-| `registry.uids` | berechnet, 0 Leser | Trägt die Entscheidung aus ADR-5042. Verdrahtung erfordert UID-Migration mit `chown -R` |
-| `registry.mediaGid` | berechnet, 0 Leser | dito, real ist GID 990 statt 5000 |
+| `registry.uids` | verdrahtet (wireFixedUids) | auf q958 aktiv, Migration via `scripts/migrate-uids.sh` |
+| `registry.mediaGid` | verdrahtet (wireFixedUids) | auf q958 aktiv: GID 5000 |
 | `compat-my.nix` | 208 Zeilen, niemand importiert sie | AGENTS.md Regel 3: bewusst außerhalb des Flake-Exports, für den Fall Nix-Grok |
 
 **Warum nicht gelöscht:** Alle drei tragen eine Absicht. Gelöscht verschwände

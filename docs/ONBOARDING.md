@@ -372,7 +372,7 @@ Sieht überflüssig aus, ist es nicht:
 |---|---|
 | `lib/service-tiers.nix` | Weiterleitung auf die Registry, von `ddns.nix` importiert. Eine Textsuche nach `registry.byService` findet nichts — der Zugriff läuft über die Weiterleitung |
 | `compat-my.nix` | Bewusst nicht importiert. Bildet `my.*` auf `grapefruitMedia.*` ab, falls jemand mediNix in Nix-Grok einbindet |
-| `registry.uids`, `mediaGid` | Berechnet, unbenutzt — tragen aber die Entscheidung aus ADR-5042 |
+| `registry.uids`, `mediaGid` | Verdrahtet (wireFixedUids), auf q958 aktiv |
 | `docs/archiv/` | 18 Code-Kommentare verweisen auf Befunde darin |
 
 > **Erst Gegentest, dann aufräumen.** Entferne den Verdächtigen und vergleiche

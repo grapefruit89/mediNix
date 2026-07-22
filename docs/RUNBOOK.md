@@ -420,7 +420,7 @@ einem Phantom.
 | `provision` inaktiv | keine API-Schlüssel | dito |
 | `recyclarr` aus | `trash_ids` ungeprüft | falsche IDs zerlegen still die Qualitätsprofile |
 | `exporters.enable = true` wirkungslos | **ungeklärt** | erzeugt weder Units noch Ports, Ursache unbekannt |
-| `registry.uids`, `mediaGid` | berechnet, nicht verdrahtet | real: UID 274, GID 990 |
+| `registry.uids`, `mediaGid` | verdrahtet (wireFixedUids) | real: UID 5032, GID 5000 |
 
 ---
 

@@ -10,15 +10,14 @@ plus sein Ordner.** Wer daneben einen Port, eine Tier-Zuordnung oder einen
 mDNS-Namen von Hand pflegt, hat die Registry umgangen.
 
 ```
-Port = number x 10        UID = 1000 + number        GID = fix 5000
+Port = number x 10        UID = 5000 + Rest        GID = fix 5000
 ```
 
 Die GID ist die **bewusste** Ausnahme: waere sie isomorph, bekaeme jeder Dienst
 seine eigene Gruppe, und der gemeinsame Bibliothekszugriff braeche.
 
-> **Ehrlicher Stand:** `uids` und `mediaGid` werden berechnet und **nirgends
-> benutzt** — durch Gegentest belegt: entfernt man sie, bleibt der Store-Pfad
-> bitgleich. Real: Sonarr UID 274, media-GID 990. Die Isomorphie ist bei Ports
+> **Ehrlicher Stand:** `uids` und `mediaGid` sind über 590-leitplanken **verdrahtet** (bei
+> `wireFixedUids = true`). Auf q958 aktiv: Sonarr UID 5032, media-GID 5000. Die Isomorphie ist bei Ports
 > umgesetzt, bei UIDs **nicht**.
 >
 > Beide Felder sind ausführlich in `registry.nix` selbst kommentiert — inklusive

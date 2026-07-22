@@ -29,7 +29,7 @@
 # Abgeleitet wird nur, was sonst eine WILLKÜRLICHE Zahl wäre:
 #
 #   Port = Nummer × 10        5120 statt 8989 — niemand merkt sich 8989
-#   UID  = 1000 + Nummer      1512 statt einer vergebenen Zufallszahl
+#   UID  = Projekt×1000+Rest  5032 statt einer vergebenen Zufallszahl
 #
 # NICHT abgeleitet wird, was bereits einen sprechenden Namen hat:
 #
@@ -241,21 +241,20 @@ in
   ports = lib.mapAttrs (_: portOf) services;
 
   # ══════════════════════════════════════════════════════════════════════
-  # uids — BERECHNET, ABER BEWUSST NOCH NICHT VERDRAHTET
+  # uids — VERDRAHTET über 590-leitplanken (bei wireFixedUids = true)
   # ══════════════════════════════════════════════════════════════════════
   #
-  # Gegengeprüft am 2026-07-21: dieses Feld hat NULL Leser. Entfernt man es,
-  # bleibt der Store-Pfad der Prüfkonfiguration bitgleich — es ist wirkungslos.
+  # Verdrahtet am 2026-07-22: 590-leitplanken setzt users.users.<dienst>.uid
+  # aus diesem Feld, sobald grapefruitMedia.wireFixedUids = true. Auf q958 aktiv
+  # (sonarr 5032, jellyfin 5051). Die einmalige Migration: scripts/migrate-uids.sh.
   #
   # Es steht trotzdem hier, weil es eine ENTSCHEIDUNG trägt, keine Vergesslichkeit:
   # ADR-5042 legt fest, dass UIDs isomorph aus der Nummer folgen sollen.
   # Löschte man das Feld, verschwände die Entscheidung mitsamt Begründung — das
   # Problem bliebe, nur unsichtbar.
   #
-  #   Soll (dieses Feld)      Ist (auf q958 gemessen)
-  #   sonarr   1512           sonarr   274
-  #   radarr   1513           radarr   275
-  #   jellyfin 1541           jellyfin 993
+  #   Formel: Projekt × 1000 + Rest   (532 → 5032)
+  #   Auf q958 verdrahtet: sonarr 5032, radarr 5033, jellyfin 5051
   #
   # WAS DIE VERDRAHTUNG KOSTET — und warum sie nicht nebenbei passiert:
   # Die *arr-Module aus nixpkgs legen ihre Benutzer selbst an. Eine feste UID
@@ -323,9 +322,8 @@ in
   # Es gibt keinen Port 5000: Ports sind Nummer×10, und 500 ist die Ingress-
   # Block-ID (X0 ist nie ein Dienst). Also keine Verwechslung mit dem Portraum.
   #
-  # ⚠ BERECHNET, ABER NOCH NICHT VERDRAHTET (Stand 2026-07-21). Real ist die
-  # GID auf q958 990, automatisch vergeben. Entfernt man dieses Feld, bleibt der
-  # Store-Pfad bitgleich. Zum Verdrahten: `users.groups.media.gid = registry.mediaGid;`
-  # plus einmaliger `chgrp -R` über /data/media — zusammen mit der UID-Migration.
+  # ⚠ VERDRAHTET (Stand 2026-07-22) über 590-leitplanken bei wireFixedUids.
+  # Auf q958 aktiv: media-GID = 5000. Die einmalige chown/usermod-Migration
+  # steht in scripts/migrate-uids.sh (check|apply).
   mediaGid = 5000;
 }
