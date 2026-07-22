@@ -191,6 +191,41 @@ Beleg: `LEARNINGS.md` L2.
 
 ---
 
+---
+
+## 4b. Feste UIDs greifen nicht — „not applying UID change"
+
+```yaml
+error_pattern: "not applying UID change|not applying GID change|wireFixedUids|feste UID"
+```
+
+**Symptom** Nach `grapefruitMedia.wireFixedUids = true` + Switch stehen die
+Benutzer weiter auf alten UIDs. Im Switch-Log:
+
+```
+warning: not applying UID change of user 'jellyfin' (993 -> 5051)
+```
+
+**Ursache** `mutableUsers = true` — NixOS nummeriert **bestehende** Benutzer
+nicht um. Die Config ist korrekt (deklariert 5051), aber das laufende System
+bleibt auf 993. Die State-Dateien gehören noch der alten UID → Folgefehler
+„permission denied" (Abschnitt 4).
+
+**Behebung** Der einmalige Abgleich ist in einem Skript codiert — nicht mehr aus
+dem Gedächtnis:
+
+```bash
+scripts/migrate-uids.sh check          # zeigt Ist vs. Soll, aendert nichts
+sudo scripts/migrate-uids.sh apply     # stoppt, usermod/groupmod, chown, startet
+```
+
+`apply` macht genau die Reihenfolge, die am 2026-07-22 von Hand nötig war:
+Dienste stoppen → `groupmod media 5000` → `usermod` je Dienst → `chown -R
+<neu>:media` über `/var/lib`/`/var/cache` → `/data` auf Gruppe media → starten.
+
+**Nicht nötig bei einer frischen Installation** — dort werden die Benutzer sofort
+mit der richtigen UID angelegt. Nur beim Migrieren eines bestehenden Systems.
+
 ## 5. `.local` löst nicht auf — und niemand meldet einen Fehler
 
 ```yaml
