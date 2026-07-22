@@ -662,6 +662,6 @@ in
     # Verbotsschilder an den Tueren, an denen wir uns die Finger geklemmt haben.
     # Jede Pruefung steht fuer einen Fehler, der real passiert ist und Stunden
     # gekostet hat -- Herleitung jeweils in LEARNINGS.md.
-    assertions = import ./lib/assertions.nix { inherit lib config; };
+    # Assertions leben jetzt domaenenweise in 59-leitplanken/59N-*.nix (ADR-8000)
   };
 }

@@ -38,6 +38,13 @@ let
   u = registry.uids;
 in
 {
+  # 590 Block-ID: importiert die domaenenweisen Leitplanken 59N
+  imports = [
+    ./591-zugang.nix
+    ./594-transfer.nix
+    ./595-wiedergabe.nix
+  ];
+
   options.grapefruitMedia.wireFixedUids = lib.mkEnableOption ''
     feste UIDs/GID nach dem Dezimalrahmen (ADR-8000) durchsetzen. Braucht eine
     einmalige chown-Migration der State-Verzeichnisse — deshalb Opt-in
