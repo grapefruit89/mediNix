@@ -3,12 +3,12 @@
 # domain: "50"
 # status: "active"
 # layer: 4
-# purpose: "Jellyfin Media Server + Jellyseerr Request Manager"
-# provides: [jellyfin, seerr]
+# purpose: "Jellyfin Media Server"
+# provides: [jellyfin]
 # requires: [grapefruitMedia.storage, grapefruitMedia.hardware]
 # ports: [5001, 5002]
 # state_dir: "/var/lib/jellyfin /var/cache/jellyfin"
-# tags: [jellyfin, jellyseerr, media, streaming, qsv]
+# tags: [jellyfin, media, streaming, qsv]
 # docs:
 #   - docs/adr/5030-media-stack-factory-hardening.md
 # ---
@@ -29,10 +29,8 @@ let
   cidrs = import ../lib/network-cidrs.nix { inherit lib; };
 
   cfgJellyfin = cfg.jellyfin;
-  cfgJellyseerr = cfg.jellyseerr;
   inherit (cfg) domain;
   portJellyfin = cfg.ports.jellyfin;
-  portJellyseerr = cfg.ports.jellyseerr;
   inherit (cfg) locale;
   localeLang = locale.language or "en";
   localeUi = lib.replaceStrings [ "_" ] [ "-" ] (locale.default or "en_US.UTF-8");
@@ -325,39 +323,5 @@ in
       ]
     ))
 
-    (lib.mkIf (cfg.enable && cfgJellyseerr.enable) (
-      lib.mkMerge [
-        {
-          services.seerr = {
-            enable = true;
-            port = portJellyseerr;
-            openFirewall = false;
-            package = lib.mkIf (cfgJellyseerr.package != null) cfgJellyseerr.package;
-          };
-        }
-        (factory.mkService {
-          inherit config;
-          name = "seerr";
-          port = portJellyseerr;
-          persistDirs = [ "/var/lib/seerr" ];
-          readWritePaths = [ "/var/lib/seerr" ];
-        })
-        {
-          systemd.services.seerr.serviceConfig.EnvironmentFile = lib.mkForce [
-            "-${cfg.secrets.jellyseerrEnvFile}"
-          ];
-          systemd.services.seerr.serviceConfig.ExecStartPre =
-            let
-              walScript = pkgs.writeShellScript "seerr-wal-pragma" ''
-                DB="/var/lib/seerr/db/db.sqlite3"
-                [ -f "$DB" ] || exit 0
-                ${pkgs.sqlite}/bin/sqlite3 "$DB" "PRAGMA journal_mode=WAL;" >/dev/null
-                echo "seerr: SQLite WAL mode activated"
-              '';
-            in
-            lib.mkBefore [ "+${walScript}" ];
-        }
-      ]
-    ))
   ];
 }
