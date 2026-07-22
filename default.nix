@@ -7,6 +7,8 @@
 # provides: [grapefruitMedia options, users.groups.media]
 # requires: []
 # tags: [media, options, module-root]
+# maintainers: ["grapefruit89"]
+# license: MIT
 # docs:
 #   - modules/50-media/README.md
 #   - docs/archiv/claude-review.md
