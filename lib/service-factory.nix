@@ -6,7 +6,7 @@
 #   purpose: mkService / mkStreamer -- systemd-Hardening, persistDirs
 #   tags: [factory, systemd, hardening]
 #   docs:
-#     - docs/adr/5030-media-stack-factory-hardening.md
+#     - 50-core/adr/5030-media-stack-factory-hardening.md
 # ---
 # M2-Cleanup (Phase 4, 2026-07-15): entfernte tote Parameter:
 #   mode, upstreamHost, socketPath, host, extraCaddy, caddyOnly,

@@ -8,7 +8,7 @@
 # requires: [grapefruitMedia.vpn, grapefruitMedia.usenet-confinement]
 # tags: [vpn, wireguard, usenet, sandboxing, leak-protection]
 # docs:
-#   - docs/adr/5310-usenet-confinement.md
+#   - 50-core/adr/5310-usenet-confinement.md
 # ---
 {
   config,

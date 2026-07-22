@@ -4,7 +4,7 @@
 #   role: lib
 #   purpose: Herstellerunabhaengige Hardwarebeschleunigung — leitet Geraete, Pakete und ffmpeg-Methode aus einer einzigen Option ab
 #   docs:
-#     - docs/adr/5041-gpu-herstellerabstraktion.md
+#     - 50-core/adr/5041-gpu-herstellerabstraktion.md
 #   tags: [gpu, vaapi, nvenc, qsv, transcode]
 # ---
 #

@@ -6,7 +6,7 @@
 > Vier feste Anker regieren Ordner und Nummern **jedes** Projekts, auf jeder Ebene:
 > **`_0` Fundament · `_1` Zugang · `_2` Sicherheit · `_9` Leitplanken** — dazwischen
 > (`_3`–`_8`) die freie, projekteigene Mitte. Port = Nummer × 10, UID = Nummer×10, GID = Projekt×1000.
-> **Volle Autorität und Begründung: `devNIX/docs/adr/8000-dezimalrahmen.md`.**
+> **Volle Autorität und Begründung: `devNIX/50-core/adr/8000-dezimalrahmen.md`.**
 > Geht das verloren, verliert das Projekt die Orientierung. Niemals löschen.
 
 `AGENTS.md` darüber ist die Verfassung: sie gilt für jeden Agenten und ändert
@@ -175,9 +175,9 @@ Vollständig in `LEARNINGS.md` (L1–L7). Die teuersten:
 | Regeln zu **einem** Modul | `CLAUDE.md` im jeweiligen Ordner |
 | Zugangswege, Ports, Fallen dieser Maschine | `CLAUDE.local.md` (gitignored) |
 | Was wir schmerzhaft gelernt haben | `LEARNINGS.md` |
-| Neue Maschine, von null bis läuft | `docs/ONBOARDING.md` |
-| Wie die Teile zusammenhängen | `docs/ARCHITEKTUR.md` |
-| Etwas ist kaputt — Fehler, Diagnose, Fix | `docs/RUNBOOK.md` |
+| Neue Maschine, von null bis läuft | `50-core/ONBOARDING.md` |
+| Wie die Teile zusammenhängen | `50-core/ARCHITEKTUR.md` |
+| Etwas ist kaputt — Fehler, Diagnose, Fix | `50-core/RUNBOOK.md` |
 | Momentaufnahme, wo wir stehen | `STATUS.md` |
-| Entscheidungen mit Begründung | `docs/adr/` |
+| Entscheidungen mit Begründung | `50-core/adr/` |
 | Die eine Wahrheit zu Port, UID, Tier | `lib/registry.nix` |

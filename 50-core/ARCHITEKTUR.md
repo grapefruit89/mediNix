@@ -114,7 +114,7 @@ umgangen und einen stillen Widerspruch eingebaut.
 Was **nicht** abgeleitet wird und warum: Unit-Name, State-Pfad und DNS-Name
 bleiben sprechend (`sonarr.service`, `/var/lib/sonarr`). Eine Zahl ersetzt eine
 Zahl — das ist Gewinn. Eine Zahl ersetzt einen Namen — das ist Verlust.
-Ausführlich in `docs/adr/5042-pfadisomorphie.md`.
+Ausführlich in `50-core/adr/5042-pfadisomorphie.md`.
 
 > **Stand 2026-07-22:** `registry.uids` und `registry.mediaGid` sind über
 > `590-leitplanken` **verdrahtet** (Opt-in `wireFixedUids`). Auf q958 aktiv:
@@ -189,18 +189,18 @@ keine.
 | Frage | Datei |
 |---|---|
 | Port, UID, Tier, mDNS-Menge | `lib/registry.nix` |
-| Warum wurde das so entschieden | `docs/adr/` |
+| Warum wurde das so entschieden | `50-core/adr/` |
 | Was ging schief und warum | `LEARNINGS.md` |
-| Etwas ist kaputt | `docs/RUNBOOK.md` |
+| Etwas ist kaputt | `50-core/RUNBOOK.md` |
 | Regeln für alle Agenten | `AGENTS.md` |
 | Regeln für Claude Code hier | `CLAUDE.md` + `.claude/rules/` |
 | Regeln zu **einem** Modul | `CLAUDE.md` im jeweiligen Ordner |
 | Zugänge, Ports, Fallen dieser Maschine | `CLAUDE.local.md` (gitignored) |
 | Wo stehen wir gerade | `STATUS.md` |
-| Historische Begründungen (K2, K4, H4.2 …) | `docs/archiv/` — **kein** Zielzustand mehr |
+| Historische Begründungen (K2, K4, H4.2 …) | `50-core/archiv/` — **kein** Zielzustand mehr |
 
 Bei Widerspruch gewinnt die speziellere Datei. Ein Widerspruch gehört
-**aufgelöst**, nicht umschifft — und `docs/archiv/` verliert immer.
+**aufgelöst**, nicht umschifft — und `50-core/archiv/` verliert immer.
 
 ---
 

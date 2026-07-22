@@ -348,18 +348,18 @@ wäre das untergegangen.
 
 | Frage | Antwort steht in |
 |---|---|
-| Wie hängt das alles zusammen | `docs/ARCHITEKTUR.md` |
-| Etwas ist kaputt | `docs/RUNBOOK.md` — Fehlerzeile gegen `error_pattern` matchen |
-| Warum ist das so entschieden | `docs/adr/` |
+| Wie hängt das alles zusammen | `50-core/ARCHITEKTUR.md` |
+| Etwas ist kaputt | `50-core/RUNBOOK.md` — Fehlerzeile gegen `error_pattern` matchen |
+| Warum ist das so entschieden | `50-core/adr/` |
 | Was ging schon mal schief | `LEARNINGS.md` |
 | Wo stehen wir gerade | `STATUS.md` |
 | Port, UID, Tier, mDNS | `lib/registry.nix` |
 | Regeln für alle Agenten | `AGENTS.md` |
 | Regeln für diesen Ordner | `CLAUDE.md` im Ordner |
 | Zugänge, IPs, Fallen der Maschine | `CLAUDE.local.md` — gitignored |
-| Historische Begründungen (K2, K4) | `docs/archiv/` — **kein** Zielzustand |
+| Historische Begründungen (K2, K4) | `50-core/archiv/` — **kein** Zielzustand |
 
-Bei Widerspruch gewinnt die speziellere Datei, und `docs/archiv/` verliert
+Bei Widerspruch gewinnt die speziellere Datei, und `50-core/archiv/` verliert
 immer. Ein Widerspruch gehört aufgelöst, nicht umschifft.
 
 ---
@@ -373,7 +373,7 @@ Sieht überflüssig aus, ist es nicht:
 | `lib/service-tiers.nix` | Weiterleitung auf die Registry, von `ddns.nix` importiert. Eine Textsuche nach `registry.byService` findet nichts — der Zugriff läuft über die Weiterleitung |
 | `compat-my.nix` | Bewusst nicht importiert. Bildet `my.*` auf `grapefruitMedia.*` ab, falls jemand mediNix in Nix-Grok einbindet |
 | `registry.uids`, `mediaGid` | Verdrahtet (wireFixedUids), auf q958 aktiv |
-| `docs/archiv/` | 18 Code-Kommentare verweisen auf Befunde darin |
+| `50-core/archiv/` | 18 Code-Kommentare verweisen auf Befunde darin |
 
 > **Erst Gegentest, dann aufräumen.** Entferne den Verdächtigen und vergleiche
 > den Store-Pfad. Bleibt er bitgleich, war es wirklich tot — sagt eine
@@ -385,7 +385,7 @@ Sieht überflüssig aus, ist es nicht:
 
 1. **Nicht weitermachen.** Ein fehlgeschlagener Schritt macht alle folgenden
    sinnlos.
-2. Fehlerzeile wörtlich nehmen und im `docs/RUNBOOK.md` gegen die
+2. Fehlerzeile wörtlich nehmen und im `50-core/RUNBOOK.md` gegen die
    `error_pattern` matchen.
 3. Steht sie dort nicht: erst die GitHub-Issues des betroffenen Pakets, bevor
    debuggt wird.

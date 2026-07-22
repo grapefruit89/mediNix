@@ -25,11 +25,11 @@ Kommentar und dürfen bei Refactorings nicht wegfallen.
 ```
 # === PRIMÄRQUELLEN — NICHT ENTFERNEN ===
 # Radarr   OpenAPI : https://raw.githubusercontent.com/Radarr/Radarr/develop/src/Radarr.Api.V3/openapi.json
-# Radarr   Doku    : https://radarr.video/docs/api/
+# Radarr   Doku    : https://radarr.video/50-core/api/
 # Sonarr   OpenAPI : https://raw.githubusercontent.com/Sonarr/Sonarr/develop/src/Sonarr.Api.V3/openapi.json
-# Sonarr   Doku    : https://sonarr.tv/docs/api/#v3
+# Sonarr   Doku    : https://sonarr.tv/50-core/api/#v3
 # Prowlarr OpenAPI : https://raw.githubusercontent.com/Prowlarr/Prowlarr/develop/src/Prowlarr.Api.V1/openapi.json
-# Prowlarr Doku    : https://prowlarr.com/docs/api/
+# Prowlarr Doku    : https://prowlarr.com/50-core/api/
 # Lidarr / Readarr : gleiche Struktur, Api.V1
 # ========================================
 ```

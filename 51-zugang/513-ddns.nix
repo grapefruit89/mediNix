@@ -8,12 +8,12 @@
 # requires: [grapefruitMedia.dns, grapefruitMedia.domain]
 # tags: [dns, ddns, cloudflare, portability]
 # docs:
-#   - modules/50-media/docs/network-topology.md
+#   - modules/50-media/50-core/network-topology.md
 # ---
 # Nur aktiv bei dns.mode = "standalone" und dns.ddns.enable.
 # Im Default-Modus "host" macht das der Host (z.B. 10-network/1091-ddclient.nix).
 #
-# Zwei Jobs, exakt die Pfade aus docs/network-topology.md:
+# Zwei Jobs, exakt die Pfade aus 50-core/network-topology.md:
 #   LAN  (Pfad 2): *.domain + @  -> aktuelle LAN-IP, ermittelt ueber den Kernel
 #                  (`ip route get 1.1.1.1`). Hardware- und subnetz-agnostisch:
 #                  egal ob 192.168.x, 172.16.x oder 10.0.x, egal wie die NIC heisst.

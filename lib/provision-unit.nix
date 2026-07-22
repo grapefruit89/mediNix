@@ -7,7 +7,7 @@
 # purpose: "Einheitlicher oneshot-Unit-Bauer fuer die Provisionierungs-Schritte"
 # tags: [lib, provisioning, systemd]
 # docs:
-#   - modules/50-media/docs/adr/5037-daten-statt-code.md
+#   - modules/50-media/50-core/adr/5037-daten-statt-code.md
 # ---
 #
 # Warum es diesen Helfer gibt (ADR-5037, Teil 2):

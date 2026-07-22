@@ -29,7 +29,7 @@ anfasst, kann ihn nicht end-to-end pruefen. Das gehoert in jede Aussage dazu.
 
 ## API-Felder niemals aus dem Gedaechtnis
 
-`docs/api-reference.md` fuehrt den Verifikationsstand je Endpunkt (✅ / ⚠️ / ❌).
+`50-core/api-reference.md` fuehrt den Verifikationsstand je Endpunkt (✅ / ⚠️ / ❌).
 Eine falsch erinnerte Feldbezeichnung faellt **nicht beim Bauen** auf, sondern
 Wochen spaeter beim ersten echten Download. Die Quell-URLs dort sind Architektur
 und duerfen bei Refactorings nicht entfernt werden.

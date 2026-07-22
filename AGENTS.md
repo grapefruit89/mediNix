@@ -4,7 +4,7 @@
 > Vier feste Anker regieren Ordner und Nummern **jedes** Projekts, auf jeder Ebene:
 > **`_0` Fundament · `_1` Zugang · `_2` Sicherheit · `_9` Leitplanken** — dazwischen
 > (`_3`–`_8`) die freie, projekteigene Mitte. Port = Nummer × 10, UID = Nummer×10, GID = Projekt×1000.
-> **Volle Autorität und Begründung: `devNIX/docs/adr/8000-dezimalrahmen.md`.**
+> **Volle Autorität und Begründung: `devNIX/50-core/adr/8000-dezimalrahmen.md`.**
 > Geht das verloren, verliert das Projekt die Orientierung. Niemals löschen.
 
 Gilt für jeden KI-Agenten (Claude, Grok, Gemini, Copilot …) und jeden Menschen,
@@ -57,7 +57,7 @@ Wochen später beim ersten echten Download.
 
 | Frage | Pflichtquelle |
 |-------|---------------|
-| *arr-/Prowlarr-API, Felder, Endpunkte | OpenAPI-Spec **und** die laufende Instanz — siehe `docs/api-reference.md` |
+| *arr-/Prowlarr-API, Felder, Endpunkte | OpenAPI-Spec **und** die laufende Instanz — siehe `50-core/api-reference.md` |
 | nixpkgs-Paket, `services.*`-Option | nixos-MCP (live), nicht das Gedächtnis |
 | `lib.*` / `builtins.*` | Noogle — Argumentreihenfolge ändert sich zwischen Versionen |
 | Caddy, systemd, Jellyfin-API, externe Libs | Context7 / offizielle Doku |
@@ -71,7 +71,7 @@ Sekunden, eine falsche Annahme kostet Stunden.
 Kommt es vor — große OpenAPI-Specs laufen in Größen- oder Zeitlimits. Dann gilt:
 
 1. **Nicht raten und weitermachen.** Kennzeichnen, was verifiziert ist und was nicht.
-2. Den Verifikationsstand **dokumentieren** (siehe `docs/api-reference.md`,
+2. Den Verifikationsstand **dokumentieren** (siehe `50-core/api-reference.md`,
    Abschnitt 2 — Tabelle mit ✅ / ⚠️ / ❌ je Quelle).
 3. Ein Verfahren hinterlassen, mit dem die offene Stelle später geprüft werden
    kann (dort Abschnitt 8).
@@ -80,7 +80,7 @@ Eine ehrlich markierte Lücke ist brauchbar. Eine unmarkierte Vermutung ist gef�
 
 ### Quell-URLs sind Architektur, kein Kommentar-Ballast
 
-Die Primärquellen-URLs in `docs/api-reference.md` (Abschnitt 1) und in den
+Die Primärquellen-URLs in `50-core/api-reference.md` (Abschnitt 1) und in den
 Code-Kommentaren **dürfen bei Refactorings nicht entfernt werden**. Wer sie
 löscht, nimmt dem nächsten Bearbeiter die Möglichkeit zu verifizieren — und
 zwingt ihn damit zum Raten.
@@ -171,15 +171,15 @@ hinreichen. Und dann: nur stdlib, keine externen Abhängigkeiten.
 |-------|-------|
 | Naming / DNS / Ingress | `lib/registry.nix` — abgeleitet, nicht gepflegt |
 | Nummernschema (projektübergreifend) | `devNIX` ADR-8000 Dezimalrahmen — die Verfassung |
-| Erreichbarkeit LAN/WAN/VPN, TLS | `docs/network-topology.md` |
-| API-Endpunkte + Verifikationsstand | `docs/api-reference.md` |
-| Provisionierungs-Architektur | `docs/adr/5350-provision-driver-architecture.md` |
+| Erreichbarkeit LAN/WAN/VPN, TLS | `50-core/network-topology.md` |
+| API-Endpunkte + Verifikationsstand | `50-core/api-reference.md` |
+| Provisionierungs-Architektur | `50-core/adr/5350-provision-driver-architecture.md` |
 | Port, UID, Tier, mDNS-Menge (SSoT) | `lib/registry.nix` |
-| Neue Maschine einrichten | `docs/ONBOARDING.md` |
-| Wie die Teile zusammenhängen | `docs/ARCHITEKTUR.md` |
-| Etwas ist kaputt | `docs/RUNBOOK.md` |
+| Neue Maschine einrichten | `50-core/ONBOARDING.md` |
+| Wie die Teile zusammenhängen | `50-core/ARCHITEKTUR.md` |
+| Etwas ist kaputt | `50-core/RUNBOOK.md` |
 | Wo stehen wir gerade | `STATUS.md` |
-| Historische Begründungen (K2, K4 …) | `docs/archiv/` — **kein** Zielzustand |
+| Historische Begründungen (K2, K4 …) | `50-core/archiv/` — **kein** Zielzustand |
 | Optionen-Referenz | `default.nix` |
 | Betriebsanweisung für Claude Code | `CLAUDE.md` + `.claude/rules/` |
 | Regeln zu **einem** Modul | `CLAUDE.md` im jeweiligen Ordner |

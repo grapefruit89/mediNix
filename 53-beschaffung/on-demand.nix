@@ -8,8 +8,8 @@
 # requires: [grapefruitMedia.onDemand, lib/on-demand-http.nix]
 # tags: [arr, on-demand, systemd-socket]
 # docs:
-#   - docs/adr/5033-systemd-socket-on-demand.md
-#   - docs/archiv/claude-review.md
+#   - 50-core/adr/5033-systemd-socket-on-demand.md
+#   - 50-core/archiv/claude-review.md
 # ---
 {
   config,
@@ -31,7 +31,7 @@ let
   inherit (cfg) ports;
 
   # H4-Fix: gemeinsame Fabrik statt duplizierter Bloecke (alt: readarr-Block war
-  # Kopie des lidarr-Blocks mit anderen Werten -- H4.2 in docs/archiv/claude-review.md).
+  # Kopie des lidarr-Blocks mit anderen Werten -- H4.2 in 50-core/archiv/claude-review.md).
   mkArrOnDemand =
     {
       name,

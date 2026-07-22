@@ -8,7 +8,7 @@
 >
 > **Diese Datei ist eine Momentaufnahme, keine Wahrheitsquelle.** Widerspricht
 > sie dem, was `systemctl` und `curl` gerade zeigen, haben die Befehle recht.
-> Der Pflichtlauf steht in `docs/RUNBOOK.md`, Abschnitt 0.
+> Der Pflichtlauf steht in `50-core/RUNBOOK.md`, Abschnitt 0.
 
 ---
 
@@ -47,7 +47,7 @@ hat `lib/registry.nix` umgangen.
 | **Agenten-Doku** | `CLAUDE.md`, `.claude/rules/`, je Modulordner eine Datei |
 | **Linting** | `nixfmt` statt `nixfmt-rfc-style` (Alias mit Warnung), `nixf-diagnose` und `shellcheck` dazu |
 | **devNIX** | neues Repo — Werkzeuge als NixOS-Modul plus Claude-Plugin mit Hooks |
-| **Altlasten** | fünf überholte Review-Dokumente nach `docs/archiv/` |
+| **Altlasten** | fünf überholte Review-Dokumente nach `50-core/archiv/` |
 
 ---
 
@@ -93,10 +93,10 @@ Wer das „repariert", arbeitet an einem Phantom.
 
 | Frage | Datei |
 |---|---|
-| Neue Maschine einrichten | `docs/ONBOARDING.md` |
-| Wie hängt alles zusammen | `docs/ARCHITEKTUR.md` |
-| Etwas ist kaputt | `docs/RUNBOOK.md` |
+| Neue Maschine einrichten | `50-core/ONBOARDING.md` |
+| Wie hängt alles zusammen | `50-core/ARCHITEKTUR.md` |
+| Etwas ist kaputt | `50-core/RUNBOOK.md` |
 | Port, UID, Tier, mDNS | `lib/registry.nix` |
-| Warum so entschieden | `docs/adr/` |
+| Warum so entschieden | `50-core/adr/` |
 | Was schiefging | `LEARNINGS.md` |
-| Historische Begründungen | `docs/archiv/` — kein Zielzustand mehr |
+| Historische Begründungen | `50-core/archiv/` — kein Zielzustand mehr |

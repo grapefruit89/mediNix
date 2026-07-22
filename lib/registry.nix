@@ -4,7 +4,7 @@
 #   role: lib
 #   purpose: Die eine Wahrheit — aus der Ordnernummer folgen Port und UID, aus dem Eintrag folgen Tier, mDNS und Ingress
 #   docs:
-#     - docs/adr/5042-pfadisomorphie.md
+#     - 50-core/adr/5042-pfadisomorphie.md
 #   tags: [registry, ports, uid, isomorphie, ssot]
 # ---
 #

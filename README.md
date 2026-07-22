@@ -4,7 +4,7 @@ Portables NixOS-Modul für den kompletten Heimmedien-Stack:
 Jellyfin · Sonarr · Radarr · Lidarr · Readarr · Prowlarr · SABnzbd · Audiobookshelf · Navidrome.
 
 
-> **Neue Maschine?** `docs/ONBOARDING.md` führt von der leeren Maschine bis
+> **Neue Maschine?** `50-core/ONBOARDING.md` führt von der leeren Maschine bis
 > zu elf laufenden Diensten — sieben Schritte, jeder mit seiner Prüfung.
 
 ## Quickstart (fremdes System)
@@ -150,7 +150,7 @@ grapefruitMedia.ingress.tls = {
 > **Kanon:** `lib/registry.nix` ist die einzige Wahrheit für Port, UID, Tier
 > und mDNS-Menge. Ports folgen der Ordnernummer × 10 (Sonarr 512 → 5120).
 >
-> Ältere Dokumente unter `docs/archiv/` beanspruchen diese Rolle teils für sich
+> Ältere Dokumente unter `50-core/archiv/` beanspruchen diese Rolle teils für sich
 > (`grok-review.md`: „SSoT für Naming/DNS/Ingress"). **Das gilt nicht mehr.**
 > Sie sind aufgehoben, weil Code-Kommentare auf ihre Befunde verweisen — nicht,
 > weil ihr Zielzustand noch aktuell wäre.

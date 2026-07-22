@@ -11,7 +11,7 @@
 
 # ADR-5043 — Der Dezimalrahmen für mediNix
 
-Die projektübergreifende Regel steht in `devNIX/docs/adr/8000-dezimalrahmen.md`. Dieses
+Die projektübergreifende Regel steht in `devNIX/50-core/adr/8000-dezimalrahmen.md`. Dieses
 ADR ist ihre **konkrete Anwendung auf mediNix** samt Migration.
 
 ## Das Problem
@@ -32,7 +32,7 @@ _3…_8  DOMÄNEN    der mediNix-eigene Stoff, in Pipeline-Reihenfolge
 _9  LEITPLANKEN   was alles einhält — Assertions
 ```
 
-**`_0` ist Wissen, kein Code.** `500-fundament/` bekommt **keine** Dienst-`.nix`
+**`_0` ist Wissen, kein Code.** `50-core/` bekommt **keine** Dienst-`.nix`
 — nur die `CLAUDE.md` der Domäne, das aggregierende `default.nix` (Options +
 Auto-Import), `docs/`, `lib/` mit der `registry`. Die Dienste wohnen in 510–590.
 
@@ -40,7 +40,7 @@ Auto-Import), `docs/`, `lib/` mit der `registry`. Die Dienste wohnen in 510–59
 
 | Dekade | Anker/Domäne | Dienste | Nummern |
 |---|---|---|---|
-| **500** | Fundament | CLAUDE.md, default.nix, lib/, docs/ | — (kein Dienst) |
+| **50** | Fundament | Root: flake/default.nix, lib/, CLAUDE.md · `50-core/`: docs, ADRs, LEARNINGS, STATUS | — (kein Dienst) |
 | **510** | Zugang | caddy, mDNS, ddns | 511, 512, 513 |
 | **520** | Sicherheit | usenet-confinement | 521 |
 | **530** | Beschaffung | prowlarr, sonarr, radarr, lidarr, readarr | 531–535 |
@@ -86,7 +86,7 @@ Genau die Lehre aus ADR-5042.
 
 | Jetzt | Wird |
 |---|---|
-| *(Wurzel: default.nix, lib/, docs/)* | `500-fundament/` |
+| *(Wurzel: default.nix, lib/, docs/)* | `50-core/` |
 | `500-media-ingress/` | `510-zugang/` |
 | `590-usenet-confinement/` | `520-sicherheit/` |
 | `520-arr-stack/` | `530-beschaffung/` |

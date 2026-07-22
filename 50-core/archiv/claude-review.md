@@ -10,10 +10,10 @@
 > | Frage | Datei |
 > |---|---|
 > | Port, UID, Tier, mDNS-Menge | `lib/registry.nix` |
-> | Warum es so entschieden wurde | `docs/adr/` |
+> | Warum es so entschieden wurde | `50-core/adr/` |
 > | Was schiefging und warum | `LEARNINGS.md` |
-> | Wie die Teile zusammenhängen | `docs/ARCHITEKTUR.md` |
-> | Etwas ist kaputt | `docs/RUNBOOK.md` |
+> | Wie die Teile zusammenhängen | `50-core/ARCHITEKTUR.md` |
+> | Etwas ist kaputt | `50-core/RUNBOOK.md` |
 >
 > **Warum es trotzdem hier liegt und nicht gelöscht wurde:** Code-Kommentare
 > verweisen namentlich auf Befunde aus diesem Dokument (K2, K3, K4, H4.2 …).
@@ -213,7 +213,7 @@ Auf Systemen mit Impermanence, ZFS-Datasets oder schlicht überlebenden `/data`-
 
 - **M1 — Tote Optionen im Recyclarr-Modul (560):** `recyclarr.quality`, `primaryLanguage`, `secondaryLanguage` werden in `default.nix:61–75` deklariert (mit enum-Typen und Beschreibung) und in `560` **komplett ignoriert** — die Profile sind hart auf German/English 1080p verdrahtet. Eine API, die Konfigurierbarkeit verspricht und nicht liefert, ist schlechter als keine Option. Entweder implementieren oder entfernen.
 - **M2 — Dead Code in der vendored Factory:** `mode`, `extraCaddy`, `caddyOnly`, `manageIngress`, `ipAllow`, `host`, `socketPath`, `upstreamHost` — überwiegend berechnete, nie genutzte Parameter (`service-factory.nix:78–106`). Jeder Aufrufer, der `mode = "sso"` übergibt, wird getäuscht (s. K2). Die Signatur sollte auf das reduziert werden, was die Factory tatsächlich tut.
-- **M3 — Meta-Header und ADR-Verweise entfernt:** Der Altstand trug in jeder Datei YAML-Meta (layer/role/purpose/docs/ADRs). In der Neuimplementierung haben nur die vendored Libs Header; alle Service-Module (510–591) sind blank. Damit reißen die Verweise auf `docs/adr/5031-usenet-vpn-sandbox.md`, `docs/memory_oom.md`, ADR-007 etc. ab — das Repo hat erkennbar eine Meta-/SPEC_REGISTRY-Konvention, die hier verletzt wird. Auch wertvolle Betriebskommentare (z. B. das OIDC-Setup-Rezept in alt-55-navidrome:686–694) sind gestrichen.
+- **M3 — Meta-Header und ADR-Verweise entfernt:** Der Altstand trug in jeder Datei YAML-Meta (layer/role/purpose/docs/ADRs). In der Neuimplementierung haben nur die vendored Libs Header; alle Service-Module (510–591) sind blank. Damit reißen die Verweise auf `50-core/adr/5031-usenet-vpn-sandbox.md`, `docs/memory_oom.md`, ADR-007 etc. ab — das Repo hat erkennbar eine Meta-/SPEC_REGISTRY-Konvention, die hier verletzt wird. Auch wertvolle Betriebskommentare (z. B. das OIDC-Setup-Rezept in alt-55-navidrome:686–694) sind gestrichen.
 - **M4 — `with lib;`** in `default.nix`, `500`, `551`, `591` — im Rest des Repos (und in den übrigen neuen Dateien) wird konsequent `lib.` qualifiziert; `with lib;` gilt in nixpkgs als Anti-Pattern (Scope-Verschattung, schlechtere Fehlermeldungen). Der letzte Hygiene-Commit („nixfmt RFC-Style auf 14 Module") zeigt, dass das Repo hier Standards hat.
 - **M5 — `metadataDir`-Default auf Root-FS:** `/var/lib/media-metadata` als Default verschiebt die Artwork-/Metadata-Last (im Altstand bewusst auf `fast_pool`, vgl. Kommentar in jellyfin-system.xml: „Metadaten auf fast_pool — nicht in /var/lib") unauffällig auf die Root-Disk. Für ein portables Modul ist ein Default okay, aber die Description sollte die Performance-Implikation nennen; auf q958 muss der Wert zwingend gesetzt werden.
 - **M6 — Exportarr-Gating unvollständig:** `mkExporter` prüft `cfgGlobal.${service}.enable && cfg.enable`, aber nicht `cfgGlobal.enable` (570:44) — bei `grapefruitMedia.enable = false` und gesetzten Flags entstehen Exporter-Units für nicht existierende Dienste. Alle anderen Module gaten korrekt auf `cfg.enable`.

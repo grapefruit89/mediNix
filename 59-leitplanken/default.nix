@@ -7,8 +7,8 @@
 # provides: [uid-wiring]
 # tags: [leitplanken, uid, gid, isomorphie, impermanence]
 # docs:
-#   - docs/adr/8000-dezimalrahmen.md
-#   - docs/adr/5043-dezimalrahmen.md
+#   - 50-core/adr/8000-dezimalrahmen.md
+#   - 50-core/adr/5043-dezimalrahmen.md
 # ---
 #
 # Setzt die festen UIDs/GID, die die Registry ableitet:

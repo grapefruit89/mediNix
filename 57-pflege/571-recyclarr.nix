@@ -8,7 +8,7 @@
 # requires: [grapefruitMedia.sonarr, grapefruitMedia.radarr, per-service API keys]
 # tags: [recyclarr, trash-guides, custom-formats, quality]
 # docs:
-#   - docs/adr/5034-scope-cut-arr-provision.md
+#   - 50-core/adr/5034-scope-cut-arr-provision.md
 # ---
 {
   config,

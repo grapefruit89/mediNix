@@ -10,10 +10,10 @@
 > | Frage | Datei |
 > |---|---|
 > | Port, UID, Tier, mDNS-Menge | `lib/registry.nix` |
-> | Warum es so entschieden wurde | `docs/adr/` |
+> | Warum es so entschieden wurde | `50-core/adr/` |
 > | Was schiefging und warum | `LEARNINGS.md` |
-> | Wie die Teile zusammenhängen | `docs/ARCHITEKTUR.md` |
-> | Etwas ist kaputt | `docs/RUNBOOK.md` |
+> | Wie die Teile zusammenhängen | `50-core/ARCHITEKTUR.md` |
+> | Etwas ist kaputt | `50-core/RUNBOOK.md` |
 >
 > **Warum es trotzdem hier liegt und nicht gelöscht wurde:** Code-Kommentare
 > verweisen namentlich auf Befunde aus diesem Dokument (K2, K3, K4, H4.2 …).

@@ -10,7 +10,7 @@
 # state_dir: "/var/lib/jellyfin /var/cache/jellyfin"
 # tags: [jellyfin, media, streaming, qsv]
 # docs:
-#   - docs/adr/5030-media-stack-factory-hardening.md
+#   - 50-core/adr/5030-media-stack-factory-hardening.md
 # ---
 {
   config,

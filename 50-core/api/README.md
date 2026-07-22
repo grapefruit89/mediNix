@@ -27,7 +27,7 @@ von Endpunkten, die jenseits des Abschnitts liegen.
 Auf einem System ohne Größenlimit (also praktisch jedem):
 
 ```bash
-cd docs/api
+cd 50-core/api
 
 curl -fsSL -o radarr-api-v3.json \
   https://raw.githubusercontent.com/Radarr/Radarr/develop/src/Radarr.Api.V3/openapi.json

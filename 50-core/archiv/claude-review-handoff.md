@@ -10,10 +10,10 @@
 > | Frage | Datei |
 > |---|---|
 > | Port, UID, Tier, mDNS-Menge | `lib/registry.nix` |
-> | Warum es so entschieden wurde | `docs/adr/` |
+> | Warum es so entschieden wurde | `50-core/adr/` |
 > | Was schiefging und warum | `LEARNINGS.md` |
-> | Wie die Teile zusammenhängen | `docs/ARCHITEKTUR.md` |
-> | Etwas ist kaputt | `docs/RUNBOOK.md` |
+> | Wie die Teile zusammenhängen | `50-core/ARCHITEKTUR.md` |
+> | Etwas ist kaputt | `50-core/RUNBOOK.md` |
 >
 > **Warum es trotzdem hier liegt und nicht gelöscht wurde:** Code-Kommentare
 > verweisen namentlich auf Befunde aus diesem Dokument (K2, K3, K4, H4.2 …).
@@ -31,7 +31,7 @@
 
 # Handoff: Umsetzung der Review-Findings (Blöcke 2–7)
 
-**Basis:** `docs/archiv/claude-review.md` (NICHT verändern!)
+**Basis:** `50-core/archiv/claude-review.md` (NICHT verändern!)
 **Stand:** 2026-07-15 — Block 1 ist umgesetzt (siehe unten). Dieses Dokument beschreibt die
 restlichen Blöcke so, dass ein beliebiges Modell/Entwickler sie umsetzen kann.
 Abschließendes Review erfolgt danach durch Claude.
@@ -136,7 +136,7 @@ Erst Mo fragen: portieren oder Scope-Cut?
 **Falls portieren:** die 9 Dateien aus Git-History (`git show bfda319^:modules/50-media/56-arr-sync/...`
 bzw. Upload-Datei) auf `grapefruitMedia.*` umziehen; `packages/arr-provision` bleibt Grundlage;
 Optionen unter `grapefruitMedia.provision.*`; rollout.nix-TODO-Block (TreasureMaps) reaktivieren.
-**Falls Scope-Cut:** ADR schreiben (docs/adr/, Template beachten), rollout-TODO-Block final
+**Falls Scope-Cut:** ADR schreiben (50-core/adr/, Template beachten), rollout-TODO-Block final
 entfernen, README-Hinweis ins Modul.
 
 ## Block 7 — Ingress vervollständigen (H6) + DNS-Konzept

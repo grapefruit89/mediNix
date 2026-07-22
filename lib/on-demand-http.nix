@@ -4,7 +4,7 @@
 #   role: lib
 #   purpose: systemd socket-proxyd on-demand HTTP — public socket, internal backend (+offset)
 #   docs:
-#     - docs/adr/5033-systemd-socket-on-demand.md
+#     - 50-core/adr/5033-systemd-socket-on-demand.md
 #   tags:
 #     - on-demand
 #     - systemd

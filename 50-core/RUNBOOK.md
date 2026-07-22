@@ -10,7 +10,7 @@ Jeder Abschnitt hat ein `error_pattern`. Ein Agent nimmt die Fehlerzeile aus
 `journalctl` und sucht damit den passenden Abschnitt:
 
 ```bash
-journalctl -u <dienst> -n 50 --no-pager | grep -iE "$(grep -oP '(?<=^error_pattern: ").*(?=")' docs/RUNBOOK.md | paste -sd'|')"
+journalctl -u <dienst> -n 50 --no-pager | grep -iE "$(grep -oP '(?<=^error_pattern: ").*(?=")' 50-core/RUNBOOK.md | paste -sd'|')"
 ```
 
 Alle Einträge hier sind **real passiert**. Keine erfundenen Fälle.

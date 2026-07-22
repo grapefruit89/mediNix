@@ -7,8 +7,8 @@
 # purpose: "Leitet DNS-Namen (edge/backend/vhost) aus Tier-Map + Hostname-Overrides ab"
 # tags: [lib, dns, tiers, ddns]
 # docs:
-#   - docs/archiv/grok-review.md
-#   - modules/50-media/docs/network-topology.md
+#   - 50-core/archiv/grok-review.md
+#   - modules/50-media/50-core/network-topology.md
 # ---
 #
 # Reine Ableitungs-Funktion -- kennt KEINE IPs, KEINE feste Domain, KEINEN Provider.

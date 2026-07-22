@@ -8,7 +8,7 @@
 # requires: [grapefruitMedia.secrets.autoGenerate]
 # tags: [secrets, arr, generator, systemd]
 # docs:
-#   - docs/archiv/claude-review.md (K4)
+#   - 50-core/archiv/claude-review.md (K4)
 # ---
 {
   config,
@@ -20,7 +20,7 @@ let
   cfg = config.grapefruitMedia;
 in
 {
-  # Review K4 (docs/archiv/claude-review.md): Default aus -- Aktivierung nur explizit via
+  # Review K4 (50-core/archiv/claude-review.md): Default aus -- Aktivierung nur explizit via
   # grapefruitMedia.secrets.autoGenerate.
   # K4-Fix: per-Service-Keys, korrekte Env-Var-Namen (SECTION__KEY-Konvention),
   # niemals existierende Dateien ueberschreiben (idempotent).
