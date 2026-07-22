@@ -10,7 +10,7 @@ plus sein Ordner.** Wer daneben einen Port, eine Tier-Zuordnung oder einen
 mDNS-Namen von Hand pflegt, hat die Registry umgangen.
 
 ```
-Port = number x 10        UID = 1000 + number        GID = fix 3000
+Port = number x 10        UID = 1000 + number        GID = fix 5000
 ```
 
 Die GID ist die **bewusste** Ausnahme: waere sie isomorph, bekaeme jeder Dienst

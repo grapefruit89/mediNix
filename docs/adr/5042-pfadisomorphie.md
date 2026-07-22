@@ -136,8 +136,24 @@ Neustart, wenn es nicht persistiert wird — die Gruppe bekäme eine neue GID, u
 bestehende Dateien gehörten plötzlich niemandem.
 
 Auf q958 gemessen: die GID war **990**, automatisch vergeben. Also genau dieser
-Fall. Festgelegt auf **3000**, weil `< 1000` bei NixOS für Systemkonten reserviert
-ist und `1000` auf den meisten Systemen der erste echte Benutzer.
+Fall.
+
+**Festgelegt auf `5000`** (geändert von `3000` am 2026-07-21). Die Bedingungen
+waren immer: über dem System-Bereich (`< 1000`, den NixOS abwärts von 999
+vergibt) und weg vom abgeleiteten UID-Band (1501–1591). Beide Werte erfüllen
+das. Den Ausschlag gab die **Erkennbarkeit**: sieht man in einer
+Rechte-Fehlermeldung `gid 5000`, ordnet man sie sofort mediNix zu — der `5xx`-
+Namensraum trägt die Zuordnung. `3000` ist sicher, aber anonym.
+
+Der Einwand „5000 liest sich wie ein Port" wurde geprüft und verworfen: eine GID
+erscheint bei *Datei-Eigentum*, ein Port bei *Netzwerk* — verschiedene Kontexte,
+keine reale Verwechslung. Und es existiert kein Port 5000 (Ports sind Nummer×10,
+`500` ist Block-ID). `500` selbst ist verboten — es liegt im System-Bereich, den
+der Automat irgendwann abwärts erreicht.
+
+> **Randnotiz zur Isomorphie:** Die GID folgt weiterhin keiner Ableitung — sie
+> ist die eine fixe Konstante. `5000` ist kein `Nummer × …`, sondern „`5` =
+> Media-Block, `000` = die geteilte Basis". Ein Erkennungszeichen, keine Formel.
 
 ## Automatische Imports — und eine widerlegte Prämisse
 

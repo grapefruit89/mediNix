@@ -213,7 +213,7 @@ belegt: entfernt man sie, bleibt der Store-Pfad bitgleich.
 | Was | Zustand | Warum es bleibt |
 |---|---|---|
 | `registry.uids` | berechnet, 0 Leser | Trägt die Entscheidung aus ADR-5042. Verdrahtung erfordert UID-Migration mit `chown -R` |
-| `registry.mediaGid` | berechnet, 0 Leser | dito, real ist GID 990 statt 3000 |
+| `registry.mediaGid` | berechnet, 0 Leser | dito, real ist GID 990 statt 5000 |
 | `compat-my.nix` | 208 Zeilen, niemand importiert sie | AGENTS.md Regel 3: bewusst außerhalb des Flake-Exports, für den Fall Nix-Grok |
 
 **Warum nicht gelöscht:** Alle drei tragen eine Absicht. Gelöscht verschwände

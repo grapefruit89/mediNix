@@ -297,15 +297,27 @@ in
   # GID, und bestehende Dateien gehörten plötzlich niemandem.
   # Auf q958 gemessen (2026-07-20): GID war 990, automatisch vergeben.
   #
-  # 3000 gewählt, weil:
-  #   < 1000  ist bei NixOS für Systemkonten reserviert (misc/ids.nix)
-  #   = 1000  ist auf den meisten Systemen der erste echte Benutzer
-  # ⚠ Ebenfalls BERECHNET, ABER NICHT VERDRAHTET (Stand 2026-07-21).
-  # Gemessen auf q958: die media-Gruppe hat GID 990, automatisch vergeben —
-  # nicht 3000. Entfernt man dieses Feld, bleibt der Store-Pfad bitgleich.
+  # 5000 gewählt (geändert von 3000 am 2026-07-21). Zwei Bedingungen, ein Wunsch:
   #
-  # Zum Verdrahten genügt `users.groups.media.gid = registry.mediaGid;` plus
-  # ein einmaliger `chgrp -R` über /data/media. Weniger Aufwand als die UIDs,
-  # aber dasselbe Impermanence-Risiko.
-  mediaGid = 3000;
+  #   SICHER  NixOS vergibt System-Gruppen 400–999 abwärts (erreicht 5000 nie)
+  #           und reguläre User 1000–29999 aufwärts (5000 erst nach 4000 Usern).
+  #           5000 liegt in KEINEM automatisch vergebenen Pfad. Geprüft.
+  #   FREI    von den abgeleiteten UIDs (1501–1591) weit entfernt.
+  #   ERKENNBAR  Sieht man in einer Rechte-Fehlermeldung `gid 5000`, ist sofort
+  #           klar: das gehört zu mediNix. Genau der Sinn des 5xx-Namensraums.
+  #
+  # Warum NICHT die naheliegenden Alternativen:
+  #   500   liegt IM System-Bereich 400–999. Heute frei, aber der Automat zählt
+  #         abwärts und erreicht es irgendwann -> Zeitbombe. Verboten.
+  #   3000  war der alte Wert. Sicher, aber ohne Erkennungswert — „3000, wo
+  #         gehört das hin?". 5000 beantwortet die Frage von selbst.
+  #
+  # Es gibt keinen Port 5000: Ports sind Nummer×10, und 500 ist die Ingress-
+  # Block-ID (X0 ist nie ein Dienst). Also keine Verwechslung mit dem Portraum.
+  #
+  # ⚠ BERECHNET, ABER NOCH NICHT VERDRAHTET (Stand 2026-07-21). Real ist die
+  # GID auf q958 990, automatisch vergeben. Entfernt man dieses Feld, bleibt der
+  # Store-Pfad bitgleich. Zum Verdrahten: `users.groups.media.gid = registry.mediaGid;`
+  # plus einmaliger `chgrp -R` über /data/media — zusammen mit der UID-Migration.
+  mediaGid = 5000;
 }

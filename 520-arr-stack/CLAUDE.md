@@ -31,7 +31,7 @@ GID isomorph abgeleitet, bekaeme jeder Dienst seine eigene — Sonarr schriebe m
 1512, Jellyfin wollte mit 1541 lesen, `Permission denied`. Das ist der klassische
 Docker-PUID/PGID-Fehler in Nix-Form.
 
-> **Offen:** `registry.mediaGid = 3000` ist definiert, aber **nicht verdrahtet**.
+> **Offen:** `registry.mediaGid = 5000` ist definiert, aber **nicht verdrahtet**.
 > Real ist die GID 990, automatisch vergeben — also genau das Impermanence-Risiko,
 > vor dem ADR-5042 warnt. Nicht so tun, als sei das erledigt.
 
