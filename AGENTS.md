@@ -1,5 +1,12 @@
 # AGENTS.md — verbindliche Regeln für alle Agenten in diesem Repo
 
+> ## ⚖ ERSTES GEBOT — der Dezimalrahmen
+> Vier feste Anker regieren Ordner und Nummern **jedes** Projekts, auf jeder Ebene:
+> **`_0` Fundament · `_1` Zugang · `_2` Sicherheit · `_9` Leitplanken** — dazwischen
+> (`_3`–`_8`) die freie, projekteigene Mitte. Port = Nummer × 10, UID = 1000 + Nummer.
+> **Volle Autorität und Begründung: `devNIX/docs/adr/8000-dezimalrahmen.md`.**
+> Geht das verloren, verliert das Projekt die Orientierung. Niemals löschen.
+
 Gilt für jeden KI-Agenten (Claude, Grok, Gemini, Copilot …) und jeden Menschen,
 der hier arbeitet. Lies das **vor** der ersten Änderung.
 

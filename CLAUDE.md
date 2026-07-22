@@ -2,6 +2,13 @@
 
 # CLAUDE.md — Betriebsanweisung für Claude Code auf q958
 
+> ## ⚖ ERSTES GEBOT — der Dezimalrahmen
+> Vier feste Anker regieren Ordner und Nummern **jedes** Projekts, auf jeder Ebene:
+> **`_0` Fundament · `_1` Zugang · `_2` Sicherheit · `_9` Leitplanken** — dazwischen
+> (`_3`–`_8`) die freie, projekteigene Mitte. Port = Nummer × 10, UID = 1000 + Nummer.
+> **Volle Autorität und Begründung: `devNIX/docs/adr/8000-dezimalrahmen.md`.**
+> Geht das verloren, verliert das Projekt die Orientierung. Niemals löschen.
+
 `AGENTS.md` darüber ist die Verfassung: sie gilt für jeden Agenten und ändert
 sich selten. Diese Datei ist der Arbeitsauftrag für **dich, hier, auf dieser
 Maschine**.
