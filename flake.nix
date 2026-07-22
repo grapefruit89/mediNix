@@ -13,6 +13,7 @@
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
+      lib = nixpkgs.lib;
 
       # Ein Check laeuft im Repo und erzeugt bei Erfolg eine leere Ausgabe.
       mkCheck =
@@ -76,6 +77,72 @@
           deadnix --fail . \
             || { echo ""; echo "Beheben mit:  deadnix --edit ."; exit 1; }
         '';
+
+        # ═══════════════════════════════════════════════════════════════
+        # 5. DIE RATSCHE -- Dezimalrahmen-Invarianten (ADR-8000).
+        # ═══════════════════════════════════════════════════════════════
+        # Faengt jede falsche Nummer beim `nix flake check`, BEVOR sie
+        # ausgerollt wird: fuehrende 5, N00 nie ein Dienst, UID/Port-Formeln,
+        # keine Doppel, mediaGid = 5000.
+        dezimalrahmen =
+          let
+            reg = import ./lib/registry.nix { inherit lib; };
+            svcNums = lib.mapAttrs (_: sv: sv.number) reg.services;
+            nums = lib.attrValues svcNums;
+            verstoesse = lib.filter (v: v != null) (
+              lib.mapAttrsToList (
+                name: num:
+                let
+                  projekt = num / 100;
+                  rest = num - projekt * 100;
+                  probleme = lib.concatStringsSep ", " (
+                    lib.optional (projekt != 5) "fuehrende Ziffer ${toString projekt} != 5"
+                    ++ lib.optional (rest == 0) "N00 darf kein Dienst sein"
+                    ++
+                      lib.optional (reg.uids.${name} != projekt * 1000 + rest)
+                        "UID ${toString reg.uids.${name}} != ${toString (projekt * 1000 + rest)}"
+                    ++ lib.optional (
+                      reg.ports.${name} != num * 10
+                    ) "Port ${toString reg.ports.${name}} != ${toString (num * 10)}"
+                  );
+                in
+                if probleme == "" then null else "${name} (${toString num}): ${probleme}"
+              ) svcNums
+            );
+            fehler =
+              verstoesse
+              ++ lib.optional (lib.length nums != lib.length (lib.unique nums)) "doppelte Nummern in der Registry"
+              ++ lib.optional (reg.mediaGid != 5000) "mediaGid ${toString reg.mediaGid} != 5000";
+          in
+          if fehler == [ ] then
+            pkgs.runCommand "dezimalrahmen-ok" { } "echo 'ADR-8000 eingehalten' > $out"
+          else
+            throw ("ADR-8000 (Dezimalrahmen) verletzt:\n  " + lib.concatStringsSep "\n  " fehler);
+
+        # 6. BOOT-TEST -- VM faehrt mediNix hoch, prueft zwei leichte Dienste
+        #    auf den abgeleiteten Ports/UIDs. Kette Registry->Port->UID end-to-end.
+        boot = pkgs.nixosTest {
+          name = "medinix-boot";
+          nodes.machine = {
+            imports = [ ./. ];
+            grapefruitMedia = {
+              enable = true;
+              hardware.ramGB = 4;
+              navidrome.enable = true;
+              audiobookshelf.enable = true;
+            };
+            system.stateVersion = "26.05";
+          };
+          testScript = ''
+            machine.wait_for_unit("navidrome.service")
+            machine.wait_for_unit("audiobookshelf.service")
+            machine.wait_for_open_port(5530)
+            machine.wait_for_open_port(5520)
+            machine.succeed("test $(id -u navidrome) -eq 5053")
+            machine.succeed("test $(id -u audiobookshelf) -eq 5052")
+            machine.succeed("test $(getent group media | cut -d: -f3) -eq 5000")
+          '';
+        };
       };
 
       # ── Entwicklungsumgebung ─────────────────────────────────────────────
