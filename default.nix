@@ -67,7 +67,7 @@ in
   imports =
     let
       entries = builtins.readDir ./.;
-      isModuleDir = name: type: type == "directory" && builtins.match "^[0-9]{2}-.*" name != null;
+      isModuleDir = name: type: type == "directory" && builtins.match "^[0-9][1-9]-.*" name != null;
       dirs = builtins.sort (a: b: a < b) (builtins.attrNames (lib.filterAttrs isModuleDir entries));
     in
     map (d: ./. + "/${d}") dirs;
