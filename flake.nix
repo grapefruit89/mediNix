@@ -121,12 +121,13 @@
 
         # 6. BOOT-TEST -- VM faehrt mediNix hoch, prueft zwei leichte Dienste
         #    auf den abgeleiteten Ports/UIDs. Kette Registry->Port->UID end-to-end.
-        boot = pkgs.nixosTest {
+        boot = pkgs.testers.nixosTest {
           name = "medinix-boot";
           nodes.machine = {
             imports = [ ./. ];
             grapefruitMedia = {
               enable = true;
+              wireFixedUids = true;
               hardware.ramGB = 4;
               navidrome.enable = true;
               audiobookshelf.enable = true;

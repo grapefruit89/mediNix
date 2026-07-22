@@ -11,20 +11,22 @@
 #   - docs/adr/5043-dezimalrahmen.md
 # ---
 #
-# Setzt die festen UIDs/GID, die die Registry ableitet, scharf. Ohne das laufen
-# die Dienste auf automatisch vergebenen Zahlen (unter /var/lib/nixos), die bei
-# Impermanence mit tmpfs-Wurzel beim Neustart verschwinden — dann bekämen die
-# Dienste neue UIDs und die Mediendateien gehörten niemandem.
+# Setzt die festen UIDs/GID, die die Registry ableitet:
+#   GID = Projekt × 1000 = 5000   (media-Gruppe, geteilt)
+#   UID = Projekt × 1000 + Rest   (5031 prowlarr … 5053 navidrome)
 #
-#   GID = Projekt × 1000 = 5000   (media-Gruppe, für alle geteilt)
-#   UID = Projekt × 1000 + Rest   (5031 prowlarr, 5032 sonarr, …)
+# OPT-IN über `grapefruitMedia.wireFixedUids`. Aus per Default, weil feste UIDs
+# eine einmalige `chown`-Migration der State-Verzeichnisse brauchen — sonst
+# starten Dienste mit „permission denied". Ein Host schaltet es bewusst ein,
+# wenn er migriert hat oder ein frisches System ohne Daten hat. Die
+# Prüfkonfiguration lässt es aus und bleibt so berührungsfrei.
 #
-# mkForce ist nötig, weil nixpkgs manchen *arr eine statische ids.uids-Zahl gibt
-# (Sonarr 274, Radarr 275, Lidarr 306) — die muss überschrieben werden.
+# Jede UID zusätzlich an den jeweiligen Dienst gekoppelt (mkIf …enable): so
+# entstehen nie Teil-Benutzer ohne isSystemUser/Gruppe, wenn ein Dienst aus ist.
 #
-# jellyseerr/seerr ist ausgenommen: läuft als systemd-DynamicUser (UID im
-# Bereich 61184–65519) und greift nicht auf /data/media zu — eine feste UID
-# brächte dort keinen Gewinn und erforderte das Abschalten von DynamicUser.
+# mkForce, weil nixpkgs manchen *arr eine statische ids.uids-Zahl gibt
+# (Sonarr 274, Radarr 275, Lidarr 306). jellyseerr/seerr ist ausgenommen:
+# DynamicUser (61184–65519), greift nicht auf /data/media zu.
 {
   config,
   lib,
@@ -36,17 +38,25 @@ let
   u = registry.uids;
 in
 {
-  config = lib.mkIf cfg.enable {
-    users.groups.media.gid = lib.mkForce registry.mediaGid;
+  options.grapefruitMedia.wireFixedUids = lib.mkEnableOption ''
+    feste UIDs/GID nach dem Dezimalrahmen (ADR-8000) durchsetzen. Braucht eine
+    einmalige chown-Migration der State-Verzeichnisse — deshalb Opt-in
+  '';
 
-    users.users.prowlarr.uid = lib.mkForce u.prowlarr;
-    users.users.sonarr.uid = lib.mkForce u.sonarr;
-    users.users.radarr.uid = lib.mkForce u.radarr;
-    users.users.lidarr.uid = lib.mkForce u.lidarr;
-    users.users.readarr.uid = lib.mkForce u.readarr;
-    users.users.sabnzbd.uid = lib.mkForce u.sabnzbd;
-    users.users.jellyfin.uid = lib.mkForce u.jellyfin;
-    users.users.audiobookshelf.uid = lib.mkForce u.audiobookshelf;
-    users.users.navidrome.uid = lib.mkForce u.navidrome;
-  };
+  config = lib.mkIf (cfg.enable && cfg.wireFixedUids) (
+    lib.mkMerge [
+      { users.groups.media.gid = lib.mkForce registry.mediaGid; }
+      (lib.mkIf cfg.prowlarr.enable { users.users.prowlarr.uid = lib.mkForce u.prowlarr; })
+      (lib.mkIf cfg.sonarr.enable { users.users.sonarr.uid = lib.mkForce u.sonarr; })
+      (lib.mkIf cfg.radarr.enable { users.users.radarr.uid = lib.mkForce u.radarr; })
+      (lib.mkIf cfg.lidarr.enable { users.users.lidarr.uid = lib.mkForce u.lidarr; })
+      (lib.mkIf cfg.readarr.enable { users.users.readarr.uid = lib.mkForce u.readarr; })
+      (lib.mkIf cfg.sabnzbd.enable { users.users.sabnzbd.uid = lib.mkForce u.sabnzbd; })
+      (lib.mkIf cfg.jellyfin.enable { users.users.jellyfin.uid = lib.mkForce u.jellyfin; })
+      (lib.mkIf cfg.audiobookshelf.enable {
+        users.users.audiobookshelf.uid = lib.mkForce u.audiobookshelf;
+      })
+      (lib.mkIf cfg.navidrome.enable { users.users.navidrome.uid = lib.mkForce u.navidrome; })
+    ]
+  );
 }
