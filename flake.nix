@@ -197,6 +197,16 @@
             machine.succeed("test $(getent group media | cut -d: -f3) -eq 5000")
           '';
         };
+
+        # 7. arr-provision Python-Tests laufen in CI.
+        # ═══════════════════════════════════════════════════════════════
+        # Das Paket fuehrt in seiner exponierten `.tests`-Ableitung
+        # `python3 -m unittest discover -s tests` aus. Referenziert es kein
+        # Check, baut `nix flake check` es nie -> die Tests liefen bisher NIE
+        # (provision ist auf q958 aus, also baut auch `full` das Paket nicht).
+        # Dieser Check baut die Test-Ableitung -> ein API-Bruch in den
+        # Sync-CLIs faellt in CI auf, nicht erst beim echten Provisioning.
+        arr-provision = (pkgs.callPackage ./packages/arr-provision { }).tests;
       };
 
       # ── Entwicklungsumgebung ─────────────────────────────────────────────
