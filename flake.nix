@@ -112,9 +112,9 @@
                   probleme = lib.concatStringsSep ", " (
                     lib.optional (projekt != 5) "fuehrende Ziffer ${toString projekt} != 5"
                     ++ lib.optional (rest == 0) "N00 darf kein Dienst sein"
-                    ++
-                      lib.optional (reg.uids.${name} != projekt * 1000 + rest)
-                        "UID ${toString reg.uids.${name}} != ${toString (projekt * 1000 + rest)}"
+                    ++ lib.optional (
+                      reg.uids.${name} != num * 10
+                    ) "UID ${toString reg.uids.${name}} != ${toString (num * 10)}"
                     ++ lib.optional (
                       reg.ports.${name} != num * 10
                     ) "Port ${toString reg.ports.${name}} != ${toString (num * 10)}"

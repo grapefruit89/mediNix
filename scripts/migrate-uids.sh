@@ -17,14 +17,14 @@
 #   migrate-uids.sh check    zeigt Ist vs. Soll, ändert NICHTS
 #   migrate-uids.sh apply    führt die Migration aus (braucht root/sudo)
 #
-# Quelle der Soll-Werte: lib/registry.nix (UID = Projekt×1000 + Rest, GID 5000).
+# Quelle der Soll-Werte: lib/registry.nix (UID = Nummer × 10, GID 5000).
 # Der `dezimalrahmen`-Check (nix flake check) pinnt die Registry-Konsistenz.
 # jellyseerr/seerr ist ausgenommen — läuft als systemd-DynamicUser.
 set -uo pipefail
 
 declare -A UID_OF=(
-  [prowlarr]=5031 [sonarr]=5032 [radarr]=5033 [lidarr]=5034 [readarr]=5035
-  [sabnzbd]=5041 [jellyfin]=5051 [audiobookshelf]=5052 [navidrome]=5053
+  [prowlarr]=5310 [sonarr]=5320 [radarr]=5330 [lidarr]=5340 [readarr]=5350
+  [sabnzbd]=5410 [jellyfin]=5510 [audiobookshelf]=5520 [navidrome]=5530
 )
 GID_MEDIA=5000
 SVCS="${!UID_OF[*]} seerr"

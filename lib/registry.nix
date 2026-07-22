@@ -220,15 +220,10 @@ let
   isStatic = svc: svc.static or false;
 
   portOf = svc: svc.number * 10;
-  # UID = Projekt × 1000 + Rest (ADR-8000). Projekt = fuehrende Ziffer,
-  # Rest = die zwei Ziffern danach. 532 -> 5*1000 + 32 = 5032. Fuehrt mit der
-  # Projektziffer wie Port und GID; kann nie X000 sein (N00 ist nie ein Dienst).
-  uidOf =
-    svc:
-    let
-      projekt = svc.number / 100;
-    in
-    projekt * 1000 + (svc.number - projekt * 100);
+  # UID = Nummer × 10 (ADR-8000). Identisch zum Port: 551 -> 5510. Eine Formel
+  # fuer beide. Kann nie eine GID (Projekt × 1000 = X000) treffen, denn das
+  # hiesse Nummer = X00 -- und N00 ist nie ein Dienst.
+  uidOf = svc: svc.number * 10;
 
   withUi = lib.filterAttrs (_: s: s.ui) services;
   inTier = tier: lib.attrNames (lib.filterAttrs (_: s: s.tier == tier) services);
