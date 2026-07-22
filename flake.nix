@@ -13,7 +13,7 @@
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
-      lib = nixpkgs.lib;
+      inherit (nixpkgs) lib;
 
       # Ein Check laeuft im Repo und erzeugt bei Erfolg eine leere Ausgabe.
       mkCheck =
