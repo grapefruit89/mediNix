@@ -34,8 +34,8 @@ Diensten. Alle drei gefundenen Fehler sind reine Laufzeitfehler.
 | `audiobookshelf.local` | ✅ HTTP 200 — nach L4 |
 | `jellyfin.local` | ❌ HTTP 502 — L3 und L5 behoben, Migration offen |
 
-**Nicht getestet:** `560-recyclarr` (braucht geprüfte trash_ids, bewusst aus),
-`590-usenet-confinement` (braucht WireGuard-Key), `525-provision` (braucht
+**Nicht getestet:** `571-recyclarr` (braucht geprüfte trash_ids, bewusst aus),
+`521-usenet-confinement` (braucht WireGuard-Key), `572-provision` (braucht
 API-Keys).
 
 **Erzeugt nichts:** `exporters.enable = true` legt weder Units noch Ports an —

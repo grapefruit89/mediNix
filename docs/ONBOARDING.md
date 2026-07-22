@@ -189,7 +189,7 @@ gewinnt gegen devNIX' `mkDefault`. Eine Assertion in devNIX weist darauf hin.
 ```
 
 **Ports musst du nicht angeben.** Sie folgen aus `lib/registry.nix`:
-Ordnernummer × 10. Sonarr liegt in `520-arr-stack` mit Nummer 512, also 5120.
+Ordnernummer × 10. Sonarr liegt in `530-beschaffung` mit Nummer 512, also 5120.
 Wer hier einen Port hart setzt, umgeht die Registry.
 
 **Was du bewusst weglässt:**

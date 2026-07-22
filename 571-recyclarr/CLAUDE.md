@@ -1,4 +1,4 @@
-# 560-recyclarr — Qualitaetsprofile fuer die *arr
+# 571-recyclarr — Qualitaetsprofile fuer die *arr
 
 Timer ohne Weboberflaeche (`ui = false`, `tier = none`).
 

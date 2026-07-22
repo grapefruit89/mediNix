@@ -86,41 +86,41 @@ let
 
     # ── 500 ingress ────────────────────────────────────────────────────
     caddy = {
-      number = 501;
+      number = 511;
       tier = "none";
       ui = false;
     };
 
     # ── 510 acquisition ────────────────────────────────────────────────
     prowlarr = {
-      number = 511;
+      number = 531;
       tier = "backend-lan";
       ui = true;
     };
     sonarr = {
-      number = 512;
+      number = 532;
       tier = "backend-lan";
       ui = true;
     };
     radarr = {
-      number = 513;
+      number = 533;
       tier = "backend-lan";
       ui = true;
     };
     lidarr = {
-      number = 514;
+      number = 534;
       tier = "backend-lan";
       ui = true;
     };
     readarr = {
-      number = 515;
+      number = 535;
       tier = "backend-lan";
       ui = true;
     };
 
     # ── 520 download ───────────────────────────────────────────────────
     sabnzbd = {
-      number = 521;
+      number = 541;
       tier = "backend-lan";
       ui = true;
     };
@@ -128,24 +128,24 @@ let
     # ── 530 management ─────────────────────────────────────────────────
     # Kein ui: Recyclarr ist ein Timer ohne Oberfläche.
     recyclarr = {
-      number = 531;
+      number = 571;
       tier = "none";
       ui = false;
     };
 
     # ── 540 playback ───────────────────────────────────────────────────
     jellyfin = {
-      number = 541;
+      number = 551;
       tier = "edge-wan";
       ui = true;
     };
     audiobookshelf = {
-      number = 542;
+      number = 552;
       tier = "edge-wan";
       ui = true;
     };
     navidrome = {
-      number = 543;
+      number = 553;
       tier = "edge-wan";
       ui = true;
     };
@@ -162,7 +162,7 @@ let
     # Feishin ERSETZT Navidrome nicht -- es spricht dessen API. Ohne einen
     # laufenden Musikserver zeigt es nur eine Anmeldemaske.
     feishin = {
-      number = 544;
+      number = 554;
       tier = "edge-wan";
       ui = true;
       static = true;
@@ -170,7 +170,7 @@ let
 
     # ── 550 access ─────────────────────────────────────────────────────
     jellyseerr = {
-      number = 551;
+      number = 561;
       tier = "edge-wan";
       ui = true;
     };
@@ -181,22 +181,22 @@ let
     # ("Basisport plus Versatz"), und genau die wollte das Schema abschaffen.
     # Keine Oberfläche für Menschen, deshalb ui = false und tier = none.
     exportarr-sonarr = {
-      number = 561;
+      number = 573;
       tier = "none";
       ui = false;
     };
     exportarr-radarr = {
-      number = 562;
+      number = 574;
       tier = "none";
       ui = false;
     };
     exportarr-prowlarr = {
-      number = 563;
+      number = 575;
       tier = "none";
       ui = false;
     };
     exportarr-lidarr = {
-      number = 564;
+      number = 576;
       tier = "none";
       ui = false;
     };
@@ -205,7 +205,7 @@ let
     # Kein Dienst mit Port, sondern ein Confinement-Mechanismus. Die Nummer
     # existiert der Vollständigkeit halber; Port und UID werden nicht genutzt.
     usenet-confinement = {
-      number = 591;
+      number = 521;
       tier = "none";
       ui = false;
     };
@@ -220,7 +220,15 @@ let
   isStatic = svc: svc.static or false;
 
   portOf = svc: svc.number * 10;
-  uidOf = svc: 1000 + svc.number;
+  # UID = Projekt × 1000 + Rest (ADR-8000). Projekt = fuehrende Ziffer,
+  # Rest = die zwei Ziffern danach. 532 -> 5*1000 + 32 = 5032. Fuehrt mit der
+  # Projektziffer wie Port und GID; kann nie X000 sein (N00 ist nie ein Dienst).
+  uidOf =
+    svc:
+    let
+      projekt = svc.number / 100;
+    in
+    projekt * 1000 + (svc.number - projekt * 100);
 
   withUi = lib.filterAttrs (_: s: s.ui) services;
   inTier = tier: lib.attrNames (lib.filterAttrs (_: s: s.tier == tier) services);

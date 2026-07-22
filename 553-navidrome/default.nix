@@ -68,10 +68,10 @@ in
         # auffaellt -- er zeigt sich erst, wenn die Rechte stimmen.
         #
         # Alle anderen Dienste machen es bereits so:
-        #   520-arr-stack:88     extraGroups = [ "media" ]
-        #   530-sabnzbd:56       extraGroups = [ "media" ]
-        #   540-audiobookshelf   group = "media"
-        #   510-jellyfin:220     users.users.jellyfin.extraGroups
+        #   530-beschaffung:88     extraGroups = [ "media" ]
+        #   541-sabnzbd:56       extraGroups = [ "media" ]
+        #   552-audiobookshelf   group = "media"
+        #   551-jellyfin:220     users.users.jellyfin.extraGroups
         users.users.navidrome.extraGroups = lib.mkAfter [ "media" ];
 
         systemd.services.navidrome.serviceConfig.EnvironmentFile = [

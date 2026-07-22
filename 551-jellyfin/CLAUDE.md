@@ -1,4 +1,4 @@
-# 510-jellyfin — Medienserver
+# 551-jellyfin — Medienserver
 
 Port 5410 (Registry 541 x 10). GPU-Transkodierung ueber `lib/gpu.nix`.
 

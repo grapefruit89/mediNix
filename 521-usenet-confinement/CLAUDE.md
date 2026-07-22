@@ -1,4 +1,4 @@
-# 590-usenet-confinement — Netzwerk-Einsperrung
+# 521-usenet-confinement — Netzwerk-Einsperrung
 
 Kein Dienst, sondern ein Mechanismus: er zwingt den Downloader durch den
 VPN-Tunnel. Nummer 591, quer zu allem — deshalb am Ende der Blockfolge.

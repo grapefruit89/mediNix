@@ -70,11 +70,11 @@ setsid nohup sudo nixos-rebuild switch --flake /etc/nixos#q958 > /tmp/sw.log 2>&
 Browser                                       Ergebnis
    │  http://sonarr.local
    ▼
-Avahi / mDNS ─────────────── 500-media-ingress/mdns.nix
+Avahi / mDNS ─────────────── 510-ingress/mdns.nix
    │  löst .local auf         Namensliste aus registry.uiServices
    │                          publish.userServices = true  ← ohne das: Stille
    ▼
-Caddy :80 ────────────────── 500-media-ingress/default.nix
+Caddy :80 ────────────────── 510-ingress/default.nix
    │  vHost je Dienst         Einzelfehlerpunkt: fällt er, ist alles weg
    │                          MemoryMin + ManagedOOMPreference = avoid
    │
@@ -222,7 +222,7 @@ unbenutzt ist, ist der schlechteste Zustand: es sieht erledigt aus. Deshalb
 steht die Begründung jeweils direkt an der Stelle im Code.
 
 **Was NICHT tot ist, obwohl es so aussieht:** `lib/service-tiers.nix` ist eine
-Weiterleitung auf die Registry und wird von `500-media-ingress/ddns.nix`
+Weiterleitung auf die Registry und wird von `510-ingress/ddns.nix`
 importiert. Eine Suche nach `registry.byService` findet nichts — der Zugriff
 läuft über die Weiterleitung. Wer hier aufräumen will, prüft erst den
 Gegentest, nicht die Textsuche.

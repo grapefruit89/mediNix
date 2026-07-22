@@ -1,6 +1,6 @@
 # API-Referenz für die Provisionierung
 
-Verbindliche Grundlage für `525-provision/`, `packages/arr-provision/` und die
+Verbindliche Grundlage für `572-provision/`, `packages/arr-provision/` und die
 Treiber-Implementierung aus **ADR-5035**.
 
 > ## ⚠ Grundregel

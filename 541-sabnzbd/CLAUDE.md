@@ -1,4 +1,4 @@
-# 530-sabnzbd — Usenet-Downloader
+# 541-sabnzbd — Usenet-Downloader
 
 Port 5210. Antwortet mit **303** — das ist korrekt, nicht kaputt.
 

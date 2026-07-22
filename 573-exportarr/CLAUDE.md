@@ -1,4 +1,4 @@
-# 570-exportarr — Prometheus-Metriken der *arr
+# 573-exportarr — Prometheus-Metriken der *arr
 
 Vier Exporter, Nummern 561–564. **Kein UI, kein Ingress.**
 

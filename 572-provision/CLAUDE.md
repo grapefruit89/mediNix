@@ -1,4 +1,4 @@
-# 525-provision — Erstkonfiguration der Dienste
+# 572-provision — Erstkonfiguration der Dienste
 
 Traegt API-Keys ein, verbindet Prowlarr mit den *arr, setzt Pfade.
 

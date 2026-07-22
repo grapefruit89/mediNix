@@ -1,4 +1,4 @@
-# 550-navidrome — Musikserver
+# 553-navidrome — Musikserver
 
 Port 5430. Antwortet mit **302**.
 
@@ -24,5 +24,5 @@ Musikverzeichnis. Ohne Gruppenmitgliedschaft brach der Zugriff, mit ihr nicht.
 
 ## Feishin haengt hier dran
 
-`544-feishin` spricht die Navidrome-API. Wer hier Port oder Adresse aendert, muss
+`554-feishin` spricht die Navidrome-API. Wer hier Port oder Adresse aendert, muss
 dort `serverUrl` mitziehen.

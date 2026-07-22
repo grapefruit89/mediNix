@@ -61,7 +61,7 @@ in
   #
   # Nur ORDNER, nie Einzeldateien: was in einem Ordner liegt, bindet dessen
   # default.nix ein. Ohne diese Regel wuerde der Scan Dateien uebersehen --
-  # genau das war bei 520-arr-stack der Fall, bevor es selbstversorgend wurde.
+  # genau das war bei 530-beschaffung der Fall, bevor es selbstversorgend wurde.
   imports =
     let
       entries = builtins.readDir ./.;
@@ -145,9 +145,9 @@ in
         description = "Systemd calendar interval for Recyclarr runs.";
       };
       # M1-Fix: quality/primaryLanguage/secondaryLanguage entfernt -- waren in
-      # 560-recyclarr/default.nix deklariert aber nie ausgewertet (Profile
+      # 571-recyclarr/default.nix deklariert aber nie ausgewertet (Profile
       # sind hart auf German/English 1080p verdrahtet). Echte Konfiguration
-      # erfolgt direkt in 560-recyclarr/default.nix bis ein generisches
+      # erfolgt direkt in 571-recyclarr/default.nix bis ein generisches
       # Template-System implementiert wird.
     };
     exporters = {
@@ -628,7 +628,7 @@ in
         default = false;
         description = ''
           Generate a shared Arr API key and per-service env files at boot
-          (520-arr-stack/secrets-generator.nix). Default off: overwrites
+          (530-beschaffung/secrets-generator.nix). Default off: overwrites
           existing <service>.env files and uses one shared key for all
           services -- see docs/archiv/claude-review.md K4 before enabling.
         '';

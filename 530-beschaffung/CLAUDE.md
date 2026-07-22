@@ -1,4 +1,4 @@
-# 520-arr-stack — Prowlarr, Sonarr, Radarr, Lidarr, Readarr
+# 530-beschaffung — Prowlarr, Sonarr, Radarr, Lidarr, Readarr
 
 Fuenf Dienste aus **einer** Fabrik (`lib/service-factory.nix`). Ports 5110–5150.
 
