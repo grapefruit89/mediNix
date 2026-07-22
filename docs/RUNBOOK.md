@@ -203,11 +203,11 @@ error_pattern: "not applying UID change|not applying GID change|wireFixedUids|fe
 Benutzer weiter auf alten UIDs. Im Switch-Log:
 
 ```
-warning: not applying UID change of user 'jellyfin' (993 -> 5051)
+warning: not applying UID change of user 'jellyfin' (993 -> 5510)
 ```
 
 **Ursache** `mutableUsers = true` — NixOS nummeriert **bestehende** Benutzer
-nicht um. Die Config ist korrekt (deklariert 5051), aber das laufende System
+nicht um. Die Config ist korrekt (deklariert 5510), aber das laufende System
 bleibt auf 993. Die State-Dateien gehören noch der alten UID → Folgefehler
 „permission denied" (Abschnitt 4).
 
@@ -420,7 +420,7 @@ einem Phantom.
 | `provision` inaktiv | keine API-Schlüssel | dito |
 | `recyclarr` aus | `trash_ids` ungeprüft | falsche IDs zerlegen still die Qualitätsprofile |
 | `exporters.enable = true` wirkungslos | **ungeklärt** | erzeugt weder Units noch Ports, Ursache unbekannt |
-| `registry.uids`, `mediaGid` | verdrahtet (wireFixedUids) | real: UID 5032, GID 5000 |
+| `registry.uids`, `mediaGid` | verdrahtet (wireFixedUids) | real: UID 5320, GID 5000 |
 
 ---
 

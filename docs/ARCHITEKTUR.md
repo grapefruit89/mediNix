@@ -101,7 +101,7 @@ Drei Stellen, an denen es lautlos bricht:
 lib/registry.nix          ← die eine Tabelle
    │
    ├─ Port  = Nummer × 10 ──────► Dienstmodule, Caddy-vHosts
-   ├─ UID   = Projekt×1000+Rest ► verdrahtet via wireFixedUids (532→5032)
+   ├─ UID   = Nummer×10 ► verdrahtet via wireFixedUids (532→5320)
    ├─ tier  ────────────────────► Ingress: edge-wan / backend-lan / none
    ├─ ui    ────────────────────► mDNS-Namen + vHost-Menge
    └─ static ───────────────────► file_server statt reverse_proxy
@@ -118,7 +118,7 @@ Ausführlich in `docs/adr/5042-pfadisomorphie.md`.
 
 > **Stand 2026-07-22:** `registry.uids` und `registry.mediaGid` sind über
 > `590-leitplanken` **verdrahtet** (Opt-in `wireFixedUids`). Auf q958 aktiv:
-> Sonarr UID 5032, media-GID 5000. Isomorphie bei Ports UND UIDs umgesetzt.
+> Sonarr UID 5320, media-GID 5000. Isomorphie bei Ports UND UIDs umgesetzt.
 
 ---
 

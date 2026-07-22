@@ -3,7 +3,7 @@
 > ## ⚖ ERSTES GEBOT — der Dezimalrahmen
 > Vier feste Anker regieren Ordner und Nummern **jedes** Projekts, auf jeder Ebene:
 > **`_0` Fundament · `_1` Zugang · `_2` Sicherheit · `_9` Leitplanken** — dazwischen
-> (`_3`–`_8`) die freie, projekteigene Mitte. Port = Nummer × 10, UID = Projekt×1000+Rest, GID = Projekt×1000.
+> (`_3`–`_8`) die freie, projekteigene Mitte. Port = Nummer × 10, UID = Nummer×10, GID = Projekt×1000.
 > **Volle Autorität und Begründung: `devNIX/docs/adr/8000-dezimalrahmen.md`.**
 > Geht das verloren, verliert das Projekt die Orientierung. Niemals löschen.
 
@@ -158,7 +158,7 @@ sonst in `/proc/<pid>/environ` und in der Prozessliste).
 
 Reihenfolge, Wiederholung, Teilerfolge und Sichtbarkeit macht systemd — nicht
 ein selbstgeschriebener Orchestrator. Deshalb acht getrennte oneshot-Units in
-der Provisionierung statt eines Über-Skripts (Begründung in ADR-5035).
+der Provisionierung statt eines Über-Skripts (Begründung in ADR-5350).
 
 Eigener Code nur als **„Surgical Glue"** dort, wo Nix und systemd nicht
 hinreichen. Und dann: nur stdlib, keine externen Abhängigkeiten.
@@ -173,7 +173,7 @@ hinreichen. Und dann: nur stdlib, keine externen Abhängigkeiten.
 | Nummernschema (projektübergreifend) | `devNIX` ADR-8000 Dezimalrahmen — die Verfassung |
 | Erreichbarkeit LAN/WAN/VPN, TLS | `docs/network-topology.md` |
 | API-Endpunkte + Verifikationsstand | `docs/api-reference.md` |
-| Provisionierungs-Architektur | `docs/adr/5035-provision-driver-architecture.md` |
+| Provisionierungs-Architektur | `docs/adr/5350-provision-driver-architecture.md` |
 | Port, UID, Tier, mDNS-Menge (SSoT) | `lib/registry.nix` |
 | Neue Maschine einrichten | `docs/ONBOARDING.md` |
 | Wie die Teile zusammenhängen | `docs/ARCHITEKTUR.md` |

@@ -56,7 +56,7 @@ hat `lib/registry.nix` umgangen.
 | Was | Zustand | Nächster Schritt |
 |---|---|---|
 | **Keine Regressionstests** | `checks/` evaluiert nur, startet nichts | Issue #48: `nixosTest`. **Die wichtigste offene Aufgabe** |
-| `registry.uids`, `mediaGid` | **verdrahtet** (wireFixedUids) | auf q958 aktiv: Sonarr 5032, media-GID 5000 — impermanence-fest |
+| `registry.uids`, `mediaGid` | **verdrahtet** (wireFixedUids) | auf q958 aktiv: Sonarr 5320, media-GID 5000 — impermanence-fest |
 | `exporters.enable = true` | erzeugt weder Units noch Ports | **ungeklärt.** Erste Schritte im Runbook, Abschnitt 11 |
 
 ---

@@ -102,11 +102,13 @@ Playback-Dienste wandern in **einen** `550-wiedergabe/`-Ordner (wie schon
 `530-beschaffung` alle *arr in einem hält). Das ist die bestehende Fabrik-Logik,
 nicht ihr Bruch.
 
-## Was NICHT gemacht wird
+## Verschachtelung — adoptiert (2026-07-22)
 
-- **Keine verschachtelten Ordner** (`550/551-jellyfin.nix`). Der Auto-Import
-  scannt flach; die Dienste teilen sich das `default.nix` ihrer Dekade, wie
-  heute die *arr-Fabrik. Verschachteln bräche den Import und die Fabrik.
+- **Zweistellige Dekaden-Ordner (`5N-name/`), Dienste als `5NN`-Dateien darin.**
+  Jedes Dekaden-`default.nix` ist die `5N0`-Block-ID und importiert rekursiv seine
+  `5NN`-Dienste. Der frühere Einwand („flacher Import bräche") ist gelöst: der
+  Auto-Import ist jetzt zweistufig. Fabrik-Dekaden (`53-beschaffung`,
+  `57-pflege/572-provision`) bleiben Ordner. UID = Port = Nummer × 10.
 - **Unit-Namen, State-Pfade, DNS bleiben sprechend** (ADR-5042): `jellyfin.service`,
   `/var/lib/jellyfin`, `jellyfin.local`. Nur die *Ordner-* und *Registry-Nummer*
   ändert sich, nicht die nixpkgs-verdrahteten Namen.
