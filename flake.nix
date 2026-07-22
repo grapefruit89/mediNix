@@ -133,6 +133,45 @@
           else
             throw ("ADR-8000 (Dezimalrahmen) verletzt:\n  " + lib.concatStringsSep "\n  " fehler);
 
+        # 5c. RIEGEL: Dienst-Port == Registry-Port.
+        # ═══════════════════════════════════════════════════════════════
+        # dezimalrahmen prueft die NUMMERN in der Registry. Dieser Check
+        # prueft, dass jeder Dienst seinen Port WIRKLICH aus registry.ports
+        # zieht -- nicht irgendwo einen Literal hardcodet. Ohne das koennte
+        # ein Modul still von der Registry abdriften.
+        # jellyfin ist ausgenommen: Port kommt aus geseedeter network.xml,
+        # keine abfragbare Option.
+        ports-verdrahtet =
+          let
+            reg = import ./lib/registry.nix { inherit lib; };
+            c = self.nixosConfigurations.check-full.config;
+            effektiv = {
+              sonarr = c.services.sonarr.settings.server.port;
+              radarr = c.services.radarr.settings.server.port;
+              lidarr = c.services.lidarr.settings.server.port;
+              readarr = c.services.readarr.settings.server.port;
+              prowlarr = c.services.prowlarr.settings.server.port;
+              sabnzbd = c.services.sabnzbd.settings.misc.port;
+              navidrome = c.services.navidrome.settings.Port;
+              audiobookshelf = c.services.audiobookshelf.port;
+              jellyseerr = c.services.jellyseerr.port;
+            };
+            dienste = lib.filterAttrs (n: _: reg.ports ? ${n}) effektiv;
+            drift = lib.filter (v: v != null) (
+              lib.mapAttrsToList (
+                name: eff:
+                if eff == reg.ports.${name} then
+                  null
+                else
+                  "${name}: Dienst-Port ${toString eff} != Registry ${toString reg.ports.${name}}"
+              ) dienste
+            );
+          in
+          if drift == [ ] then
+            pkgs.runCommand "ports-verdrahtet-ok" { } "echo 'Alle Dienst-Ports == Registry' > $out"
+          else
+            throw ("Port-Drift zwischen Registry und Diensten:\n  " + lib.concatStringsSep "\n  " drift);
+
         # 6. BOOT-TEST -- VM faehrt mediNix hoch, prueft zwei leichte Dienste
         #    auf den abgeleiteten Ports/UIDs. Kette Registry->Port->UID end-to-end.
         boot = pkgs.testers.nixosTest {
