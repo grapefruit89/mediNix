@@ -39,6 +39,15 @@
         ];
       };
 
+      # Voller Stack -- baut jeden Dienst, anders als die minimale check-Config.
+      nixosConfigurations.check-full = nixpkgs.lib.nixosSystem {
+        inherit system;
+        modules = [
+          ./checks/full-host.nix
+          ./.
+        ];
+      };
+
       # ── Formatter ────────────────────────────────────────────────────────
       # nixfmt ist der offizielle Nix-Formatter (RFC 166) und das, was die
       # nixpkgs-CI selbst benutzt (ci/treefmt.nix).
@@ -56,6 +65,11 @@
 
         # 1. Baut das Modul ueberhaupt?
         eval = self.nixosConfigurations.check.config.system.build.toplevel;
+
+        # 1b. Baut der VOLLE Stack? (jeder Dienst, wie q958)
+        #     minimal-host laesst Dienste aus -> eval baut fast nichts.
+        #     Dieser Check faengt ein kaputtes Dienstmodul, bevor der Switch es tut.
+        full = self.nixosConfigurations.check-full.config.system.build.toplevel;
 
         # 2. Ist alles formatiert? --check aendert nichts, es meldet nur.
         format = mkCheck "format" [ pkgs.nixfmt ] ''
