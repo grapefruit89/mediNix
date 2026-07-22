@@ -18,7 +18,7 @@ let
   cfg = config.grapefruitMedia;
   prov = cfg.provision;
   sub = prov.locale;
-  arrProvision = pkgs.callPackage ../packages/arr-provision { };
+  arrProvision = pkgs.callPackage ../../packages/arr-provision { };
 
   anyEnabled = cfg.jellyfin.enable || cfg.sabnzbd.enable;
   active = cfg.enable && prov.enable && sub.enable && anyEnabled;

@@ -20,7 +20,7 @@ let
   sub = prov.seerr;
   inherit (cfg) ports;
   inherit (cfg) locale;
-  arrProvision = pkgs.callPackage ../packages/arr-provision { };
+  arrProvision = pkgs.callPackage ../../packages/arr-provision { };
 
   loopback = "127.0.0.1";
 

@@ -19,7 +19,7 @@ let
   prov = cfg.provision;
   sub = prov.profiles;
   inherit (cfg) ports;
-  arrProvision = pkgs.callPackage ../packages/arr-provision { };
+  arrProvision = pkgs.callPackage ../../packages/arr-provision { };
 
   anyArr = cfg.sonarr.enable || cfg.radarr.enable;
   active = cfg.enable && prov.enable && sub.enable && anyArr;

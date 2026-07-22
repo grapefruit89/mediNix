@@ -19,8 +19,8 @@ let
   prov = cfg.provision;
   sub = prov.keys;
   inherit (cfg) ports;
-  arrProvision = pkgs.callPackage ../packages/arr-provision { };
-  provision = import ../lib/provision-unit.nix { inherit lib; };
+  arrProvision = pkgs.callPackage ../../packages/arr-provision { };
+  provision = import ../../lib/provision-unit.nix { inherit lib; };
 
   anyArr = cfg.sonarr.enable || cfg.radarr.enable || cfg.prowlarr.enable || cfg.sabnzbd.enable;
   active = cfg.enable && prov.enable && sub.enable && anyArr;

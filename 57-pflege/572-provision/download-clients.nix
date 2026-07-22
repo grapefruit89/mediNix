@@ -19,7 +19,7 @@ let
   prov = cfg.provision;
   sub = prov.downloadClients;
   inherit (cfg) ports;
-  arrProvision = pkgs.callPackage ../packages/arr-provision { };
+  arrProvision = pkgs.callPackage ../../packages/arr-provision { };
 
   loopback = "127.0.0.1";
 

@@ -287,11 +287,6 @@ let
 
 in
 {
-  imports = [
-    ./mdns.nix
-    ./ddns.nix
-  ];
-
   config = lib.mkIf cfg.enable (
     lib.mkMerge [
 
