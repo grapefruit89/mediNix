@@ -41,6 +41,7 @@ in
   # 590 Block-ID: importiert die domaenenweisen Leitplanken 59N
   imports = [
     ./591-zugang.nix
+    ./593-beschaffung.nix
     ./594-transfer.nix
     ./595-wiedergabe.nix
   ];
