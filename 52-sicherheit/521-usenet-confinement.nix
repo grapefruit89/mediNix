@@ -1,5 +1,6 @@
 # ---
 # id: "usenet-confinement"
+# status: "deprecated"  # ersetzt durch 522-killswitch.nix (nftables, kein netns)
 # domain: "50"
 # status: "active"
 # layer: 4
@@ -157,6 +158,10 @@ let
 in
 {
   config = lib.mkIf (cfgGlobal.enable && cfgGlobal.usenet-confinement.enable) {
+    warnings = [
+      "[medinix] usenet-confinement (netns) ist DEPRECATED -- bricht die direkte Erreichbarkeit. Nutze grapefruitMedia.vpn.killswitch.enable (522-killswitch.nix). Nicht beide gleichzeitig aktiv."
+    ];
+
     # Fail-closed: lieber Build-Fehler als ein stiller Public-DNS-Fallback.
     assertions = [
       {
